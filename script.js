@@ -60,7 +60,6 @@ let allChatsLoaded = false; // Flag to indicate all chats have been loaded
 const CHATS_PER_PAGE = 15; // Number of chats to load per page
 let isLearningMode = false; // State for learning mode
 let confirmationResolve = null; // To handle promise-based confirmation
-let completedTopics = []; // === BIẾN MỚI: Lưu trữ các chủ đề đã học ===
 
 // System prompt for learning mode. This is prepended to user prompts when learning mode is active.
 const LEARNING_MODE_SYSTEM_PROMPT = `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
@@ -616,41 +615,37 @@ async function handleSavePersona(e) {
 
 
 // --- CHAT LOGIC ---
-// === SỬA LỖI: Cập nhật hàm preprocessText ===
 function preprocessText(text) {
-    // Regex cho learning links, ví dụ [Title]{"prompt":"..."}
     const learningLinkRegex = /\[([^\]]+?)\]\{"prompt":"([^"]+?)"\}/g;
+    const termLinkRegex = /\[([^\]]+?)\]/g;
     
-    // Regex cho các thuật ngữ đơn giản, ví dụ [Term].
-    // Sử dụng negative lookahead `(?!\{)` để đảm bảo nó không được theo sau bởi dấu '{',
-    // tránh việc khớp nhầm với một learning link.
-    const termLinkRegex = /\[([^\]{}]+?)\](?!\{)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
 
-    let processedText = text;
+    while ((match = learningLinkRegex.exec(text)) !== null) {
+        parts.push(text.substring(lastIndex, match.index));
+        
+        const title = match[1];
+        const prompt = match[2];
 
-    // 1. Ưu tiên xử lý các learning link phức tạp trước.
-    processedText = processedText.replace(learningLinkRegex, (match, title, promptJson) => {
-        try {
-            const promptData = JSON.parse(promptJson);
-            const prompt = promptData.prompt;
-            const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            
-            // Kiểm tra xem chủ đề này đã hoàn thành chưa
-            const isCompleted = completedTopics.includes(prompt);
-            const completedClass = isCompleted ? ' completed' : '';
-            
-            return `<a href="#" class="learning-link${completedClass}" data-prompt="${sanitizedPrompt}">${title}</a>`;
-        } catch (e) {
-            // Nếu JSON không hợp lệ, trả về văn bản gốc để tránh lỗi
-            return match;
+        const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        parts.push(`<a href="#" class="learning-link" data-prompt="${sanitizedPrompt}">${title}</a>`);
+        
+        lastIndex = match.index + match[0].length;
+    }
+
+    parts.push(text.substring(lastIndex));
+
+    const finalParts = parts.map(part => {
+        if (part.startsWith('<a href="#" class="learning-link"')) {
+            return part;
+        } else {
+            return part.replace(termLinkRegex, `<a href="#" class="term-link" data-term="$1">$1</a>`);
         }
     });
 
-    // 2. Sau đó, xử lý các term link đơn giản trên chuỗi đã được xử lý một phần.
-    // Điều này đảm bảo nó sẽ không chạy bên trong các learning link đã được tạo.
-    processedText = processedText.replace(termLinkRegex, `<a href="#" class="term-link" data-term="$1">$1</a>`);
-
-    return processedText;
+    return finalParts.join('');
 }
 
 async function startNewChat(personaId, isCustom = false) {
@@ -668,7 +663,6 @@ async function startNewChat(personaId, isCustom = false) {
     
     clearSuggestions();
     currentPersona = selectedPersona;
-    completedTopics = []; // === CẬP NHẬT: Reset tiến độ khi bắt đầu chat mới ===
     
     personaSelectionScreen.classList.add('hidden');
     chatViewContainer.classList.remove('hidden');
@@ -680,11 +674,11 @@ async function startNewChat(personaId, isCustom = false) {
     currentChatId = null;
     chat = null;
     localHistory = [{
-        id: crypto.randomUUID(),
+        id: crypto.randomUUID(), // Thêm ID
         role: "user",
         parts: [{ text: currentPersona.systemPrompt }],
     }, {
-        id: crypto.randomUUID(),
+        id: crypto.randomUUID(), // Thêm ID
         role: "model",
         parts: [{ text: "Đã hiểu! Tôi đã sẵn sàng. Bạn cần tôi giúp gì?" }],
     }];
@@ -1018,14 +1012,12 @@ async function handleRegenerate(targetMessageId) {
 }
 
 
-// === CẬP NHẬT: Thêm mảng completedTopics vào DB ===
 async function updateConversationInDb() {
     if (!currentUserId || localHistory.length <= 2) return; 
     const chatData = { 
         history: localHistory, 
         updatedAt: serverTimestamp(), 
-        personaId: currentPersona?.id || 'general',
-        completedTopics: completedTopics || [] // Lưu tiến độ học tập
+        personaId: currentPersona?.id || 'general'
     };
     try {
         if (currentChatId) {
@@ -1044,7 +1036,6 @@ async function updateConversationInDb() {
     }
 }
 
-// === CẬP NHẬT: Tải tiến độ học tập từ DB ===
 async function loadChat(chatId) {
     if (speechSynthesis.speaking) speechSynthesis.cancel();
     
@@ -1060,8 +1051,6 @@ async function loadChat(chatId) {
 
         if (chatDoc.exists()) {
             const data = chatDoc.data();
-            completedTopics = data.completedTopics || []; // Tải tiến độ
-            
             const loadedPersonaId = data.personaId || 'general';
             
             let foundPersona = defaultPersonas.find(p => p.id === loadedPersonaId);
@@ -1093,6 +1082,7 @@ async function loadChat(chatId) {
             // Bỏ qua 2 tin nhắn hệ thống đầu tiên
             const messagesToDisplay = localHistory.slice(2);
             messagesToDisplay.forEach(msg => {
+                // Đảm bảo mỗi tin nhắn trong lịch sử đều có ID, nếu không thì gán mới
                 if (!msg.id) {
                     msg.id = crypto.randomUUID();
                 }
@@ -1650,17 +1640,9 @@ async function generateSystemPrompt() {
     }
 }
 
-// === CẬP NHẬT: Lưu tiến độ khi nhấp vào link ===
 async function handleLearningPromptClick(linkElement) {
     const promptForAI = linkElement.dataset.prompt;
     if (!promptForAI) return;
-
-    // Đánh dấu là đã hoàn thành và lưu
-    if (!completedTopics.includes(promptForAI)) {
-        completedTopics.push(promptForAI);
-        linkElement.classList.add('completed');
-        await updateConversationInDb(); // Lưu ngay lập tức
-    }
 
     const titleForDisplay = linkElement.textContent;
     await sendMessage(titleForDisplay);
