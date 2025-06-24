@@ -26,11 +26,10 @@ body {
     background: var(--scrollbar-thumb-hover-bg);
 }
 /* Markdown rendering styles */
-/* === CẬP NHẬT: Định dạng cho khối code của Highlight.js === */
 .message-content pre { 
-    position: relative; /* Quan trọng để định vị nút sao chép */
-    padding-top: 2.25rem; /* Thêm khoảng trống ở trên cho nút */
-    background-color: #f3f4f6; /* tương đương màu bg-gray-100 */
+    position: relative;
+    padding-top: 2.25rem;
+    background-color: #f3f4f6;
     color: #abb2bf;
     border-radius: 0.5rem; 
     overflow-x: auto; 
@@ -38,7 +37,7 @@ body {
 .message-content pre code.hljs {
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.875rem;
-    padding: 1rem; /* Padding cho chính thẻ code */
+    padding: 1rem;
 }
 
 .message-content code:not(pre > code) { background-color: #e2e8f0; color: #1e293b; padding: 0.2em 0.4em; margin: 0; font-size: 85%; border-radius: 3px; }
@@ -57,14 +56,13 @@ body {
 .message-content blockquote { border-left: 4px solid #d1d5db; padding-left: 1rem; margin: 1rem 0; color: #4b5563; font-style: italic; }
 .dark .message-content blockquote { border-left-color: #4b5563; color: #9ca3af; }
 
-/* === THÊM MỚI: Định dạng cho nút sao chép code === */
 .copy-code-btn {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
     padding: 0.25rem 0.5rem;
-    background-color: rgba(71, 85, 105, 0.5); /* slate-600 with opacity */
-    color: #e2e8f0; /* slate-200 */
+    background-color: rgba(71, 85, 105, 0.5); 
+    color: #e2e8f0;
     border: none;
     border-radius: 0.375rem;
     font-size: 0.75rem;
@@ -77,13 +75,12 @@ body {
     opacity: 1;
 }
 .copy-code-btn:hover {
-    background-color: rgba(71, 85, 105, 0.8); /* a bit more solid on hover */
+    background-color: rgba(71, 85, 105, 0.8);
 }
 .copy-code-btn.copied {
-    background-color: #16a34a; /* green-600 */
+    background-color: #16a34a; 
     color: white;
 }
-/* Note and Summary specific styles */
 .note-wrapper { margin-top: 1rem; margin-bottom: 1rem; padding: 1rem; border-radius: 0.5rem; border-width: 1px; background-color: #fefce8; border-color: #fde68a; }
 .dark .note-wrapper { background-color: #1e293b; border-color: #334155; }
 .note-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; color: #92400e; }
@@ -97,30 +94,28 @@ body {
 .summary-content { color: #374151; }
 .dark .summary-content { color: #d1d5db; }
 
-/* Interactive links for learning mode and terms */
 .term-link, .learning-link { color: #2563eb; font-weight: 400; border-bottom: 2px dotted #93c5fd; cursor: pointer; transition: color 0.2s, border-color 0.2s; text-decoration: none; }
 .dark .term-link, .dark .learning-link { color: #60a5fa; border-bottom-color: #3b82f6; }
 .term-link:hover, .learning-link:hover { color: #1d4ed8; border-bottom-color: #2563eb; background-color: #eef2ff; }
 .dark .term-link:hover, .dark .learning-link:hover { color: #93c5fd; border-bottom-color: #60a5fa; background-color: #374151;}
 
-/* === CSS CHO TIẾN ĐỘ HỌC TẬP === */
 .learning-link.completed {
-    color: #16a34a; /* text-green-600 */
+    color: #16a34a;
     border-bottom-style: solid;
-    border-bottom-color: #86efac; /* border-green-300 */
+    border-bottom-color: #86efac;
     text-decoration: none;
     opacity: 0.8;
 }
 .dark .learning-link.completed {
-    color: #4ade80; /* text-green-400 */
-    border-bottom-color: #22c55e; /* border-green-500 */
+    color: #4ade80;
+    border-bottom-color: #22c55e;
 }
 .learning-link.completed:hover {
-    background-color: #f0fdf4; /* bg-green-50 */
+    background-color: #f0fdf4;
     opacity: 1;
 }
 .dark .learning-link.completed:hover {
-    background-color: #14532d; /* bg-green-900/50 */
+    background-color: #14532d;
     opacity: 1;
 }
 .learning-link.completed::before {
@@ -131,7 +126,6 @@ body {
 
 .ai-status { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; color: #2563eb; padding-right: 0.5rem; }
 .dark .ai-status { color: #60a5fa; }
-/* Persona selection screen improvements */
 #persona-selection-screen { -ms-overflow-style: none; scrollbar-width: none; }
 #persona-selection-screen::-webkit-scrollbar { display: none; }
 .persona-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; position: relative; }
@@ -141,114 +135,118 @@ body {
 .blinking-cursor { display: inline-block; width: 8px; height: 1.2em; background-color: #333; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
 .dark .blinking-cursor { background-color: #ccc; }
 @keyframes blink { from, to { background-color: transparent; } 50% { background-color: inherit; } }
-/* Sidebar transitions */
 #sidebar { transition: transform 0.3s ease-in-out; overflow: hidden; }
 #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
-/* Record button animation */
 #record-btn.recording { animation: pulse-red 1s infinite; background-color: #ef4444; color: white; }
 @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); transform: scale(1.05); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); } }
-/* Input area styling */
 .p-4 > #input-area-wrapper { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); border-radius: 9999px; padding: 4px; background-color: white; transition: box-shadow 0.2s ease-in-out; }
 .p-4 > #input-area-wrapper:focus-within { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); }
 .dark .p-4 > #input-area-wrapper { background-color: #1f2937; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
 .dark .p-4 > #input-area-wrapper:focus-within { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
 #sidebar-content { overflow-y: scroll; overflow-x: hidden; }
-/* Persona modal transitions */
 #persona-modal-overlay { transition: opacity 0.3s ease-in-out; }
 #persona-modal { transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 90vh; }
 .custom-persona-actions { position: absolute; top: 0.5rem; right: 0.5rem; opacity: 0; transition: opacity 0.2s ease-in-out; }
 .persona-card:hover .custom-persona-actions { opacity: 1; }
-/* Welcome suggestion card hover effect */
-.welcome-suggestion-card {
-    transition: background-color 0.2s ease-in-out;
+.welcome-suggestion-card { transition: background-color 0.2s ease-in-out; }
+.welcome-suggestion-card:hover { background-color: #eef2ff; }
+.dark .welcome-suggestion-card:hover { background-color: #374151; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.animate-spin { animation: spin 1s linear infinite; }
+.toast { transition: all 0.4s ease-in-out; opacity: 0; transform: translateX(100%); }
+.toast.show { opacity: 1; transform: translateX(0); }
+.toast.hide { opacity: 0; transform: translateX(120%); }
+#learning-mode-toggle:checked + .block + .dot { transform: translateX(1.5rem); background-color: #3b82f6; }
+#learning-mode-toggle:checked + .block { background-color: #93c5fd; }
+.dark #learning-mode-toggle:checked + .block + .dot { background-color: #60a5fa; }
+.dark #learning-mode-toggle:checked + .block { background-color: #374151; }
+#scrollToTopBtn { display: none; position: sticky; bottom: 1rem; right: 1.5rem; margin-left: auto; z-index: 30; border: none; outline: none; background-color: #3b82f6; color: white; cursor: pointer; padding: 10px 15px; border-radius: 50%; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background-color 0.3s, opacity 0.3s; opacity: 0; }
+#scrollToTopBtn:hover { background-color: #2563eb; }
+#scrollToTopBtn.show { opacity: 1; display: block; }
+.dark #scrollToTopBtn { background-color: #60a5fa; }
+.dark #scrollToTopBtn:hover { background-color: #3b82f6; }
+#confirmation-modal-overlay { transition: opacity 0.3s ease-in-out; }
+#confirmation-modal-overlay.show { opacity: 1; }
+#confirmation-modal.show { opacity: 1; transform: scale(1); }
+
+/* === BỔ SUNG MỚI: CSS CHO TRẮC NGHIỆM === */
+.quiz-option-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db; /* gray-300 */
+    border-radius: 0.75rem; /* rounded-xl */
+    background-color: #ffffff; /* white */
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
 }
-.welcome-suggestion-card:hover {
-    background-color: #eef2ff; /* indigo-50 */
-}
-.dark .welcome-suggestion-card:hover {
+.dark .quiz-option-btn {
+    border-color: #4b5563; /* gray-600 */
     background-color: #374151; /* gray-700 */
 }
-/* Spin animation for loading indicators */
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.quiz-option-btn:not(:disabled):hover {
+    background-color: #f9fafb; /* gray-50 */
+    border-color: #9ca3af; /* gray-400 */
 }
-.animate-spin {
-  animation: spin 1s linear infinite;
+.dark .quiz-option-btn:not(:disabled):hover {
+    background-color: #4b5563; /* gray-600 */
+    border-color: #6b7280; /* gray-500 */
 }
-/* Toast notification styles */
-.toast {
-    transition: all 0.4s ease-in-out;
-    opacity: 0;
-    transform: translateX(100%);
-}
-.toast.show {
-    opacity: 1;
-    transform: translateX(0);
-}
-.toast.hide {
-    opacity: 0;
-    transform: translateX(120%);
-}
-/* Learning Mode Toggle styling */
-#learning-mode-toggle:checked + .block + .dot {
-    transform: translateX(1.5rem); /* 24px */
-    background-color: #3b82f6; /* bg-blue-600 */
-}
-#learning-mode-toggle:checked + .block {
-    background-color: #93c5fd; /* bg-blue-300 */
-}
-.dark #learning-mode-toggle:checked + .block + .dot {
-    background-color: #60a5fa; /* bg-blue-400 */
-}
-.dark #learning-mode-toggle:checked + .block {
-    background-color: #374151;
-}
-
-/* === SỬA LỖI: Scroll to Top Button Styles === */
-#scrollToTopBtn {
-    display: none; /* Hidden by default */
-    position: sticky; /* <<< THAY ĐỔI QUAN TRỌNG NHẤT */
-    bottom: 1rem; /* Đặt vị trí dính ở dưới */
-    right: 1.5rem; /* Đặt vị trí dính ở bên phải */
-    margin-left: auto; /* Đẩy nút sang phải */
-    z-index: 30; /* Đảm bảo nó nổi trên nội dung */
-    border: none;
-    outline: none;
-    background-color: #3b82f6;
-    color: white;
-    cursor: pointer;
-    padding: 10px 15px;
+.quiz-option-letter {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-right: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #d1d5db; /* gray-300 */
     border-radius: 50%;
-    font-size: 18px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: background-color 0.3s, opacity 0.3s;
-    opacity: 0; /* Bắt đầu ẩn */
+    background-color: #f3f4f6; /* gray-100 */
+    color: #374151; /* gray-700 */
+}
+.dark .quiz-option-letter {
+    border-color: #6b7280; /* gray-500 */
+    background-color: #4b5563; /* gray-600 */
+    color: #d1d5db; /* gray-300 */
+}
+.quiz-option-text {
+    flex-grow: 1;
 }
 
-#scrollToTopBtn:hover {
-    background-color: #2563eb;
+/* Correct answer style */
+.quiz-option-btn.correct {
+    border-color: #16a34a; /* green-600 */
+    background-color: #f0fdf4; /* green-50 */
 }
-#scrollToTopBtn.show {
-    opacity: 1;
-    display: block;
+.dark .quiz-option-btn.correct {
+    border-color: #22c55e; /* green-500 */
+    background-color: #14532d; /* green-900 */
 }
-.dark #scrollToTopBtn {
-    background-color: #60a5fa;
+.quiz-option-btn.correct .quiz-option-letter {
+    background-color: #22c55e; /* green-500 */
+    border-color: #16a34a; /* green-600 */
+    color: #ffffff; /* white */
 }
-.dark #scrollToTopBtn:hover {
-    background-color: #3b82f6;
+/* Incorrect answer style */
+.quiz-option-btn.incorrect {
+    border-color: #dc2626; /* red-600 */
+    background-color: #fef2f2; /* red-50 */
 }
-
-/* CSS CHO MODAL XÁC NHẬN */
-#confirmation-modal-overlay {
-    transition: opacity 0.3s ease-in-out;
+.dark .quiz-option-btn.incorrect {
+    border-color: #ef4444; /* red-500 */
+    background-color: #7f1d1d; /* red-900 */
 }
-
-#confirmation-modal-overlay.show {
-    opacity: 1;
+.quiz-option-btn.incorrect .quiz-option-letter {
+    background-color: #ef4444; /* red-500 */
+    border-color: #dc2626; /* red-600 */
+    color: #ffffff; /* white */
 }
-
-#confirmation-modal.show {
-    opacity: 1;
-    transform: scale(1);
+/* Disabled state */
+.quiz-option-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
 }
