@@ -616,12 +616,20 @@ async function handleSavePersona(e) {
 
 
 // --- CHAT LOGIC ---
-// === CẬP NHẬT: Thêm logic kiểm tra mục đã hoàn thành ===
+// === SỬA LỖI: Cập nhật hàm preprocessText ===
 function preprocessText(text) {
+    // Regex cho learning links, ví dụ [Title]{"prompt":"..."}
     const learningLinkRegex = /\[([^\]]+?)\]\{"prompt":"([^"]+?)"\}/g;
-    const termLinkRegex = /\[([^\]]+?)\]/g;
     
-    let processedText = text.replace(learningLinkRegex, (match, title, promptJson) => {
+    // Regex cho các thuật ngữ đơn giản, ví dụ [Term].
+    // Sử dụng negative lookahead `(?!\{)` để đảm bảo nó không được theo sau bởi dấu '{',
+    // tránh việc khớp nhầm với một learning link.
+    const termLinkRegex = /\[([^\]{}]+?)\](?!\{)/g;
+
+    let processedText = text;
+
+    // 1. Ưu tiên xử lý các learning link phức tạp trước.
+    processedText = processedText.replace(learningLinkRegex, (match, title, promptJson) => {
         try {
             const promptData = JSON.parse(promptJson);
             const prompt = promptData.prompt;
@@ -633,12 +641,14 @@ function preprocessText(text) {
             
             return `<a href="#" class="learning-link${completedClass}" data-prompt="${sanitizedPrompt}">${title}</a>`;
         } catch (e) {
-            // Nếu JSON không hợp lệ, trả về văn bản gốc
+            // Nếu JSON không hợp lệ, trả về văn bản gốc để tránh lỗi
             return match;
         }
     });
 
-    processedText = processedText.replace(/(?<!<a[^>]*>)\[([^\]]+?)\]/g, `<a href="#" class="term-link" data-term="$1">$1</a>`);
+    // 2. Sau đó, xử lý các term link đơn giản trên chuỗi đã được xử lý một phần.
+    // Điều này đảm bảo nó sẽ không chạy bên trong các learning link đã được tạo.
+    processedText = processedText.replace(termLinkRegex, `<a href="#" class="term-link" data-term="$1">$1</a>`);
 
     return processedText;
 }
