@@ -59,6 +59,7 @@ let isFetchingChats = false; // Flag to prevent multiple fetches
 let allChatsLoaded = false; // Flag to indicate all chats have been loaded
 const CHATS_PER_PAGE = 15; // Number of chats to load per page
 let isLearningMode = false; // State for learning mode
+let confirmationResolve = null; // To handle promise-based confirmation
 
 // System prompt for learning mode. This is prepended to user prompts when learning mode is active.
 const LEARNING_MODE_SYSTEM_PROMPT = `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
@@ -73,7 +74,7 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
 * [Cú pháp cơ bản, Biến và Kiểu dữ liệu]{"prompt":"Trình bày bài học về cú pháp cơ bản của Javascript, cách khai báo biến với var, let, const, và các kiểu dữ liệu nguyên thủy như string, number, boolean, null, undefined."}`;
 
 
-// Element Selectors (Cached DOM elements for efficiency)
+// === CẬP NHẬT: Thêm các biến cho modal xác nhận ===
 const authContainer = document.getElementById('auth-container');
 const appContainer = document.getElementById('app-container');
 const loginView = document.getElementById('login-view');
@@ -148,6 +149,14 @@ const learningModeToggle = document.getElementById('learning-mode-toggle');
 const learningModeIndicator = document.getElementById('learning-mode-indicator');
 const chatScrollContainer = document.getElementById("chat-container");
 const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+const confirmationModalOverlay = document.getElementById('confirmation-modal-overlay');
+const confirmationModal = document.getElementById('confirmation-modal');
+const confirmationModalIcon = document.getElementById('confirmation-modal-icon');
+const confirmationModalTitle = document.getElementById('confirmation-modal-title');
+const confirmationModalMessage = document.getElementById('confirmation-modal-message');
+const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-confirm-btn');
+const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
+
 
 // --- UPDATED: Pre-defined default personas with curated sample prompts ---
 const defaultPersonas = [
@@ -200,6 +209,104 @@ const defaultPersonas = [
         ]
     }
 ];
+
+// --- HÀM MỚI: Logic cho Modal Xác nhận ---
+
+/**
+ * Hiển thị modal xác nhận với các tùy chọn.
+ * @param {object} options - Các tùy chọn cho modal.
+ * @param {string} options.title - Tiêu đề của modal.
+ * @param {string} options.message - Thông điệp cảnh báo.
+ * @param {string} [options.confirmText='Xóa'] - Chữ trên nút xác nhận.
+ * @param {string} [options.confirmColor='red'] - Màu của nút xác nhận ('red' hoặc 'blue').
+ * @returns {Promise<boolean>} - Trả về true nếu người dùng xác nhận, false nếu hủy.
+ */
+function showConfirmationModal({ title, message, confirmText = 'Xóa', confirmColor = 'red' }) {
+    return new Promise(resolve => {
+        confirmationResolve = resolve; // Lưu hàm resolve để sử dụng sau
+
+        confirmationModalTitle.textContent = title;
+        confirmationModalMessage.textContent = message;
+        confirmationModalConfirmBtn.textContent = confirmText;
+
+        // Reset màu nút
+        confirmationModalConfirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'bg-blue-600', 'hover:bg-blue-700');
+        
+        if (confirmColor === 'red') {
+            confirmationModalConfirmBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        } else {
+            confirmationModalConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }
+
+        confirmationModalIcon.innerHTML = svgIcons.warning || '<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>';
+
+        confirmationModalOverlay.classList.remove('hidden');
+        setTimeout(() => {
+            confirmationModalOverlay.classList.add('opacity-100');
+            confirmationModal.classList.add('scale-100', 'opacity-100');
+            confirmationModal.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    });
+}
+
+function hideConfirmationModal() {
+    confirmationModalOverlay.classList.remove('opacity-100');
+    confirmationModal.classList.remove('scale-100', 'opacity-100');
+    confirmationModal.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        confirmationModalOverlay.classList.add('hidden');
+    }, 300);
+}
+
+
+// --- CẬP NHẬT CÁC HÀM XÓA ---
+
+// Cập nhật hàm deletePersona để sử dụng modal mới
+async function deletePersona(personaId, personaName) {
+    const confirmed = await showConfirmationModal({
+        title: `Xóa Persona "${personaName}"?`,
+        message: 'Hành động này không thể hoàn tác. Tất cả các cuộc trò chuyện liên quan đến persona này cũng sẽ bị ảnh hưởng.',
+        confirmText: 'Xóa vĩnh viễn'
+    });
+
+    if (!confirmed) return;
+
+    try {
+        await deleteDoc(doc(db, 'users', currentUserId, 'customPersonas', personaId));
+        showToast(`Persona "${personaName}" đã được xóa.`, 'success');
+        await showPersonaSelectionScreen();
+    } catch (error) {
+        console.error("Lỗi khi xóa persona:", error);
+        showToast('Lỗi khi xóa persona.', 'error');
+    }
+}
+
+// Cập nhật hàm deleteChat để sử dụng modal mới
+async function deleteChat(chatId) {
+    const confirmed = await showConfirmationModal({
+        title: 'Xóa cuộc trò chuyện này?',
+        message: 'Bạn có chắc chắn muốn xóa vĩnh viễn cuộc trò chuyện này không?',
+        confirmText: 'Đồng ý xóa'
+    });
+    
+    if (!confirmed) return;
+    if (!currentUserId) return;
+
+    try {
+        await deleteDoc(doc(db, 'chats', currentUserId, 'conversations', chatId));
+        showToast('Cuộc trò chuyện đã được xóa.', 'success');
+        if(chatId === currentChatId) {
+            currentChatId = null;
+            localHistory = [];
+            await showPersonaSelectionScreen();
+        } else {
+            await renderAllChats();
+        }
+    } catch (error) {
+        console.error("Lỗi khi xóa cuộc trò chuyện:", error);
+        showToast('Lỗi khi xóa cuộc trò chuyện.', 'error');
+    }
+}
 
 // --- UTILITY FUNCTIONS ---
 /**
@@ -506,18 +613,6 @@ async function handleSavePersona(e) {
     }
 }
 
-async function deletePersona(personaId, personaName) {
-    if (!confirm(`Bạn có chắc chắn muốn xóa persona "${personaName}" không? Hành động này không thể hoàn tác.`)) return;
-
-    try {
-        await deleteDoc(doc(db, 'users', currentUserId, 'customPersonas', personaId));
-        showToast(`Persona "${personaName}" đã được xóa.`, 'success');
-        await showPersonaSelectionScreen();
-    } catch (error) {
-        console.error("Lỗi khi xóa persona:", error);
-        showToast('Lỗi khi xóa persona.', 'error');
-    }
-}
 
 // --- CHAT LOGIC ---
 function preprocessText(text) {
@@ -833,7 +928,6 @@ async function sendMessage(promptTextOverride = null) {
     }
 }
 
-// --- HÀM MỚI ---
 /**
  * Xử lý việc tái tạo câu trả lời của AI.
  * @param {string} targetMessageId - ID của tin nhắn AI cần tái tạo.
@@ -1384,24 +1478,6 @@ async function togglePinChat(chatId, isCurrentlyPinned) {
     }
 }
 
-async function deleteChat(chatId) {
-    if (!confirm("Bạn có chắc chắn muốn xóa cuộc trò chuyện này?")) return;
-    if (!currentUserId) return;
-    try {
-        await deleteDoc(doc(db, 'chats', currentUserId, 'conversations', chatId));
-        showToast('Cuộc trò chuyện đã được xóa.', 'success');
-        if(chatId === currentChatId) {
-            currentChatId = null;
-            localHistory = [];
-            await showPersonaSelectionScreen();
-        } else {
-            await renderAllChats();
-        }
-    } catch (error) {
-        console.error("Lỗi khi xóa cuộc trò chuyện:", error);
-        showToast('Lỗi khi xóa cuộc trò chuyện.', 'error');
-    }
-}
 
 // --- REFERENCE MODAL FUNCTIONS ---
 function showReferenceModal(title, showInput) {
@@ -1773,4 +1849,22 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollToTopBtn.addEventListener("click", scrollToTop);
     }
     updateLearningModeIndicator();
+    
+    // Event listeners cho modal xác nhận
+    confirmationModalCancelBtn.addEventListener('click', () => {
+        if (confirmationResolve) confirmationResolve(false);
+        hideConfirmationModal();
+    });
+
+    confirmationModalOverlay.addEventListener('click', (e) => {
+        if (e.target === confirmationModalOverlay) {
+            if (confirmationResolve) confirmationResolve(false);
+            hideConfirmationModal();
+        }
+    });
+
+    confirmationModalConfirmBtn.addEventListener('click', () => {
+        if (confirmationResolve) confirmationResolve(true);
+        hideConfirmationModal();
+    });
 });
