@@ -60,8 +60,7 @@ let allChatsLoaded = false; // Flag to indicate all chats have been loaded
 const CHATS_PER_PAGE = 15; // Number of chats to load per page
 let isLearningMode = false; // State for learning mode
 let confirmationResolve = null; // To handle promise-based confirmation
-let completedTopics = []; 
-let learningContextMessage = null; // === BIẾN MỚI: Lưu ngữ cảnh của lộ trình học ===
+let completedTopics = []; // === BIẾN MỚI: Lưu trữ các chủ đề đã học ===
 
 // System prompt for learning mode. This is prepended to user prompts when learning mode is active.
 const LEARNING_MODE_SYSTEM_PROMPT = `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
@@ -635,7 +634,7 @@ function preprocessText(text) {
         let prompt;
         try {
             // Attempt to parse the JSON part to get the prompt
-            const promptData = JSON.parse(match[2]);
+            const promptData = JSON.parse(`{ "prompt": ${match[2]} }`);
             prompt = promptData.prompt;
         } catch(e) {
             // If JSON is invalid, use the raw string as a fallback
@@ -643,7 +642,7 @@ function preprocessText(text) {
         }
 
         const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        
+
         // *** INTEGRATE THE NEW FEATURE HERE ***
         const isCompleted = completedTopics.includes(prompt);
         const completedClass = isCompleted ? ' completed' : '';
@@ -687,8 +686,7 @@ async function startNewChat(personaId, isCustom = false) {
     
     clearSuggestions();
     currentPersona = selectedPersona;
-    completedTopics = []; 
-    learningContextMessage = null; // === CẬP NHẬT: Reset ngữ cảnh khi bắt đầu chat mới ===
+    completedTopics = []; // === CẬP NHẬT: Reset tiến độ khi bắt đầu chat mới ===
     
     personaSelectionScreen.classList.add('hidden');
     chatViewContainer.classList.remove('hidden');
@@ -823,9 +821,6 @@ function addMessage(role, text, shouldScroll = true) {
         // Truyền messageId vào hàm addMessageActions
         addMessageActions(actionsContainer, text, messageId);
     }
-    
-    // === CẬP NHẬT: Kích hoạt highlight code sau khi thêm tin nhắn ===
-    highlightAllCode(contentElem);
 
     chatContainer.insertBefore(messageWrapper, notificationArea);
     if (shouldScroll) {
@@ -834,48 +829,6 @@ function addMessage(role, text, shouldScroll = true) {
 
     return { messageWrapper, contentElem, statusElem, actionsContainer, messageId };
 }
-
-// === CÁC HÀM MỚI cho Highlight.js ===
-/**
- * Thêm nút "Copy" vào một khối mã <pre>.
- * @param {HTMLElement} preElement - Phần tử <pre> chứa khối mã.
- */
-function addCopyButton(preElement) {
-    // Tránh thêm nút nếu đã có
-    if (preElement.querySelector('.copy-code-btn')) return;
-
-    const button = document.createElement('button');
-    button.className = 'copy-code-btn';
-    button.textContent = 'Copy';
-
-    button.addEventListener('click', () => {
-        const codeElement = preElement.querySelector('code');
-        if (codeElement) {
-            copyToClipboard(codeElement.innerText);
-            button.textContent = 'Copied!';
-            button.classList.add('copied');
-            setTimeout(() => {
-                button.textContent = 'Copy';
-                button.classList.remove('copied');
-            }, 2000);
-        }
-    });
-
-    preElement.appendChild(button);
-}
-
-/**
- * Tìm và tô màu tất cả các khối mã trong một phần tử và thêm nút sao chép.
- * @param {HTMLElement} container - Phần tử cha để tìm kiếm các khối mã.
- */
-function highlightAllCode(container) {
-    const codeBlocks = container.querySelectorAll('pre code');
-    codeBlocks.forEach((block) => {
-        hljs.highlightElement(block);
-        addCopyButton(block.parentElement);
-    });
-}
-
 
 async function handleSummary() {
     if (isSummarizing) return;
@@ -916,16 +869,13 @@ async function handleSummary() {
     }
 }
 
-// === CẬP NHẬT: Thêm tham số displayTextOverride ===
-async function sendMessage(promptTextOverride = null, displayTextOverride = null) {
+async function sendMessage(promptTextOverride = null) {
     welcomeScreen.classList.add('hidden');
     welcomeScreen.classList.remove('flex');
     chatContainer.classList.remove('hidden');
 
-    const actualPromptToSend = promptTextOverride || promptInput.value.trim();
-    const userDisplayedText = displayTextOverride || actualPromptToSend;
-
-    if (!actualPromptToSend || isSummarizing) return;
+    const userDisplayedText = promptTextOverride ? promptTextOverride : promptInput.value.trim(); 
+    if (!userDisplayedText || isSummarizing) return;
 
     if (!promptTextOverride) {
         promptInput.value = '';
@@ -934,6 +884,7 @@ async function sendMessage(promptTextOverride = null, displayTextOverride = null
     sendBtn.disabled = true;
     clearSuggestions();
 
+    // CẬP NHẬT: Gán ID khi thêm tin nhắn người dùng
     const userMessage = addMessage('user', userDisplayedText);
     localHistory.push({ id: userMessage.messageId, role: 'user', parts: [{ text: userDisplayedText }] });
 
@@ -942,18 +893,21 @@ async function sendMessage(promptTextOverride = null, displayTextOverride = null
 
     try {
         let historyForThisCall = [];
+        // Lấy lịch sử chat hợp lệ (không bao gồm ghi chú, tóm tắt...)
         const validHistory = localHistory.filter(m => ['user', 'model'].includes(m.role));
         if (validHistory.length > 1) {
-            historyForThisCall = validHistory.slice(0, -1).map(({role, parts}) => ({role, parts}));
+             historyForThisCall = validHistory.slice(0, -1).map(({role, parts}) => ({role, parts}));
         }
 
-        // *** SỬA LỖI: Tạm thời loại bỏ prompt của persona khi ở Chế độ Học tập ***
-        if (isLearningMode && historyForThisCall.length > 0 && historyForThisCall[0].parts[0].text === currentPersona.systemPrompt) {
-            historyForThisCall.splice(0, 2); // Bỏ cả prompt của persona và câu trả lời "Đã hiểu!"
+        let finalPrompt;
+        if (isLearningMode && !promptTextOverride) { 
+            finalPrompt = `${LEARNING_MODE_SYSTEM_PROMPT}\n\nYêu cầu của người học: "${userDisplayedText}"`;
+        } else {
+            finalPrompt = userDisplayedText;
         }
 
         const chatSession = model.startChat({ history: historyForThisCall });
-        const result = await chatSession.sendMessageStream(actualPromptToSend); // Luôn gửi prompt đầy đủ
+        const result = await chatSession.sendMessageStream(finalPrompt);
 
         let fullResponseText = "";
         let isFirstChunk = true;
@@ -965,8 +919,7 @@ async function sendMessage(promptTextOverride = null, displayTextOverride = null
             }
             fullResponseText += chunk.text();
             const processedChunk = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
-            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
-            highlightAllCode(contentElem);
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
@@ -976,14 +929,8 @@ async function sendMessage(promptTextOverride = null, displayTextOverride = null
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = fullResponseText;
         
-        highlightAllCode(contentElem);
         addMessageActions(actionsContainer, fullResponseText, aiMessageId);
         
-        // === CẬP NHẬT: Lưu ngữ cảnh nếu là lộ trình học ===
-        if (isLearningMode && /\[.+?\]\{"prompt":.+?\}/.test(fullResponseText)) {
-            learningContextMessage = fullResponseText;
-        }
-
         setTimeout(() => messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
 
         localHistory.push({ id: aiMessageId, role: 'model', parts: [{ text: fullResponseText }] });
@@ -1013,12 +960,14 @@ async function handleRegenerate(targetMessageId) {
     const messageWrapper = document.querySelector(`[data-message-id="${targetMessageId}"]`);
     if (!messageWrapper) return;
 
+    // Tìm tin nhắn và prompt tương ứng trong lịch sử
     const messageIndex = localHistory.findIndex(m => m.id === targetMessageId);
     if (messageIndex < 1 || localHistory[messageIndex].role !== 'model') {
         showToast('Không thể tái tạo tin nhắn này.', 'error');
         return;
     }
 
+    // Tìm prompt của người dùng ngay trước đó
     let userPrompt = null;
     let historyForCall = [];
     for (let i = messageIndex - 1; i >= 0; i--) {
@@ -1034,6 +983,7 @@ async function handleRegenerate(targetMessageId) {
         return;
     }
 
+    // Vô hiệu hóa tất cả các nút hành động trên tin nhắn này
     const allButtons = messageWrapper.querySelectorAll('.message-actions button');
     allButtons.forEach(btn => btn.disabled = true);
     
@@ -1041,6 +991,7 @@ async function handleRegenerate(targetMessageId) {
     const statusElem = messageWrapper.querySelector('.ai-status');
     const actionsContainer = messageWrapper.querySelector('.message-actions');
     
+    // Hiển thị trạng thái đang tải
     contentElem.innerHTML = '<span class="blinking-cursor"></span>';
     if(statusElem) {
         statusElem.textContent = 'Đang suy nghĩ lại...';
@@ -1057,7 +1008,6 @@ async function handleRegenerate(targetMessageId) {
             newFullResponseText += chunk.text();
             const processedChunk = preprocessText(newFullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
-            highlightAllCode(contentElem);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
@@ -1066,11 +1016,14 @@ async function handleRegenerate(targetMessageId) {
         const finalProcessedText = preprocessText(newFullResponseText);
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = newFullResponseText;
-        
-        highlightAllCode(contentElem);
 
+        // Cập nhật localHistory
         localHistory[messageIndex].parts[0].text = newFullResponseText;
+
+        // Kích hoạt lại các nút hành động với nội dung mới
         addMessageActions(actionsContainer, newFullResponseText, targetMessageId);
+
+        // Lưu vào DB
         await updateConversationInDb();
 
     } catch (error) {
@@ -1090,8 +1043,7 @@ async function updateConversationInDb() {
         history: localHistory, 
         updatedAt: serverTimestamp(), 
         personaId: currentPersona?.id || 'general',
-        completedTopics: completedTopics || [], // Lưu tiến độ học tập
-        learningContext: learningContextMessage || null // Lưu ngữ cảnh
+        completedTopics: completedTopics || [] // Lưu tiến độ học tập
     };
     try {
         if (currentChatId) {
@@ -1127,7 +1079,6 @@ async function loadChat(chatId) {
         if (chatDoc.exists()) {
             const data = chatDoc.data();
             completedTopics = data.completedTopics || []; // Tải tiến độ
-            learningContextMessage = data.learningContext || null; // Tải ngữ cảnh
             
             const loadedPersonaId = data.personaId || 'general';
             
@@ -1719,19 +1670,18 @@ async function generateSystemPrompt() {
 
 // === CẬP NHẬT: Lưu tiến độ khi nhấp vào link ===
 async function handleLearningPromptClick(linkElement) {
-    const basePrompt = linkElement.dataset.prompt;
-    if (!basePrompt) return;
+    const promptForAI = linkElement.dataset.prompt;
+    if (!promptForAI) return;
 
     // Đánh dấu là đã hoàn thành và lưu
-    if (!completedTopics.includes(basePrompt)) {
-        completedTopics.push(basePrompt);
+    if (!completedTopics.includes(promptForAI)) {
+        completedTopics.push(promptForAI);
         linkElement.classList.add('completed');
         await updateConversationInDb(); // Lưu ngay lập tức
     }
 
-    const displayTitle = linkElement.textContent;
-    // Gửi yêu cầu đã được bổ sung ngữ cảnh, nhưng chỉ hiển thị tiêu đề cho người dùng
-    await sendMessage(basePrompt, displayTitle);
+    const titleForDisplay = linkElement.textContent;
+    await sendMessage(titleForDisplay);
 }
 
 // --- GLOBAL EVENT LISTENERS ---
