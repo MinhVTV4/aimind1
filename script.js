@@ -944,7 +944,12 @@ async function sendMessage(promptTextOverride = null, displayTextOverride = null
         let historyForThisCall = [];
         const validHistory = localHistory.filter(m => ['user', 'model'].includes(m.role));
         if (validHistory.length > 1) {
-             historyForThisCall = validHistory.slice(0, -1).map(({role, parts}) => ({role, parts}));
+            historyForThisCall = validHistory.slice(0, -1).map(({role, parts}) => ({role, parts}));
+        }
+
+        // *** SỬA LỖI: Tạm thời loại bỏ prompt của persona khi ở Chế độ Học tập ***
+        if (isLearningMode && historyForThisCall.length > 0 && historyForThisCall[0].parts[0].text === currentPersona.systemPrompt) {
+            historyForThisCall.splice(0, 2); // Bỏ cả prompt của persona và câu trả lời "Đã hiểu!"
         }
 
         const chatSession = model.startChat({ history: historyForThisCall });
@@ -1712,7 +1717,7 @@ async function generateSystemPrompt() {
     }
 }
 
-// === CẬP NHẬT: Thêm logic ngữ cảnh vào hàm này ===
+// === CẬP NHẬT: Lưu tiến độ khi nhấp vào link ===
 async function handleLearningPromptClick(linkElement) {
     const basePrompt = linkElement.dataset.prompt;
     if (!basePrompt) return;
@@ -1725,15 +1730,8 @@ async function handleLearningPromptClick(linkElement) {
     }
 
     const displayTitle = linkElement.textContent;
-    let finalPromptForAI = basePrompt;
-
-    // Xây dựng "siêu yêu cầu" nếu có ngữ cảnh
-    if (learningContextMessage) {
-        finalPromptForAI = `Trong khuôn khổ của lộ trình học sau đây:\n\n---\n${learningContextMessage}\n---\n\nHãy giải thích chi tiết về chủ đề sau: "${basePrompt}"`;
-    }
-    
     // Gửi yêu cầu đã được bổ sung ngữ cảnh, nhưng chỉ hiển thị tiêu đề cho người dùng
-    await sendMessage(finalPromptForAI, displayTitle);
+    await sendMessage(basePrompt, displayTitle);
 }
 
 // --- GLOBAL EVENT LISTENERS ---
