@@ -579,9 +579,11 @@ async function startNewChat(personaId, isCustom = false) {
     currentChatId = null;
     chat = null;
     localHistory = [{
+        id: crypto.randomUUID(), // Thêm ID
         role: "user",
         parts: [{ text: currentPersona.systemPrompt }],
     }, {
+        id: crypto.randomUUID(), // Thêm ID
         role: "model",
         parts: [{ text: "Đã hiểu! Tôi đã sẵn sàng. Bạn cần tôi giúp gì?" }],
     }];
@@ -608,7 +610,8 @@ function updateChatHeader(persona) {
     }
 }
 
-function addMessageActions(actionsContainer, rawText) {
+// CẬP NHẬT: Thêm messageId vào các nút hành động
+function addMessageActions(actionsContainer, rawText, messageId) {
      if (!actionsContainer || !rawText || rawText.includes('blinking-cursor')) return;
     
     actionsContainer.innerHTML = '';
@@ -627,10 +630,22 @@ function addMessageActions(actionsContainer, rawText) {
     speakBtn.dataset.text = rawText;
     speakBtn.dataset.state = 'idle';
     actionsContainer.appendChild(speakBtn);
+
+    // --- THÊM NÚT TÁI TẠO ---
+    const regenerateBtn = document.createElement('button');
+    regenerateBtn.className = 'regenerate-btn p-1.5 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-colors';
+    regenerateBtn.innerHTML = svgIcons.regenerate;
+    regenerateBtn.title = 'Tái tạo phản hồi';
+    regenerateBtn.dataset.targetId = messageId; // Gán ID của tin nhắn vào nút
+    actionsContainer.appendChild(regenerateBtn);
 }
 
+// CẬP NHẬT: Gán ID cho mỗi tin nhắn khi tạo
 function addMessage(role, text, shouldScroll = true) {
+    const messageId = crypto.randomUUID(); // Tạo ID duy nhất
     const messageWrapper = document.createElement('div');
+    messageWrapper.dataset.messageId = messageId; // Gán ID vào DOM element
+
     let contentElem;
     let statusElem;
     let actionsContainer = null;
@@ -684,7 +699,8 @@ function addMessage(role, text, shouldScroll = true) {
     contentElem.innerHTML = DOMPurify.sanitize(marked.parse(preprocessedText), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
 
     if (actionsContainer) {
-        addMessageActions(actionsContainer, text);
+        // Truyền messageId vào hàm addMessageActions
+        addMessageActions(actionsContainer, text, messageId);
     }
 
     chatContainer.insertBefore(messageWrapper, notificationArea);
@@ -692,7 +708,7 @@ function addMessage(role, text, shouldScroll = true) {
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    return { messageWrapper, contentElem, statusElem, actionsContainer };
+    return { messageWrapper, contentElem, statusElem, actionsContainer, messageId };
 }
 
 async function handleSummary() {
@@ -718,9 +734,9 @@ async function handleSummary() {
         const result = await fastModel.generateContent(prompt);
         const summaryText = result.response.text();
 
-        addMessage('summary', summaryText);
+        const { messageId } = addMessage('summary', summaryText);
         
-        localHistory.push({ role: 'summary', parts: [{ text: summaryText }] });
+        localHistory.push({ id: messageId, role: 'summary', parts: [{ text: summaryText }] });
         await updateConversationInDb();
 
     } catch (error) {
@@ -735,63 +751,42 @@ async function handleSummary() {
 }
 
 async function sendMessage(promptTextOverride = null) {
-    console.log("--- sendMessage called ---");
-    console.log("Initial localHistory length:", localHistory.length);
-
     welcomeScreen.classList.add('hidden');
     welcomeScreen.classList.remove('flex');
     chatContainer.classList.remove('hidden');
 
     const userDisplayedText = promptTextOverride ? promptTextOverride : promptInput.value.trim(); 
-    const actualPromptToSend = promptTextOverride || promptInput.value.trim();
-
-    if (!actualPromptToSend || isSummarizing) return;
+    if (!userDisplayedText || isSummarizing) return;
 
     if (!promptTextOverride) {
         promptInput.value = '';
         adjustInputHeight();
     }
-
     sendBtn.disabled = true;
     clearSuggestions();
 
-    addMessage('user', userDisplayedText);
-    localHistory.push({ role: 'user', parts: [{ text: userDisplayedText }] });
-    console.log("localHistory after adding user message:", JSON.parse(JSON.stringify(localHistory)));
+    // CẬP NHẬT: Gán ID khi thêm tin nhắn người dùng
+    const userMessage = addMessage('user', userDisplayedText);
+    localHistory.push({ id: userMessage.messageId, role: 'user', parts: [{ text: userDisplayedText }] });
 
-    const { messageWrapper, contentElem, statusElem, actionsContainer } = addMessage('ai', '<span class="blinking-cursor"></span>');
+    const { messageWrapper, contentElem, statusElem, actionsContainer, messageId: aiMessageId } = addMessage('ai', '<span class="blinking-cursor"></span>');
     if (statusElem) statusElem.textContent = 'Đang suy nghĩ...';
 
     try {
         let historyForThisCall = [];
-        const historyLength = localHistory.length;
-        for (let i = 0; i < historyLength; i++) {
-            const message = localHistory[i];
-
-            if (message.role === 'note' || message.role === 'summary') {
-                continue;
-            }
-            if (i === historyLength - 1 && message.role === 'user') {
-                break; 
-            }
-            if (historyForThisCall.length > 0 && historyForThisCall[historyForThisCall.length - 1].role === message.role) {
-                if (message.role === 'model') {
-                    console.warn("Skipping consecutive 'model' message found in localHistory during history preparation:", message);
-                    continue;
-                }
-            }
-
-            historyForThisCall.push(message);
+        // Lấy lịch sử chat hợp lệ (không bao gồm ghi chú, tóm tắt...)
+        const validHistory = localHistory.filter(m => ['user', 'model'].includes(m.role));
+        if (validHistory.length > 1) {
+             historyForThisCall = validHistory.slice(0, -1).map(({role, parts}) => ({role, parts}));
         }
 
         let finalPrompt;
         if (isLearningMode && !promptTextOverride) { 
-            finalPrompt = `${LEARNING_MODE_SYSTEM_PROMPT}\n\nYêu cầu của người học: "${actualPromptToSend}"`;
+            finalPrompt = `${LEARNING_MODE_SYSTEM_PROMPT}\n\nYêu cầu của người học: "${userDisplayedText}"`;
         } else {
-            finalPrompt = actualPromptToSend;
+            finalPrompt = userDisplayedText;
         }
 
-        console.log("History sent to startChat:", JSON.parse(JSON.stringify(historyForThisCall))); 
         const chatSession = model.startChat({ history: historyForThisCall });
         const result = await chatSession.sendMessageStream(finalPrompt);
 
@@ -799,12 +794,11 @@ async function sendMessage(promptTextOverride = null) {
         let isFirstChunk = true;
 
         for await (const chunk of result.stream) {
-            if (isFirstChunk) {
-                if (statusElem) statusElem.textContent = 'Đang viết...';
+            if (isFirstChunk && statusElem) {
+                statusElem.textContent = 'Đang viết...';
                 isFirstChunk = false;
             }
             fullResponseText += chunk.text();
-            
             const processedChunk = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
             chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -816,14 +810,11 @@ async function sendMessage(promptTextOverride = null) {
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = fullResponseText;
         
-        addMessageActions(actionsContainer, fullResponseText);
+        addMessageActions(actionsContainer, fullResponseText, aiMessageId);
         
-        setTimeout(() => {
-             messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
+        setTimeout(() => messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
 
-        localHistory.push({ role: 'model', parts: [{ text: fullResponseText }] });
-        console.log("localHistory after adding model message:", JSON.parse(JSON.stringify(localHistory)));
+        localHistory.push({ id: aiMessageId, role: 'model', parts: [{ text: fullResponseText }] });
         await updateConversationInDb();
         
         if (!isLearningMode) {
@@ -835,16 +826,97 @@ async function sendMessage(promptTextOverride = null) {
     } catch (error) {
         console.error("Error during sendMessage:", error);
         contentElem.innerHTML = `**Lỗi:** ${error.message}`;
-        if (localHistory.length > 0) {
-            localHistory.pop(); 
-            console.log("localHistory after error pop:", JSON.parse(JSON.stringify(localHistory)));
-        }
+        if (localHistory.length > 0) localHistory.pop();
         showToast(`Lỗi gửi tin nhắn: ${error.message}`, 'error');
-
     } finally {
         sendBtn.disabled = false;
     }
 }
+
+// --- HÀM MỚI ---
+/**
+ * Xử lý việc tái tạo câu trả lời của AI.
+ * @param {string} targetMessageId - ID của tin nhắn AI cần tái tạo.
+ */
+async function handleRegenerate(targetMessageId) {
+    const messageWrapper = document.querySelector(`[data-message-id="${targetMessageId}"]`);
+    if (!messageWrapper) return;
+
+    // Tìm tin nhắn và prompt tương ứng trong lịch sử
+    const messageIndex = localHistory.findIndex(m => m.id === targetMessageId);
+    if (messageIndex < 1 || localHistory[messageIndex].role !== 'model') {
+        showToast('Không thể tái tạo tin nhắn này.', 'error');
+        return;
+    }
+
+    // Tìm prompt của người dùng ngay trước đó
+    let userPrompt = null;
+    let historyForCall = [];
+    for (let i = messageIndex - 1; i >= 0; i--) {
+        if (localHistory[i].role === 'user') {
+            userPrompt = localHistory[i].parts[0].text;
+            historyForCall = localHistory.slice(0, i).filter(m => ['user', 'model'].includes(m.role)).map(({role, parts}) => ({role, parts}));
+            break;
+        }
+    }
+    
+    if (!userPrompt) {
+        showToast('Không tìm thấy prompt gốc.', 'error');
+        return;
+    }
+
+    // Vô hiệu hóa tất cả các nút hành động trên tin nhắn này
+    const allButtons = messageWrapper.querySelectorAll('.message-actions button');
+    allButtons.forEach(btn => btn.disabled = true);
+    
+    const contentElem = messageWrapper.querySelector('.message-content');
+    const statusElem = messageWrapper.querySelector('.ai-status');
+    const actionsContainer = messageWrapper.querySelector('.message-actions');
+    
+    // Hiển thị trạng thái đang tải
+    contentElem.innerHTML = '<span class="blinking-cursor"></span>';
+    if(statusElem) {
+        statusElem.textContent = 'Đang suy nghĩ lại...';
+        statusElem.classList.remove('hidden');
+    }
+    if(actionsContainer) actionsContainer.innerHTML = '';
+    
+    try {
+        const chatSession = model.startChat({ history: historyForCall });
+        const result = await chatSession.sendMessageStream(userPrompt);
+
+        let newFullResponseText = "";
+        for await (const chunk of result.stream) {
+            newFullResponseText += chunk.text();
+            const processedChunk = preprocessText(newFullResponseText + '<span class="blinking-cursor"></span>');
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        if(statusElem) statusElem.classList.add('hidden');
+
+        const finalProcessedText = preprocessText(newFullResponseText);
+        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+        contentElem.dataset.rawText = newFullResponseText;
+
+        // Cập nhật localHistory
+        localHistory[messageIndex].parts[0].text = newFullResponseText;
+
+        // Kích hoạt lại các nút hành động với nội dung mới
+        addMessageActions(actionsContainer, newFullResponseText, targetMessageId);
+
+        // Lưu vào DB
+        await updateConversationInDb();
+
+    } catch (error) {
+        console.error("Lỗi khi tái tạo:", error);
+        contentElem.innerHTML = `**Lỗi:** Không thể tái tạo câu trả lời.`;
+        showToast('Lỗi khi tái tạo câu trả lời.', 'error');
+    } finally {
+        allButtons.forEach(btn => btn.disabled = false);
+    }
+}
+
 
 async function updateConversationInDb() {
     if (!currentUserId || localHistory.length <= 2) return; 
@@ -857,7 +929,7 @@ async function updateConversationInDb() {
         if (currentChatId) {
             await updateDoc(doc(db, 'chats', currentUserId, 'conversations', currentChatId), chatData);
         } else {
-            const firstUserPrompt = localHistory[2];
+            const firstUserPrompt = localHistory.find(m => m.role === 'user' && m.parts[0].text !== currentPersona.systemPrompt);
             chatData.title = firstUserPrompt?.parts[0].text.substring(0, 40) || "Cuộc trò chuyện mới";
             chatData.createdAt = serverTimestamp();
             chatData.isPinned = false;
@@ -903,7 +975,6 @@ async function loadChat(chatId) {
 
             currentChatId = chatDoc.id;
             localHistory = data.history || [];
-            console.log("Loaded localHistory:", JSON.parse(JSON.stringify(localHistory)));
             
             await renderAllChats();
             welcomeScreen.classList.add('hidden');
@@ -914,8 +985,13 @@ async function loadChat(chatId) {
 
             clearSuggestions();
 
+            // Bỏ qua 2 tin nhắn hệ thống đầu tiên
             const messagesToDisplay = localHistory.slice(2);
             messagesToDisplay.forEach(msg => {
+                // Đảm bảo mỗi tin nhắn trong lịch sử đều có ID, nếu không thì gán mới
+                if (!msg.id) {
+                    msg.id = crypto.randomUUID();
+                }
                 addMessage(msg.role, msg.parts[0].text, false);
             });
             setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 0);
@@ -1412,9 +1488,9 @@ async function sendReferenceMessage(userPromptOverride = null) {
 async function saveAsNote(prompt, response) {
     if (!response.trim()) return;
     const fullNoteText = `**Hỏi:** ${prompt}\n\n<hr class="my-2 border-yellow-300 dark:border-slate-600"/>\n\n**Đáp:**\n${response}`;
-    const noteMessage = { role: 'note', parts: [{ text: fullNoteText }] };
+    const { messageId } = addMessage('note', fullNoteText);
+    const noteMessage = { id: messageId, role: 'note', parts: [{ text: fullNoteText }] };
     localHistory.push(noteMessage);
-    addMessage('note', fullNoteText);
     await updateConversationInDb();
     closeReferenceModal();
     showToast('Đã lưu ghi chú vào cuộc trò chuyện!', 'info');
@@ -1564,6 +1640,7 @@ function resetActiveSpeechButton() {
     }
 }
 
+// CẬP NHẬT: Thêm xử lý cho nút Tái tạo
 chatContainer.addEventListener('click', async (e) => {
     const link = e.target.closest('a');
     const button = e.target.closest('button');
@@ -1617,6 +1694,9 @@ chatContainer.addEventListener('click', async (e) => {
                 activeSpeech = null; 
             };
             speechSynthesis.speak(utterance);
+         } else if (button.classList.contains('regenerate-btn')) { // XỬ LÝ NÚT MỚI
+            e.preventDefault(); e.stopPropagation();
+            handleRegenerate(button.dataset.targetId);
          }
     }
 });
