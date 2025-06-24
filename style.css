@@ -169,3 +169,17 @@ body {
 .dark #scrollToTopBtn:hover {
     background-color: #3b82f6;
 }
+
+/* === CSS MỚI CHO MODAL XÁC NHẬN === */
+#confirmation-modal-overlay {
+    transition: opacity 0.3s ease-in-out;
+}
+
+#confirmation-modal-overlay.show {
+    opacity: 1;
+}
+
+#confirmation-modal.show {
+    opacity: 1;
+    transform: scale(1);
+}
