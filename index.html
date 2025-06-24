@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chat - Chế độ Học tập</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
+    <script>
+        // Set theme based on localStorage or system preference
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="icon" href="icon-192.png">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 font-sans overflow-x-hidden">
+
+    <div id="auth-container" class="flex items-center justify-center h-screen">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md m-4">
+            <div id="login-view">
+                <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Đăng nhập</h2>
+                <form id="login-form">
+                    <div class="mb-4">
+                        <label for="login-email" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="login-email" required class="shadow-sm appearance-none border dark:border-gray-600 rounded w-full py-3 px-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                    </div>
+                    <div class="mb-6">
+                        <label for="login-password" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Mật khẩu</label>
+                        <input type="password" id="login-password" required class="shadow-sm appearance-none border dark:border-gray-600 rounded w-full py-3 px-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-200">Đăng nhập</button>
+                </form>
+                <div class="my-4 flex items-center">
+                    <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 dark:text-gray-500">hoặc</span>
+                    <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                </div>
+                <button id="google-login-btn" class="w-full bg-white dark:bg-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-300 text-gray-700 font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-200 flex items-center justify-center">
+                    <span data-icon="google"></span>
+                    Đăng nhập với Google
+                </button>
+                <p class="text-center mt-6 text-sm">
+                    <a href="#" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300" id="show-register">Chưa có tài khoản? Đăng ký ngay</a>
+                </p>
+            </div>
+            <div id="register-view" class="hidden">
+                 <h2 class="text-2xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Tạo tài khoản</h2>
+                <form id="register-form">
+                    <div class="mb-4">
+                        <label for="register-email" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="register-email" required class="shadow-sm appearance-none border dark:border-gray-600 rounded w-full py-3 px-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                    </div>
+                    <div class="mb-6">
+                        <label for="register-password" class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2">Mật khẩu</label>
+                        <input type="password" id="register-password" required class="shadow-sm appearance-none border dark:border-gray-600 rounded w-full py-3 px-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-200">Đăng ký</button>
+                </form>
+                <p class="text-center mt-6 text-sm">
+                    <a href="#" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300" id="show-login">Đã có tài khoản? Đăng nhập</a>
+                </p>
+            </div>
+            <p id="auth-error" class="text-red-500 dark:text-red-400 text-center mt-4 min-h-[1.2em]"></p>
+        </div>
+    </div>
+
+    <div id="app-container" class="hidden h-screen flex overflow-hidden">
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden opacity-0 transition-opacity duration-300 ease-in-out lg:hidden"></div>
+        
+        <div id="sidebar" class="fixed top-0 left-0 h-screen w-[calc(100vw-56px)] sm:w-64 md:w-72 bg-white dark:bg-slate-800 shadow-xl z-50 transform -translate-x-full flex flex-col lg:translate-x-0 lg:static lg:w-72 lg:border-r rounded-r-2xl border-gray-200 dark:border-slate-700">
+            <div class="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between lg:hidden">
+                <h2 class="text-lg font-semibold dark:text-gray-100">Menu</h2>
+                <button id="close-sidebar-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700">
+                    <span data-icon="close"></span>
+                </button>
+            </div>
+            <div id="sidebar-content" class="flex-1 overflow-y-scroll overflow-x-hidden p-4">
+                <button id="new-chat-btn" class="w-full flex items-center gap-3 p-3 rounded-lg border border-blue-200 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors text-blue-700 dark:text-blue-400 font-semibold mb-4">
+                    <span data-icon="newPersona"></span>
+                    Chọn chuyên gia khác
+                </button>
+                <div id="pinned-chats-section" class="hidden">
+                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Đã ghim</h3>
+                    <ul id="pinned-chats-list" class="space-y-1 mb-4"></ul>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">Gần đây</h3>
+                <ul id="saved-chats-list" class="space-y-1"></ul>
+                <div id="saved-chats-skeleton" class="space-y-2 mt-2 hidden">
+                    <div class="h-8 bg-gray-200 dark:bg-slate-700 rounded animate-pulse w-11/12"></div>
+                    <div class="h-8 bg-gray-200 dark:bg-slate-700 rounded animate-pulse w-10/12"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex-1 flex flex-col overflow-x-hidden">
+            <div id="persona-selection-screen" class="flex flex-col items-center h-full p-4 sm:p-6 overflow-y-auto bg-gray-50 dark:bg-slate-900">
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-2">Chào bạn, <span id="welcome-user-name"></span>!</h1>
+                <p class="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-6 sm:mb-8">Bạn muốn bắt đầu với chuyên gia nào hôm nay?</p>
+                
+                <div class="w-full max-w-7xl">
+                    <div class="mb-6 sm:mb-8">
+                        <button id="create-persona-btn" class="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+                            <span data-icon="addSquare"></span>
+                            Tạo Persona Mới
+                        </button>
+                    </div>
+
+                    <div id="custom-personas-section" class="mb-10">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-700 dark:text-gray-300 mb-4 border-b pb-2 dark:border-gray-700">Persona của bạn</h2>
+                        <div id="custom-persona-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                        <div id="empty-custom-persona-state" class="hidden text-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl mt-4">
+                            <div class="flex justify-center mb-4">
+                               <span data-icon="emptyPersona"></span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">Tạo chuyên gia AI đầu tiên của bạn!</h3>
+                            <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Biến ý tưởng thành hiện thực bằng cách tạo ra một Persona AI với kiến thức và phong cách riêng.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-700 dark:text-gray-300 mb-4 border-b pb-2 dark:border-gray-700">Persona mặc định</h2>
+                        <div id="default-persona-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                    </div>
+                </div>
+                <button id="logout-btn-persona" class="mt-8 text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors">Đăng xuất</button>
+            </div>
+
+            <div id="chat-view-container" class="hidden flex-col h-full bg-gray-50 dark:bg-slate-900">
+                <header id="main-header" class="flex-shrink-0 flex justify-between items-center p-3 sm:p-4 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
+                    <div class="flex items-center gap-3">
+                        <button id="menu-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors lg:hidden" title="Menu">
+                            <span data-icon="menu"></span>
+                        </button>
+                        <div id="chat-header-info" class="flex items-center gap-3">
+                            </div>
+                        <button id="summarize-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Tóm tắt cuộc trò chuyện">
+                           <span data-icon="summarize"></span>
+                        </button>
+                        <button id="new-topic-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Trò chuyện mới">
+                            <span data-icon="addCircle"></span>
+                        </button>
+                        <div class="flex items-center border-l border-gray-200 dark:border-slate-600 ml-2 pl-2">
+                            <label for="learning-mode-toggle" class="flex items-center cursor-pointer" title="Bật/Tắt chế độ học tập tương tác">
+                                <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Học tập</span>
+                                <div class="relative">
+                                    <input type="checkbox" id="learning-mode-toggle" class="sr-only">
+                                    <div class="block bg-gray-200 dark:bg-slate-700 w-12 h-6 rounded-full transition-colors"></div>
+                                    <div class="dot absolute left-1 top-1 bg-white dark:bg-slate-500 w-4 h-4 rounded-full transition-transform"></div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Chuyển chế độ Sáng/Tối">
+                            <span data-icon="moon" id="theme-toggle-dark-icon"></span>
+                            <span data-icon="sun" id="theme-toggle-light-icon"></span>
+                        </button>
+                        <button id="logout-btn" class="p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/50 transition-colors" title="Đăng xuất">
+                            <span data-icon="logout"></span>
+                        </button>
+                    </div>
+                </header>
+
+                <div id="main-content" class="flex-1 flex flex-col overflow-hidden relative"> <div id="welcome-screen" class="flex-1 flex-col items-center justify-center p-4 text-center hidden">
+                        <div id="welcome-persona-icon" class="text-6xl mb-4"></div>
+                        <h2 id="welcome-persona-name" class="text-2xl font-bold text-gray-800 dark:text-gray-200"></h2>
+                        <p id="welcome-persona-description" class="max-w-md mt-2 text-gray-600 dark:text-gray-400"></p>
+                        <div id="welcome-suggestions-container" class="mt-8 w-full max-w-2xl mx-auto space-y-3">
+                            </div>
+                    </div>
+                    
+                    <div id="chat-container" class="flex-1 px-4 pt-4 space-y-4 overflow-y-auto relative hidden">
+                        <div id="notification-area" class="hidden sticky bottom-2 w-full flex justify-center">
+                            <div class="bg-blue-100 dark:bg-slate-700 text-blue-800 dark:text-blue-200 text-xs font-semibold px-4 py-2 rounded-full shadow-lg">
+                                Đang tối ưu hóa cuộc trò chuyện...
+                            </div>
+                        </div>
+                        <button id="scrollToTopBtn" title="Cuộn lên đầu">
+                            <span data-icon="arrowUp"></span>
+                        </button>
+                    </div>
+
+                    <div id="suggestion-area" class="px-4 pb-2">
+                        <button id="toggle-suggestions-btn" class="hidden w-full text-left text-sm text-blue-600 dark:text-blue-400 font-semibold p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                            <span data-icon="showSuggestions"></span>
+                            Xem gợi ý
+                        </button>
+                        <div id="suggestions-container" class="hidden mt-2 flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <div class="p-4 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700">
+                        <div id="input-area-wrapper" class="rounded-full">
+                            <div id="input-area" class="flex items-center gap-3 bg-gray-100 dark:bg-slate-700 rounded-full p-2">
+                                <button id="reference-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors" title="Trợ lý Phụ">
+                                    <span data-icon="info"></span>
+                                </button>
+                                <textarea id="prompt-input" rows="1" placeholder="Nhập câu hỏi..." class="flex-1 bg-transparent px-3 py-2 resize-none focus:outline-none dark:text-gray-200 dark:placeholder-gray-400"></textarea>
+                                <button id="record-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors" title="Ghi âm">
+                                    <span data-icon="mic"></span>
+                                </button>
+                                <button id="send-btn" class="w-10 h-10 flex items-center justify-center bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-colors disabled:bg-blue-300 dark:disabled:bg-blue-800 disabled:cursor-not-allowed" title="Gửi">
+                                    <span data-icon="send"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="persona-modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
+    <div id="persona-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl z-50 flex flex-col transform scale-95 opacity-0">
+        <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
+            <h2 id="persona-modal-title" class="text-lg font-semibold text-gray-800 dark:text-gray-100">Tạo Chuyên gia AI của bạn</h2>
+            <button id="close-persona-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700">
+                <span data-icon="close"></span>
+            </button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1">
+            <form id="persona-form" class="space-y-4">
+                <input type="hidden" id="persona-id">
+                <div>
+                    <label for="persona-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tên Persona</label>
+                    <input type="text" id="persona-name" required class="block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="persona-icon" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Biểu tượng (Emoji)</label>
+                    <input type="text" id="persona-icon" required maxlength="2" class="block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="persona-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mô tả ngắn</label>
+                    <textarea id="persona-description" rows="2" required class="block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm resize-none"></textarea>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between">
+                         <label for="persona-prompt" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Chỉ thị Hệ thống (System Prompt)</label>
+                         <button type="button" id="generate-prompt-btn" class="p-1 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-slate-700" title="Gợi ý từ AI">
+                            <span data-icon="sparkle"></span>
+                         </button>
+                    </div>
+                    <textarea id="persona-prompt" rows="6" required class="block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm resize-y"></textarea>
+                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Đây là chỉ dẫn cốt lõi cho AI, quyết định vai trò và phong cách của nó.</p>
+                </div>
+            </form>
+        </div>
+        <div class="flex justify-end items-center p-4 bg-gray-50 dark:bg-slate-900/50 border-t border-gray-200 dark:border-slate-700 flex-shrink-0 rounded-b-2xl">
+            <button id="cancel-persona-btn" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-3">Hủy</button>
+            <button id="save-persona-btn" type="submit" form="persona-form" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Lưu Persona</button>
+        </div>
+    </div>
+
+    <div id="reference-modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
+    <div id="reference-modal" class="hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 rounded-t-2xl shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out" style="max-height: 85vh;">
+        <div id="reference-header" class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
+            <h2 id="reference-title" class="text-lg font-semibold text-gray-800 dark:text-gray-100">Trợ lý Phụ</h2>
+            <button id="close-reference-modal-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700">
+                <span data-icon="close"></span>
+            </button>
+        </div>
+        <div id="reference-content" class="p-4 overflow-y-auto flex-1 space-y-4"></div>
+        <div id="reference-input-area" class="p-4 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 flex-shrink-0">
+            <div class="flex items-center gap-3 bg-gray-100 dark:bg-slate-700 rounded-full p-2">
+                <textarea id="reference-prompt-input" rows="1" placeholder="Hỏi trợ lý phụ..." class="flex-1 bg-transparent px-3 py-2 resize-none focus:outline-none dark:text-gray-200 dark:placeholder-gray-400"></textarea>
+                <button id="reference-send-btn" class="w-10 h-10 flex items-center justify-center bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-colors" title="Gửi">
+                    <span data-icon="send"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] space-y-2"></div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
