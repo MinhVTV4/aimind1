@@ -63,7 +63,7 @@ body {
 .term-link:hover, .learning-link:hover { color: #1d4ed8; border-bottom-color: #2563eb; background-color: #eef2ff; }
 .dark .term-link:hover, .dark .learning-link:hover { color: #93c5fd; border-bottom-color: #60a5fa; background-color: #374151;}
 
-/* === CSS MỚI CHO TIẾN ĐỘ HỌC TẬP === */
+/* === CSS CHO TIẾN ĐỘ HỌC TẬP === */
 .learning-link.completed {
     color: #16a34a; /* text-green-600 */
     border-bottom-style: solid;
@@ -164,28 +164,29 @@ body {
     background-color: #374151;
 }
 
-/* Scroll to Top Button Styles */
+/* === SỬA LỖI: Scroll to Top Button Styles === */
 #scrollToTopBtn {
     display: none; /* Hidden by default */
-    position: absolute; /* Changed from fixed to absolute to contain within chat-container */
-    bottom: 20px; /* Place at the bottom */
-    right: 20px; /* Place at the right */
-    z-index: 99; /* Make sure it does not overlap */
-    border: none; /* Remove borders */
-    outline: none; /* Remove outline */
-    background-color: #3b82f6; /* Blue background */
-    color: white; /* White text */
-    cursor: pointer; /* Add a mouse pointer on hover */
-    padding: 10px 15px; /* Some padding */
-    border-radius: 50%; /* Rounded corners */
-    font-size: 18px; /* Increase font size */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Add a subtle shadow */
-    transition: background-color 0.3s, opacity 0.3s; /* Smooth transition */
-    opacity: 0; /* Start hidden */
+    position: sticky; /* <<< THAY ĐỔI QUAN TRỌNG NHẤT */
+    bottom: 1rem; /* Đặt vị trí dính ở dưới */
+    right: 1.5rem; /* Đặt vị trí dính ở bên phải */
+    margin-left: auto; /* Đẩy nút sang phải */
+    z-index: 30; /* Đảm bảo nó nổi trên nội dung */
+    border: none;
+    outline: none;
+    background-color: #3b82f6;
+    color: white;
+    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: 50%;
+    font-size: 18px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.3s, opacity 0.3s;
+    opacity: 0; /* Bắt đầu ẩn */
 }
 
 #scrollToTopBtn:hover {
-    background-color: #2563eb; /* Darker blue on hover */
+    background-color: #2563eb;
 }
 #scrollToTopBtn.show {
     opacity: 1;
