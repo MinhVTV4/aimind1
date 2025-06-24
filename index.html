@@ -22,6 +22,7 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 font-sans overflow-x-hidden">
 
+    <!-- Authentication UI -->
     <div id="auth-container" class="flex items-center justify-center h-screen">
         <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md m-4">
             <div id="login-view">
@@ -71,9 +72,11 @@
         </div>
     </div>
 
+    <!-- Main App UI -->
     <div id="app-container" class="hidden h-screen flex overflow-hidden">
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden opacity-0 transition-opacity duration-300 ease-in-out lg:hidden"></div>
         
+        <!-- Sidebar -->
         <div id="sidebar" class="fixed top-0 left-0 h-screen w-[calc(100vw-56px)] sm:w-64 md:w-72 bg-white dark:bg-slate-800 shadow-xl z-50 transform -translate-x-full flex flex-col lg:translate-x-0 lg:static lg:w-72 lg:border-r rounded-r-2xl border-gray-200 dark:border-slate-700">
             <div class="p-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between lg:hidden">
                 <h2 class="text-lg font-semibold dark:text-gray-100">Menu</h2>
@@ -100,6 +103,7 @@
         </div>
         
         <div class="flex-1 flex flex-col overflow-x-hidden">
+            <!-- Persona Selection Screen -->
             <div id="persona-selection-screen" class="flex flex-col items-center h-full p-4 sm:p-6 overflow-y-auto bg-gray-50 dark:bg-slate-900">
                 <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-2">Chào bạn, <span id="welcome-user-name"></span>!</h1>
                 <p class="text-base sm:text-lg text-gray-600 dark:text-gray-400 mb-6 sm:mb-8">Bạn muốn bắt đầu với chuyên gia nào hôm nay?</p>
@@ -132,6 +136,7 @@
                 <button id="logout-btn-persona" class="mt-8 text-sm text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors">Đăng xuất</button>
             </div>
 
+            <!-- Chat View Container -->
             <div id="chat-view-container" class="hidden flex-col h-full bg-gray-50 dark:bg-slate-900">
                 <header id="main-header" class="flex-shrink-0 flex justify-between items-center p-3 sm:p-4 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
                     <div class="flex items-center gap-3">
@@ -139,13 +144,15 @@
                             <span data-icon="menu"></span>
                         </button>
                         <div id="chat-header-info" class="flex items-center gap-3">
-                            </div>
+                            <!-- Learning Mode Indicator is dynamically added here by JS -->
+                        </div>
                         <button id="summarize-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Tóm tắt cuộc trò chuyện">
                            <span data-icon="summarize"></span>
                         </button>
                         <button id="new-topic-btn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors" title="Trò chuyện mới">
                             <span data-icon="addCircle"></span>
                         </button>
+                        <!-- Learning Mode Toggle -->
                         <div class="flex items-center border-l border-gray-200 dark:border-slate-600 ml-2 pl-2">
                             <label for="learning-mode-toggle" class="flex items-center cursor-pointer" title="Bật/Tắt chế độ học tập tương tác">
                                 <span class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Học tập</span>
@@ -169,12 +176,14 @@
                     </div>
                 </header>
 
-                <div id="main-content" class="flex-1 flex flex-col overflow-hidden relative"> <div id="welcome-screen" class="flex-1 flex-col items-center justify-center p-4 text-center hidden">
+                <div id="main-content" class="flex-1 flex flex-col overflow-hidden relative"> <!-- Added relative here for scroll to top button positioning -->
+                    <div id="welcome-screen" class="flex-1 flex-col items-center justify-center p-4 text-center hidden">
                         <div id="welcome-persona-icon" class="text-6xl mb-4"></div>
                         <h2 id="welcome-persona-name" class="text-2xl font-bold text-gray-800 dark:text-gray-200"></h2>
                         <p id="welcome-persona-description" class="max-w-md mt-2 text-gray-600 dark:text-gray-400"></p>
                         <div id="welcome-suggestions-container" class="mt-8 w-full max-w-2xl mx-auto space-y-3">
-                            </div>
+                            <!-- Welcome suggestions will be rendered here -->
+                        </div>
                     </div>
                     
                     <div id="chat-container" class="flex-1 px-4 pt-4 space-y-4 overflow-y-auto relative hidden">
@@ -183,6 +192,7 @@
                                 Đang tối ưu hóa cuộc trò chuyện...
                             </div>
                         </div>
+                        <!-- Scroll to Top Button -->
                         <button id="scrollToTopBtn" title="Cuộn lên đầu">
                             <span data-icon="arrowUp"></span>
                         </button>
@@ -217,6 +227,7 @@
         </div>
     </div>
 
+    <!-- Persona Creation/Edit Modal -->
     <div id="persona-modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
     <div id="persona-modal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11/12 max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl z-50 flex flex-col transform scale-95 opacity-0">
         <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
@@ -258,6 +269,7 @@
         </div>
     </div>
 
+    <!-- Reference Modal -->
     <div id="reference-modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-40"></div>
     <div id="reference-modal" class="hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-800 rounded-t-2xl shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out" style="max-height: 85vh;">
         <div id="reference-header" class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
@@ -277,7 +289,35 @@
         </div>
     </div>
     
+    <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-5 right-5 z-[100] space-y-2"></div>
+
+
+    <!-- === HTML CHO MODAL XÁC NHẬN === -->
+    <div id="confirmation-modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex items-center justify-center p-4">
+        <div id="confirmation-modal" class="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
+            <div class="p-6 sm:flex sm:items-start">
+                <div id="confirmation-modal-icon" class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                    <!-- Icon sẽ được chèn vào đây bởi JS -->
+                </div>
+                <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                    <h3 id="confirmation-modal-title" class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100"></h3>
+                    <div class="mt-2">
+                        <p id="confirmation-modal-message" class="text-sm text-gray-500 dark:text-gray-400"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 dark:bg-slate-800/50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 rounded-b-2xl">
+                <button type="button" id="confirmation-modal-confirm-btn" class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto">
+                    Xác nhận
+                </button>
+                <button type="button" id="confirmation-modal-cancel-btn" class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-slate-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600 sm:mt-0 sm:w-auto">
+                    Hủy
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module" src="script.js"></script>
 </body>
