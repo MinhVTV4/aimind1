@@ -616,59 +616,31 @@ async function handleSavePersona(e) {
 
 
 // --- CHAT LOGIC ---
-// === SỬA LỖI: Cập nhật hàm preprocessText ===
+// === CẬP NHẬT: Thêm logic kiểm tra mục đã hoàn thành ===
 function preprocessText(text) {
     const learningLinkRegex = /\[([^\]]+?)\]\{"prompt":"([^"]+?)"\}/g;
     const termLinkRegex = /\[([^\]]+?)\]/g;
     
-    const parts = [];
-    let lastIndex = 0;
-    let match;
-
-    // 1. First pass: Find all complex learning links and separate them.
-    while ((match = learningLinkRegex.exec(text)) !== null) {
-        // Push the raw text segment before this learning link.
-        parts.push(text.substring(lastIndex, match.index));
-        
-        const title = match[1];
-        let prompt;
+    let processedText = text.replace(learningLinkRegex, (match, title, promptJson) => {
         try {
-            // Attempt to parse the JSON part to get the prompt
-            const promptData = JSON.parse(match[2]);
-            prompt = promptData.prompt;
-        } catch(e) {
-            // If JSON is invalid, use the raw string as a fallback
-            prompt = match[2];
-        }
-
-        const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        
-        // *** INTEGRATE THE NEW FEATURE HERE ***
-        const isCompleted = completedTopics.includes(prompt);
-        const completedClass = isCompleted ? ' completed' : '';
-        
-        // Push the fully formed, safe HTML for the learning link.
-        parts.push(`<a href="#" class="learning-link${completedClass}" data-prompt="${sanitizedPrompt}">${title}</a>`);
-        
-        lastIndex = match.index + match[0].length;
-    }
-
-    // Push the final segment of raw text.
-    parts.push(text.substring(lastIndex));
-
-    // 2. Second pass: Process the raw text segments for simple term links.
-    const finalParts = parts.map(part => {
-        // If this part is already an HTML link we generated, leave it alone.
-        if (part.startsWith('<a href="#" class="learning-link')) {
-            return part;
-        } else {
-            // Otherwise, it's a raw text segment, so it's safe to process for term links.
-            return part.replace(termLinkRegex, `<a href="#" class="term-link" data-term="$1">$1</a>`);
+            const promptData = JSON.parse(promptJson);
+            const prompt = promptData.prompt;
+            const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            
+            // Kiểm tra xem chủ đề này đã hoàn thành chưa
+            const isCompleted = completedTopics.includes(prompt);
+            const completedClass = isCompleted ? ' completed' : '';
+            
+            return `<a href="#" class="learning-link${completedClass}" data-prompt="${sanitizedPrompt}">${title}</a>`;
+        } catch (e) {
+            // Nếu JSON không hợp lệ, trả về văn bản gốc
+            return match;
         }
     });
 
-    // 3. Join everything back together.
-    return finalParts.join('');
+    processedText = processedText.replace(/(?<!<a[^>]*>)\[([^\]]+?)\]/g, `<a href="#" class="term-link" data-term="$1">$1</a>`);
+
+    return processedText;
 }
 
 async function startNewChat(personaId, isCustom = false) {
@@ -686,8 +658,7 @@ async function startNewChat(personaId, isCustom = false) {
     
     clearSuggestions();
     currentPersona = selectedPersona;
-    completedTopics = []; 
-    learningContextMessage = null; // === CẬP NHẬT: Reset ngữ cảnh khi bắt đầu chat mới ===
+    completedTopics = []; // === CẬP NHẬT: Reset tiến độ khi bắt đầu chat mới ===
     
     personaSelectionScreen.classList.add('hidden');
     chatViewContainer.classList.remove('hidden');
@@ -822,9 +793,6 @@ function addMessage(role, text, shouldScroll = true) {
         // Truyền messageId vào hàm addMessageActions
         addMessageActions(actionsContainer, text, messageId);
     }
-    
-    // === CẬP NHẬT: Kích hoạt highlight code sau khi thêm tin nhắn ===
-    highlightAllCode(contentElem);
 
     chatContainer.insertBefore(messageWrapper, notificationArea);
     if (shouldScroll) {
@@ -833,48 +801,6 @@ function addMessage(role, text, shouldScroll = true) {
 
     return { messageWrapper, contentElem, statusElem, actionsContainer, messageId };
 }
-
-// === CÁC HÀM MỚI cho Highlight.js ===
-/**
- * Thêm nút "Copy" vào một khối mã <pre>.
- * @param {HTMLElement} preElement - Phần tử <pre> chứa khối mã.
- */
-function addCopyButton(preElement) {
-    // Tránh thêm nút nếu đã có
-    if (preElement.querySelector('.copy-code-btn')) return;
-
-    const button = document.createElement('button');
-    button.className = 'copy-code-btn';
-    button.textContent = 'Copy';
-
-    button.addEventListener('click', () => {
-        const codeElement = preElement.querySelector('code');
-        if (codeElement) {
-            copyToClipboard(codeElement.innerText);
-            button.textContent = 'Copied!';
-            button.classList.add('copied');
-            setTimeout(() => {
-                button.textContent = 'Copy';
-                button.classList.remove('copied');
-            }, 2000);
-        }
-    });
-
-    preElement.appendChild(button);
-}
-
-/**
- * Tìm và tô màu tất cả các khối mã trong một phần tử và thêm nút sao chép.
- * @param {HTMLElement} container - Phần tử cha để tìm kiếm các khối mã.
- */
-function highlightAllCode(container) {
-    const codeBlocks = container.querySelectorAll('pre code');
-    codeBlocks.forEach((block) => {
-        hljs.highlightElement(block);
-        addCopyButton(block.parentElement);
-    });
-}
-
 
 async function handleSummary() {
     if (isSummarizing) return;
@@ -915,16 +841,13 @@ async function handleSummary() {
     }
 }
 
-// === CẬP NHẬT: Thêm tham số displayTextOverride ===
-async function sendMessage(promptTextOverride = null, displayTextOverride = null) {
+async function sendMessage(promptTextOverride = null) {
     welcomeScreen.classList.add('hidden');
     welcomeScreen.classList.remove('flex');
     chatContainer.classList.remove('hidden');
 
-    const actualPromptToSend = promptTextOverride || promptInput.value.trim();
-    const userDisplayedText = displayTextOverride || actualPromptToSend;
-
-    if (!actualPromptToSend || isSummarizing) return;
+    const userDisplayedText = promptTextOverride ? promptTextOverride : promptInput.value.trim(); 
+    if (!userDisplayedText || isSummarizing) return;
 
     if (!promptTextOverride) {
         promptInput.value = '';
@@ -933,6 +856,7 @@ async function sendMessage(promptTextOverride = null, displayTextOverride = null
     sendBtn.disabled = true;
     clearSuggestions();
 
+    // CẬP NHẬT: Gán ID khi thêm tin nhắn người dùng
     const userMessage = addMessage('user', userDisplayedText);
     localHistory.push({ id: userMessage.messageId, role: 'user', parts: [{ text: userDisplayedText }] });
 
@@ -941,18 +865,21 @@ async function sendMessage(promptTextOverride = null, displayTextOverride = null
 
     try {
         let historyForThisCall = [];
+        // Lấy lịch sử chat hợp lệ (không bao gồm ghi chú, tóm tắt...)
         const validHistory = localHistory.filter(m => ['user', 'model'].includes(m.role));
         if (validHistory.length > 1) {
              historyForThisCall = validHistory.slice(0, -1).map(({role, parts}) => ({role, parts}));
         }
 
-        // *** SỬA LỖI: Tạm thời loại bỏ prompt của persona khi ở Chế độ Học tập ***
-        if (isLearningMode && historyForThisCall.length > 0 && historyForThisCall[0].parts[0].text === currentPersona.systemPrompt) {
-            historyForThisCall.splice(0, 2); // Bỏ cả prompt của persona và câu trả lời "Đã hiểu!"
+        let finalPrompt;
+        if (isLearningMode && !promptTextOverride) { 
+            finalPrompt = `${LEARNING_MODE_SYSTEM_PROMPT}\n\nYêu cầu của người học: "${userDisplayedText}"`;
+        } else {
+            finalPrompt = userDisplayedText;
         }
 
         const chatSession = model.startChat({ history: historyForThisCall });
-        const result = await chatSession.sendMessageStream(actualPromptToSend); // Luôn gửi prompt đầy đủ
+        const result = await chatSession.sendMessageStream(finalPrompt);
 
         let fullResponseText = "";
         let isFirstChunk = true;
@@ -964,8 +891,7 @@ async function sendMessage(promptTextOverride = null, displayTextOverride = null
             }
             fullResponseText += chunk.text();
             const processedChunk = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
-            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
-            highlightAllCode(contentElem);
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
@@ -975,14 +901,8 @@ async function sendMessage(promptTextOverride = null, displayTextOverride = null
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = fullResponseText;
         
-        highlightAllCode(contentElem);
         addMessageActions(actionsContainer, fullResponseText, aiMessageId);
         
-        // === CẬP NHẬT: Lưu ngữ cảnh nếu là lộ trình học ===
-        if (isLearningMode && /\[.+?\]\{"prompt":.+?\}/.test(fullResponseText)) {
-            learningContextMessage = fullResponseText;
-        }
-
         setTimeout(() => messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
 
         localHistory.push({ id: aiMessageId, role: 'model', parts: [{ text: fullResponseText }] });
@@ -1012,12 +932,14 @@ async function handleRegenerate(targetMessageId) {
     const messageWrapper = document.querySelector(`[data-message-id="${targetMessageId}"]`);
     if (!messageWrapper) return;
 
+    // Tìm tin nhắn và prompt tương ứng trong lịch sử
     const messageIndex = localHistory.findIndex(m => m.id === targetMessageId);
     if (messageIndex < 1 || localHistory[messageIndex].role !== 'model') {
         showToast('Không thể tái tạo tin nhắn này.', 'error');
         return;
     }
 
+    // Tìm prompt của người dùng ngay trước đó
     let userPrompt = null;
     let historyForCall = [];
     for (let i = messageIndex - 1; i >= 0; i--) {
@@ -1033,6 +955,7 @@ async function handleRegenerate(targetMessageId) {
         return;
     }
 
+    // Vô hiệu hóa tất cả các nút hành động trên tin nhắn này
     const allButtons = messageWrapper.querySelectorAll('.message-actions button');
     allButtons.forEach(btn => btn.disabled = true);
     
@@ -1040,6 +963,7 @@ async function handleRegenerate(targetMessageId) {
     const statusElem = messageWrapper.querySelector('.ai-status');
     const actionsContainer = messageWrapper.querySelector('.message-actions');
     
+    // Hiển thị trạng thái đang tải
     contentElem.innerHTML = '<span class="blinking-cursor"></span>';
     if(statusElem) {
         statusElem.textContent = 'Đang suy nghĩ lại...';
@@ -1056,7 +980,6 @@ async function handleRegenerate(targetMessageId) {
             newFullResponseText += chunk.text();
             const processedChunk = preprocessText(newFullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
-            highlightAllCode(contentElem);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
@@ -1065,11 +988,14 @@ async function handleRegenerate(targetMessageId) {
         const finalProcessedText = preprocessText(newFullResponseText);
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = newFullResponseText;
-        
-        highlightAllCode(contentElem);
 
+        // Cập nhật localHistory
         localHistory[messageIndex].parts[0].text = newFullResponseText;
+
+        // Kích hoạt lại các nút hành động với nội dung mới
         addMessageActions(actionsContainer, newFullResponseText, targetMessageId);
+
+        // Lưu vào DB
         await updateConversationInDb();
 
     } catch (error) {
@@ -1082,15 +1008,14 @@ async function handleRegenerate(targetMessageId) {
 }
 
 
-// === CẬP NHẬT: Thêm mảng completedTopics và learningContext vào DB ===
+// === CẬP NHẬT: Thêm mảng completedTopics vào DB ===
 async function updateConversationInDb() {
     if (!currentUserId || localHistory.length <= 2) return; 
     const chatData = { 
         history: localHistory, 
         updatedAt: serverTimestamp(), 
         personaId: currentPersona?.id || 'general',
-        completedTopics: completedTopics || [], // Lưu tiến độ học tập
-        learningContext: learningContextMessage || null // Lưu ngữ cảnh
+        completedTopics: completedTopics || [] // Lưu tiến độ học tập
     };
     try {
         if (currentChatId) {
@@ -1109,7 +1034,7 @@ async function updateConversationInDb() {
     }
 }
 
-// === CẬP NHẬT: Tải tiến độ học tập và ngữ cảnh từ DB ===
+// === CẬP NHẬT: Tải tiến độ học tập từ DB ===
 async function loadChat(chatId) {
     if (speechSynthesis.speaking) speechSynthesis.cancel();
     
@@ -1126,7 +1051,6 @@ async function loadChat(chatId) {
         if (chatDoc.exists()) {
             const data = chatDoc.data();
             completedTopics = data.completedTopics || []; // Tải tiến độ
-            learningContextMessage = data.learningContext || null; // Tải ngữ cảnh
             
             const loadedPersonaId = data.personaId || 'general';
             
