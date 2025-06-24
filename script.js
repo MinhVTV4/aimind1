@@ -39,7 +39,7 @@ const db = getFirestore(app);
 const ai = getAI(app);
 // Using gemini-2.5-flash for main and gemini-1.5-flash for faster, secondary tasks
 const model = getGenerativeModel(ai, { model: "gemini-2.5-flash" });
-const fastModel = getGenerativeModel(ai, { model: "gemini-1.5-flash" });
+const fastModel = getGenerativeModel(ai, { model: "gemini-2.0-flash" });
 
 // Global state variables
 let currentUserId = null;
