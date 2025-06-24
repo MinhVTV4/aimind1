@@ -30,7 +30,7 @@ body {
 .message-content pre { 
     position: relative; /* Quan trọng để định vị nút sao chép */
     padding-top: 2.25rem; /* Thêm khoảng trống ở trên cho nút */
-    background-color: transparent; /* Màu nền mặc định của theme atom-one-dark để đồng bộ */
+    background-color: #f3f4f6; /* tương đương màu bg-gray-100 */
     color: #abb2bf;
     border-radius: 0.5rem; 
     overflow-x: auto; 
