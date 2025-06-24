@@ -634,7 +634,7 @@ function preprocessText(text) {
         let prompt;
         try {
             // Attempt to parse the JSON part to get the prompt
-            const promptData = JSON.parse(`{ "prompt": ${match[2]} }`);
+            const promptData = JSON.parse(match[2]);
             prompt = promptData.prompt;
         } catch(e) {
             // If JSON is invalid, use the raw string as a fallback
@@ -642,7 +642,7 @@ function preprocessText(text) {
         }
 
         const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-
+        
         // *** INTEGRATE THE NEW FEATURE HERE ***
         const isCompleted = completedTopics.includes(prompt);
         const completedClass = isCompleted ? ' completed' : '';
@@ -821,6 +821,9 @@ function addMessage(role, text, shouldScroll = true) {
         // Truyền messageId vào hàm addMessageActions
         addMessageActions(actionsContainer, text, messageId);
     }
+    
+    // === CẬP NHẬT: Kích hoạt highlight code sau khi thêm tin nhắn ===
+    highlightAllCode(contentElem);
 
     chatContainer.insertBefore(messageWrapper, notificationArea);
     if (shouldScroll) {
@@ -829,6 +832,48 @@ function addMessage(role, text, shouldScroll = true) {
 
     return { messageWrapper, contentElem, statusElem, actionsContainer, messageId };
 }
+
+// === CÁC HÀM MỚI cho Highlight.js ===
+/**
+ * Thêm nút "Copy" vào một khối mã <pre>.
+ * @param {HTMLElement} preElement - Phần tử <pre> chứa khối mã.
+ */
+function addCopyButton(preElement) {
+    // Tránh thêm nút nếu đã có
+    if (preElement.querySelector('.copy-code-btn')) return;
+
+    const button = document.createElement('button');
+    button.className = 'copy-code-btn';
+    button.textContent = 'Copy';
+
+    button.addEventListener('click', () => {
+        const codeElement = preElement.querySelector('code');
+        if (codeElement) {
+            copyToClipboard(codeElement.innerText);
+            button.textContent = 'Copied!';
+            button.classList.add('copied');
+            setTimeout(() => {
+                button.textContent = 'Copy';
+                button.classList.remove('copied');
+            }, 2000);
+        }
+    });
+
+    preElement.appendChild(button);
+}
+
+/**
+ * Tìm và tô màu tất cả các khối mã trong một phần tử và thêm nút sao chép.
+ * @param {HTMLElement} container - Phần tử cha để tìm kiếm các khối mã.
+ */
+function highlightAllCode(container) {
+    const codeBlocks = container.querySelectorAll('pre code');
+    codeBlocks.forEach((block) => {
+        hljs.highlightElement(block);
+        addCopyButton(block.parentElement);
+    });
+}
+
 
 async function handleSummary() {
     if (isSummarizing) return;
@@ -884,7 +929,6 @@ async function sendMessage(promptTextOverride = null) {
     sendBtn.disabled = true;
     clearSuggestions();
 
-    // CẬP NHẬT: Gán ID khi thêm tin nhắn người dùng
     const userMessage = addMessage('user', userDisplayedText);
     localHistory.push({ id: userMessage.messageId, role: 'user', parts: [{ text: userDisplayedText }] });
 
@@ -893,7 +937,6 @@ async function sendMessage(promptTextOverride = null) {
 
     try {
         let historyForThisCall = [];
-        // Lấy lịch sử chat hợp lệ (không bao gồm ghi chú, tóm tắt...)
         const validHistory = localHistory.filter(m => ['user', 'model'].includes(m.role));
         if (validHistory.length > 1) {
              historyForThisCall = validHistory.slice(0, -1).map(({role, parts}) => ({role, parts}));
@@ -919,7 +962,8 @@ async function sendMessage(promptTextOverride = null) {
             }
             fullResponseText += chunk.text();
             const processedChunk = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
-            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
+            highlightAllCode(contentElem);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
@@ -929,6 +973,7 @@ async function sendMessage(promptTextOverride = null) {
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = fullResponseText;
         
+        highlightAllCode(contentElem);
         addMessageActions(actionsContainer, fullResponseText, aiMessageId);
         
         setTimeout(() => messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
@@ -960,14 +1005,12 @@ async function handleRegenerate(targetMessageId) {
     const messageWrapper = document.querySelector(`[data-message-id="${targetMessageId}"]`);
     if (!messageWrapper) return;
 
-    // Tìm tin nhắn và prompt tương ứng trong lịch sử
     const messageIndex = localHistory.findIndex(m => m.id === targetMessageId);
     if (messageIndex < 1 || localHistory[messageIndex].role !== 'model') {
         showToast('Không thể tái tạo tin nhắn này.', 'error');
         return;
     }
 
-    // Tìm prompt của người dùng ngay trước đó
     let userPrompt = null;
     let historyForCall = [];
     for (let i = messageIndex - 1; i >= 0; i--) {
@@ -983,7 +1026,6 @@ async function handleRegenerate(targetMessageId) {
         return;
     }
 
-    // Vô hiệu hóa tất cả các nút hành động trên tin nhắn này
     const allButtons = messageWrapper.querySelectorAll('.message-actions button');
     allButtons.forEach(btn => btn.disabled = true);
     
@@ -991,7 +1033,6 @@ async function handleRegenerate(targetMessageId) {
     const statusElem = messageWrapper.querySelector('.ai-status');
     const actionsContainer = messageWrapper.querySelector('.message-actions');
     
-    // Hiển thị trạng thái đang tải
     contentElem.innerHTML = '<span class="blinking-cursor"></span>';
     if(statusElem) {
         statusElem.textContent = 'Đang suy nghĩ lại...';
@@ -1008,6 +1049,7 @@ async function handleRegenerate(targetMessageId) {
             newFullResponseText += chunk.text();
             const processedChunk = preprocessText(newFullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+            highlightAllCode(contentElem);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
@@ -1016,14 +1058,11 @@ async function handleRegenerate(targetMessageId) {
         const finalProcessedText = preprocessText(newFullResponseText);
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = newFullResponseText;
+        
+        highlightAllCode(contentElem);
 
-        // Cập nhật localHistory
         localHistory[messageIndex].parts[0].text = newFullResponseText;
-
-        // Kích hoạt lại các nút hành động với nội dung mới
         addMessageActions(actionsContainer, newFullResponseText, targetMessageId);
-
-        // Lưu vào DB
         await updateConversationInDb();
 
     } catch (error) {
