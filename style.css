@@ -56,11 +56,39 @@ body {
 .dark .summary-header { color: #c084fc; }
 .summary-content { color: #374151; }
 .dark .summary-content { color: #d1d5db; }
+
 /* Interactive links for learning mode and terms */
 .term-link, .learning-link { color: #2563eb; font-weight: 600; border-bottom: 2px dotted #93c5fd; cursor: pointer; transition: color 0.2s, border-color 0.2s; text-decoration: none; }
 .dark .term-link, .dark .learning-link { color: #60a5fa; border-bottom-color: #3b82f6; }
 .term-link:hover, .learning-link:hover { color: #1d4ed8; border-bottom-color: #2563eb; background-color: #eef2ff; }
 .dark .term-link:hover, .dark .learning-link:hover { color: #93c5fd; border-bottom-color: #60a5fa; background-color: #374151;}
+
+/* === CSS MỚI CHO TIẾN ĐỘ HỌC TẬP === */
+.learning-link.completed {
+    color: #16a34a; /* text-green-600 */
+    border-bottom-style: solid;
+    border-bottom-color: #86efac; /* border-green-300 */
+    text-decoration: none;
+    opacity: 0.8;
+}
+.dark .learning-link.completed {
+    color: #4ade80; /* text-green-400 */
+    border-bottom-color: #22c55e; /* border-green-500 */
+}
+.learning-link.completed:hover {
+    background-color: #f0fdf4; /* bg-green-50 */
+    opacity: 1;
+}
+.dark .learning-link.completed:hover {
+    background-color: #14532d; /* bg-green-900/50 */
+    opacity: 1;
+}
+.learning-link.completed::before {
+    content: '✅';
+    margin-right: 0.35rem;
+    display: inline-block;
+}
+
 .ai-status { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; color: #2563eb; padding-right: 0.5rem; }
 .dark .ai-status { color: #60a5fa; }
 /* Persona selection screen improvements */
@@ -170,7 +198,7 @@ body {
     background-color: #3b82f6;
 }
 
-/* === CSS MỚI CHO MODAL XÁC NHẬN === */
+/* CSS CHO MODAL XÁC NHẬN */
 #confirmation-modal-overlay {
     transition: opacity 0.3s ease-in-out;
 }
