@@ -62,7 +62,7 @@ let isLearningMode = false; // State for learning mode
 let confirmationResolve = null; // To handle promise-based confirmation
 let completedTopics = []; // === BIẾN MỚI: Lưu trữ các chủ đề đã học ===
 
-// System prompt for learning mode. This is prepended to user prompts when learning mode is active.
+// System prompt for learning mode.
 const LEARNING_MODE_SYSTEM_PROMPT = `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
 Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi người dùng yêu cầu một lộ trình học, hãy tuân thủ các quy tắc sau:
 1.  **Tạo Lộ trình:** Trả lời bằng một danh sách có cấu trúc (dùng Markdown với gạch đầu dòng).
@@ -616,60 +616,51 @@ async function handleSavePersona(e) {
 
 
 // --- CHAT LOGIC ---
-// === SỬA LỖI: Cập nhật hàm preprocessText ===
+// === SỬA LỖI: Hàm preprocessText đã được cập nhật để xử lý lỗi JSON an toàn hơn ===
 function preprocessText(text) {
-    const learningLinkRegex = /\[([^\]]+?)\]\{"prompt":"([^"]+?)"\}/g;
+    // Regex cho các loại liên kết
+    const learningLinkRegex = /\[([^\]]+?)\](\{("prompt"):"([\s\S]*?)"\})/g;
     const termLinkRegex = /\[([^\]]+?)\]/g;
     
-    const parts = [];
-    let lastIndex = 0;
-    let match;
-
-    // 1. First pass: Find all complex learning links and separate them.
-    while ((match = learningLinkRegex.exec(text)) !== null) {
-        // Push the raw text segment before this learning link.
-        parts.push(text.substring(lastIndex, match.index));
-        
-        const title = match[1];
-        let prompt;
-        try {
-            // Attempt to parse the JSON part to get the prompt
-            const promptData = JSON.parse(match[2]);
-            prompt = promptData.prompt;
-        } catch(e) {
-            // If JSON is invalid, use the raw string as a fallback
-            prompt = match[2];
-        }
-
-        const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        
-        // *** INTEGRATE THE NEW FEATURE HERE ***
-        const isCompleted = completedTopics.includes(prompt);
-        const completedClass = isCompleted ? ' completed' : '';
-        
-        // Push the fully formed, safe HTML for the learning link.
-        parts.push(`<a href="#" class="learning-link${completedClass}" data-prompt="${sanitizedPrompt}">${title}</a>`);
-        
-        lastIndex = match.index + match[0].length;
+    // Bỏ qua hoàn toàn việc xử lý nếu đây là một tin nhắn trắc nghiệm
+    if (text.startsWith('[QUIZ]')) {
+        return text;
     }
 
-    // Push the final segment of raw text.
-    parts.push(text.substring(lastIndex));
-
-    // 2. Second pass: Process the raw text segments for simple term links.
-    const finalParts = parts.map(part => {
-        // If this part is already an HTML link we generated, leave it alone.
-        if (part.startsWith('<a href="#" class="learning-link')) {
-            return part;
-        } else {
-            // Otherwise, it's a raw text segment, so it's safe to process for term links.
-            return part.replace(termLinkRegex, `<a href="#" class="term-link" data-term="$1">$1</a>`);
+    // 1. Xử lý các liên kết học tập phức tạp trước
+    let processedText = text.replace(learningLinkRegex, (match, title, jsonContainer, key, promptValue) => {
+        // jsonContainer looks like {"prompt":"..."}
+        // promptValue is the content inside the quotes
+        try {
+            // We already have the value, just need to un-escape it if necessary
+            // JSON.parse on a quoted string will un-escape it correctly.
+            const prompt = JSON.parse(promptValue);
+            const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            const isCompleted = completedTopics.includes(prompt);
+            const completedClass = isCompleted ? ' completed' : '';
+            return `<a href="#" class="learning-link${completedClass}" data-prompt="${sanitizedPrompt}">${title}</a>`;
+        } catch (e) {
+            // Nếu JSON không hợp lệ, trả về chuỗi gốc để không làm hỏng tin nhắn
+            console.error("Invalid JSON in learning link:", promptValue);
+            return match; 
         }
     });
 
-    // 3. Join everything back together.
-    return finalParts.join('');
+    // 2. Xử lý các liên kết thuật ngữ đơn giản còn lại
+    // Regex này sẽ không bắt lại các liên kết đã được chuyển thành thẻ <a>
+    processedText = processedText.replace(termLinkRegex, (match, term) => {
+        // Chỉ thay thế nếu nó không phải là một phần của thẻ HTML đã được tạo
+        // A simple check to see if the term is surrounded by > and <, which would indicate it's already part of a tag.
+        const surrounding = processedText.substr(processedText.indexOf(match) - 1, match.length + 2);
+        if (surrounding.startsWith('>') && surrounding.endsWith('<')) {
+             return match;
+        }
+        return `<a href="#" class="term-link" data-term="${term}">${term}</a>`;
+    });
+
+    return processedText;
 }
+
 
 async function startNewChat(personaId, isCustom = false) {
     let selectedPersona;
@@ -815,7 +806,7 @@ function addMessage(role, text, shouldScroll = true) {
     }
     
     const preprocessedText = preprocessText(text);
-    contentElem.innerHTML = DOMPurify.sanitize(marked.parse(preprocessedText), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
+    contentElem.innerHTML = DOMPurify.sanitize(marked.parse(preprocessedText), { ADD_ATTR: ['target', 'data-term', 'data-prompt', 'class'] });
 
     if (actionsContainer) {
         // Truyền messageId vào hàm addMessageActions
@@ -962,7 +953,7 @@ async function sendMessage(promptTextOverride = null) {
             }
             fullResponseText += chunk.text();
             const processedChunk = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
-            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), { ADD_ATTR: ['target', 'data-term', 'data-prompt', 'class'] });
             highlightAllCode(contentElem);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -970,7 +961,7 @@ async function sendMessage(promptTextOverride = null) {
         if (statusElem) statusElem.classList.add('hidden');
         
         const finalProcessedText = preprocessText(fullResponseText);
-        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt', 'class']});
         contentElem.dataset.rawText = fullResponseText;
         
         highlightAllCode(contentElem);
@@ -1048,7 +1039,7 @@ async function handleRegenerate(targetMessageId) {
         for await (const chunk of result.stream) {
             newFullResponseText += chunk.text();
             const processedChunk = preprocessText(newFullResponseText + '<span class="blinking-cursor"></span>');
-            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt', 'class']});
             highlightAllCode(contentElem);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -1056,7 +1047,7 @@ async function handleRegenerate(targetMessageId) {
         if(statusElem) statusElem.classList.add('hidden');
 
         const finalProcessedText = preprocessText(newFullResponseText);
-        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt', 'class']});
         contentElem.dataset.rawText = newFullResponseText;
         
         highlightAllCode(contentElem);
