@@ -181,24 +181,27 @@ const defaultPersonas = [
         systemPrompt: `**Chỉ thị hệ thống:** Bạn là một lập trình viên cao cấp với 10 năm kinh nghiệm. Luôn đưa ra câu trả lời dưới dạng mã nguồn được giải thích rõ ràng, tuân thủ các coding convention tốt nhất. Khi được yêu cầu, hãy phân tích ưu và nhược điểm của các giải pháp khác nhau. Hãy ưu tiên tính hiệu quả và khả năng bảo trì của mã nguồn. **Yêu cầu bổ sung:** Khi đề cập đến một hàm, thư viện, hoặc khái niệm lập trình, hãy bọc nó trong dấu ngoặc vuông, ví dụ: [React], [API], [useState].`,
         samplePrompts: [
             "Viết một hàm Python để kiểm tra một chuỗi có phải là palindrome không.",
-            "Giải thích sự khác biệt giữa `let`, `const`, và `var` trong JavaScript.",
-            "Làm thế nào để tối ưu một truy vấn SQL có sử dụng `JOIN` trên nhiều bảng lớn?"
+            "Giải thích sự khác biệt giữa \`let\`, \`const\`, và \`var\` trong JavaScript.",
+            "Làm thế nào để tối ưu một truy vấn SQL có sử dụng \`JOIN\` trên nhiều bảng lớn?"
         ]
     },
-    // === PERSONA ĐƯỢC NÂNG CẤP VỚI TÍNH NĂNG TRẮC NGHIỆM ===
+    // === PERSONA ĐƯỢC NÂNG CẤP VỚI TÍNH NĂNG TRẮC NGHIỆM VÀ PHÁT ÂM ===
     { 
         id: 'language_tutor', 
         name: 'Gia sư Ngoại ngữ', 
         icon: '🌐', 
         description: 'Dạy từ vựng, ngữ pháp và kiểm tra kiến thức.', 
-        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp, thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
+        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp, thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn) và Tiếng Anh. Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
 
-1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc, sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt.
+1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc (nếu có), sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt.
+    * **Tiếng Anh:** Hello (həˈloʊ) - Xin chào.
     * **Tiếng Trung:** 你好 (Nǐ hǎo) - Xin chào.
     * **Tiếng Nhật:** こんにちは (Konnichiwa) - Xin chào.
     * **Tiếng Hàn:** 안녕하세요 (Annyeonghaseyo) - Xin chào.
 
-2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm, và bản dịch.
+2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm (nếu là ngôn ngữ Á Đông), và bản dịch tiếng Việt.
+    * **Tiếng Anh ví dụ:** Good morning (ɡʊd ˈmɔːrnɪŋ) - Chào buổi sáng.
+    * **Tiếng Trung ví dụ:** 早上好 (Zǎo shàng hǎo) - Chào buổi sáng.
 
 3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và kiên nhẫn.
 
@@ -216,11 +219,13 @@ const defaultPersonas = [
     }
     \`\`\`
 
-5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Nhật cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.`,
+5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Nhật cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.
+6.  **Hỗ trợ phát âm:** Khi bạn đưa ra các từ/cụm từ tiếng Trung, Nhật, Hàn hoặc Anh, đặc biệt là các từ mới, hãy luôn kèm theo phiên âm. Người dùng sẽ có thể nhấp vào từ đó để nghe phát âm.`,
         samplePrompts: [
             "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung và sau đó kiểm tra tôi.",
             "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật, rồi đố tôi một câu hỏi.",
-            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm."
+            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm.",
+            "Dạy tôi cách chào hỏi cơ bản trong tiếng Anh và kiểm tra tôi."
         ]
     },
     { 
@@ -251,103 +256,6 @@ const defaultPersonas = [
 
 // --- HÀM MỚI: Logic cho Modal Xác nhận ---
 
-/**
- * Hiển thị modal xác nhận với các tùy chọn.
- * @param {object} options - Các tùy chọn cho modal.
- * @param {string} options.title - Tiêu đề của modal.
- * @param {string} options.message - Thông điệp cảnh báo.
- * @param {string} [options.confirmText='Xóa'] - Chữ trên nút xác nhận.
- * @param {string} [options.confirmColor='red'] - Màu của nút xác nhận ('red' hoặc 'blue').
- * @returns {Promise<boolean>} - Trả về true nếu người dùng xác nhận, false nếu hủy.
- */
-function showConfirmationModal({ title, message, confirmText = 'Xóa', confirmColor = 'red' }) {
-    return new Promise(resolve => {
-        confirmationResolve = resolve; // Lưu hàm resolve để sử dụng sau
-
-        confirmationModalTitle.textContent = title;
-        confirmationModalMessage.textContent = message;
-        confirmationModalConfirmBtn.textContent = confirmText;
-
-        // Reset màu nút
-        confirmationModalConfirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'bg-blue-600', 'hover:bg-blue-700');
-        
-        if (confirmColor === 'red') {
-            confirmationModalConfirmBtn.classList.add('bg-red-600', 'hover:bg-red-700');
-        } else {
-            confirmationModalConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-        }
-
-        confirmationModalIcon.innerHTML = svgIcons.warning || '<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>';
-
-        confirmationModalOverlay.classList.remove('hidden');
-        setTimeout(() => {
-            confirmationModalOverlay.classList.add('opacity-100');
-            confirmationModal.classList.add('scale-100', 'opacity-100');
-            confirmationModal.classList.remove('scale-95', 'opacity-0');
-        }, 10);
-    });
-}
-
-function hideConfirmationModal() {
-    confirmationModalOverlay.classList.remove('opacity-100');
-    confirmationModal.classList.remove('scale-100', 'opacity-100');
-    confirmationModal.classList.add('scale-95', 'opacity-0');
-    setTimeout(() => {
-        confirmationModalOverlay.classList.add('hidden');
-    }, 300);
-}
-
-
-// --- CẬP NHẬT CÁC HÀM XÓA ---
-
-// Cập nhật hàm deletePersona để sử dụng modal mới
-async function deletePersona(personaId, personaName) {
-    const confirmed = await showConfirmationModal({
-        title: `Xóa Persona "${personaName}"?`,
-        message: 'Hành động này không thể hoàn tác. Tất cả các cuộc trò chuyện liên quan đến persona này cũng sẽ bị ảnh hưởng.',
-        confirmText: 'Xóa vĩnh viễn'
-    });
-
-    if (!confirmed) return;
-
-    try {
-        await deleteDoc(doc(db, 'users', currentUserId, 'customPersonas', personaId));
-        showToast(`Persona "${personaName}" đã được xóa.`, 'success');
-        await showPersonaSelectionScreen();
-    } catch (error) {
-        console.error("Lỗi khi xóa persona:", error);
-        showToast('Lỗi khi xóa persona.', 'error');
-    }
-}
-
-// Cập nhật hàm deleteChat để sử dụng modal mới
-async function deleteChat(chatId) {
-    const confirmed = await showConfirmationModal({
-        title: 'Xóa cuộc trò chuyện này?',
-        message: 'Bạn có chắc chắn muốn xóa vĩnh viễn cuộc trò chuyện này không?',
-        confirmText: 'Đồng ý xóa'
-    });
-    
-    if (!confirmed) return;
-    if (!currentUserId) return;
-
-    try {
-        await deleteDoc(doc(db, 'chats', currentUserId, 'conversations', chatId));
-        showToast('Cuộc trò chuyện đã được xóa.', 'success');
-        if(chatId === currentChatId) {
-            currentChatId = null;
-            localHistory = [];
-            await showPersonaSelectionScreen();
-        } else {
-            await renderAllChats();
-        }
-    } catch (error) {
-        console.error("Lỗi khi xóa cuộc trò chuyện:", error);
-        showToast('Lỗi khi xóa cuộc trò chuyện.', 'error');
-    }
-}
-
-// --- UTILITY FUNCTIONS ---
 /**
  * Displays a toast notification message to the user.
  * @param {string} message - The message to display.
@@ -426,6 +334,89 @@ function copyToClipboard(text) {
 
 
 // --- AUTHENTICATION ---
+const authContainer = document.getElementById('auth-container');
+const appContainer = document.getElementById('app-container');
+const loginView = document.getElementById('login-view');
+const registerView = document.getElementById('register-view');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const googleLoginBtn = document.getElementById('google-login-btn');
+const showRegisterBtn = document.getElementById('show-register');
+const showLoginBtn = document.getElementById('show-login');
+const authError = document.getElementById('auth-error');
+const personaSelectionScreen = document.getElementById('persona-selection-screen');
+const welcomeUserName = document.getElementById('welcome-user-name');
+const createPersonaBtn = document.getElementById('create-persona-btn');
+const customPersonasSection = document.getElementById('custom-personas-section');
+const customPersonaGrid = document.getElementById('custom-persona-grid');
+const emptyCustomPersonaState = document.getElementById('empty-custom-persona-state');
+const defaultPersonaGrid = document.getElementById('default-persona-grid');
+const logoutBtnPersona = document.getElementById('logout-btn-persona');
+const chatViewContainer = document.getElementById('chat-view-container');
+const mainHeader = document.getElementById('main-header');
+const menuBtn = document.getElementById('menu-btn');
+const chatHeaderInfo = document.getElementById('chat-header-info');
+const newTopicBtn = document.getElementById('new-topic-btn');
+const summarizeBtn = document.getElementById('summarize-btn');
+const themeToggle = document.getElementById('theme-toggle');
+const logoutBtn = document.getElementById('logout-btn');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const sidebar = document.getElementById('sidebar');
+const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+const sidebarContent = document.getElementById('sidebar-content');
+const newChatBtn = document.getElementById('new-chat-btn');
+const pinnedChatsSection = document.getElementById('pinned-chats-section');
+const pinnedChatsList = document.getElementById('pinned-chats-list');
+const savedChatsList = document.getElementById('saved-chats-list');
+const savedChatsSkeleton = document.getElementById('saved-chats-skeleton');
+const mainContent = document.getElementById('main-content');
+const welcomeScreen = document.getElementById('welcome-screen');
+const chatContainer = document.getElementById('chat-container');
+const notificationArea = document.getElementById('notification-area');
+const suggestionArea = document.getElementById('suggestion-area');
+const toggleSuggestionsBtn = document.getElementById('toggle-suggestions-btn');
+const suggestionsContainer = document.getElementById('suggestions-container');
+const inputAreaWrapper = document.getElementById('input-area-wrapper');
+const inputArea = document.getElementById('input-area');
+const referenceBtn = document.getElementById('reference-btn');
+const promptInput = document.getElementById('prompt-input');
+const recordBtn = document.getElementById('record-btn');
+const sendBtn = document.getElementById('send-btn');
+const personaModalOverlay = document.getElementById('persona-modal-overlay');
+const personaModal = document.getElementById('persona-modal');
+const personaModalTitle = document.getElementById('persona-modal-title');
+const closePersonaModalBtn = document.getElementById('close-persona-modal-btn');
+const personaForm = document.getElementById('persona-form');
+const personaIdInput = document.getElementById('persona-id');
+const personaNameInput = document.getElementById('persona-name');
+const personaIconInput = document.getElementById('persona-icon');
+const personaDescriptionInput = document.getElementById('persona-description');
+const personaPromptInput = document.getElementById('persona-prompt');
+const generatePromptBtn = document.getElementById('generate-prompt-btn');
+const cancelPersonaBtn = document.getElementById('cancel-persona-btn');
+const savePersonaBtn = document.getElementById('save-persona-btn');
+const referenceModalOverlay = document.getElementById('reference-modal-overlay');
+const referenceModal = document.getElementById('reference-modal');
+const referenceHeader = document.getElementById('reference-header');
+const referenceTitle = document.getElementById('reference-title');
+const closeReferenceModalBtn = document.getElementById('close-reference-modal-btn');
+const referenceContent = document.getElementById('reference-content');
+const referenceInputArea = document.getElementById('reference-input-area');
+const referencePromptInput = document.getElementById('reference-prompt-input');
+const referenceSendBtn = document.getElementById('reference-send-btn');
+const learningModeToggle = document.getElementById('learning-mode-toggle'); 
+const learningModeIndicator = document.getElementById('learning-mode-indicator');
+const chatScrollContainer = document.getElementById("chat-container");
+const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+const confirmationModalOverlay = document.getElementById('confirmation-modal-overlay');
+const confirmationModal = document.getElementById('confirmation-modal');
+const confirmationModalIcon = document.getElementById('confirmation-modal-icon');
+const confirmationModalTitle = document.getElementById('confirmation-modal-title');
+const confirmationModalMessage = document.getElementById('confirmation-modal-message');
+const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-confirm-btn');
+const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
+
+
 onAuthStateChanged(auth, async user => {
     if (user) {
         currentUserId = user.uid;
@@ -759,7 +750,7 @@ function processQuizBlocks(containerElement) {
 /**
  * Speaks a given text using the browser's Speech Synthesis API.
  * @param {string} text - The text to be spoken.
- * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'ko-KR').
+ * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'ko-KR', 'en-US').
  */
 function speakText(text, lang) {
     if (!('speechSynthesis' in window)) {
@@ -780,6 +771,12 @@ function speakText(text, lang) {
         const fallbackVoice = voices.find(voice => voice.lang.startsWith(baseLang));
         if (fallbackVoice) {
             utterance.voice = fallbackVoice;
+        } else {
+            // Fallback for English if no specific voice is found
+            if (baseLang === 'en') {
+                const enVoice = voices.find(voice => voice.lang.startsWith('en'));
+                if (enVoice) utterance.voice = enVoice;
+            }
         }
     }
 
@@ -796,15 +793,20 @@ function speakText(text, lang) {
 }
 
 /**
- * Finds foreign characters (Chinese, Japanese, Korean) in an element's text nodes 
+ * Finds foreign characters (Chinese, Japanese, Korean) and English words in an element's text nodes 
  * and wraps them in a clickable span that can be used for pronunciation.
  * @param {HTMLElement} container - The element whose text nodes should be processed.
  */
 function makeForeignTextClickable(container) {
-    const foreignRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]+/g;
+    // Combined regex for CJK and English words.
+    // This regex will NOT match Vietnamese characters (e.g., "á", "à", "ẽ")
+    // It specifically looks for CJK Unicode ranges and standard English alphabet characters.
+    const foreignAndEnglishRegex = /([\u4E00-\u9FFF]+|[\u3040-\u309F\u30A0-\u30FF]+|[\uAC00-\uD7AF]+|[a-zA-Z']+)/g;
     const hiraganaKatakanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
     const hangulRegex = /[\uAC00-\uD7AF]/;
-    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const englishRegex = /[a-zA-Z']+/; // Simple regex for English words (letters and apostrophes)
+
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
     const nodesToProcess = [];
     let currentNode;
     while (currentNode = walker.nextNode()) {
@@ -812,38 +814,47 @@ function makeForeignTextClickable(container) {
     }
 
     nodesToProcess.forEach(textNode => {
-        if (textNode.parentElement.closest('script, style, .clickable-foreign')) {
+        // Avoid processing inside code blocks or already processed clickable spans
+        if (textNode.parentElement.closest('pre, code, .clickable-foreign')) {
             return;
         }
 
         const text = textNode.nodeValue;
-        foreignRegex.lastIndex = 0;
-        if (!foreignRegex.test(text)) {
+        foreignAndEnglishRegex.lastIndex = 0; // Reset regex lastIndex for each node
+        if (!foreignAndEnglishRegex.test(text)) {
             return;
         }
-        foreignRegex.lastIndex = 0;
+        foreignAndEnglishRegex.lastIndex = 0; // Reset again after test
 
         const fragment = document.createDocumentFragment();
         let lastIndex = 0;
         let match;
 
-        while ((match = foreignRegex.exec(text)) !== null) {
+        while ((match = foreignAndEnglishRegex.exec(text)) !== null) {
             if (match.index > lastIndex) {
                 fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
             }
             const span = document.createElement('span');
             span.className = 'clickable-foreign';
             span.textContent = match[0];
+            
+            // Determine language based on the matched text
             if (hangulRegex.test(match[0])) {
                 span.dataset.lang = 'ko-KR';
             } else if (hiraganaKatakanaRegex.test(match[0])) {
                 span.dataset.lang = 'ja-JP';
-            } else {
+            } else if (englishRegex.test(match[0])) { 
+                // A stricter check for English words (no Vietnamese diacritics)
+                // This might need more refinement if dealing with complex mixed text
+                span.dataset.lang = 'en-US'; 
+            } else { 
+                // Assume Chinese for remaining CJK characters
                 span.dataset.lang = 'zh-CN';
             }
+            
             span.title = `Phát âm (${span.dataset.lang})`;
             fragment.appendChild(span);
-            lastIndex = foreignRegex.lastIndex;
+            lastIndex = foreignAndEnglishRegex.lastIndex;
         }
         
         if (lastIndex < text.length) {
@@ -854,6 +865,103 @@ function makeForeignTextClickable(container) {
              textNode.parentNode.replaceChild(fragment, textNode);
         }
     });
+}
+
+
+/**
+ * Hiển thị modal xác nhận với các tùy chọn.
+ * @param {object} options - Các tùy chọn cho modal.
+ * @param {string} options.title - Tiêu đề của modal.
+ * @param {string} options.message - Thông điệp cảnh báo.
+ * @param {string} [options.confirmText='Xóa'] - Chữ trên nút xác nhận.
+ * @param {string} [options.confirmColor='red'] - Màu của nút xác nhận ('red' hoặc 'blue').
+ * @returns {Promise<boolean>} - Trả về true nếu người dùng xác nhận, false nếu hủy.
+ */
+function showConfirmationModal({ title, message, confirmText = 'Xóa', confirmColor = 'red' }) {
+    return new Promise(resolve => {
+        confirmationResolve = resolve; // Lưu hàm resolve để sử dụng sau
+
+        confirmationModalTitle.textContent = title;
+        confirmationModalMessage.textContent = message;
+        confirmationModalConfirmBtn.textContent = confirmText;
+
+        // Reset màu nút
+        confirmationModalConfirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'bg-blue-600', 'hover:bg-blue-700');
+        
+        if (confirmColor === 'red') {
+            confirmationModalConfirmBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        } else {
+            confirmationModalConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }
+
+        confirmationModalIcon.innerHTML = svgIcons.warning || '<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>';
+
+        confirmationModalOverlay.classList.remove('hidden');
+        setTimeout(() => {
+            confirmationModalOverlay.classList.add('opacity-100');
+            confirmationModal.classList.add('scale-100', 'opacity-100');
+            confirmationModal.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+    });
+}
+
+function hideConfirmationModal() {
+    confirmationModalOverlay.classList.remove('opacity-100');
+    confirmationModal.classList.remove('scale-100', 'opacity-100');
+    confirmationModal.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        confirmationModalOverlay.classList.add('hidden');
+    }, 300);
+}
+
+
+// --- CẬP NHẬT CÁC HÀM XÓA ---
+
+// Cập nhật hàm deletePersona để sử dụng modal mới
+async function deletePersona(personaId, personaName) {
+    const confirmed = await showConfirmationModal({
+        title: `Xóa Persona "${personaName}"?`,
+        message: 'Hành động này không thể hoàn tác. Tất cả các cuộc trò chuyện liên quan đến persona này cũng sẽ bị ảnh hưởng.',
+        confirmText: 'Xóa vĩnh viễn'
+    });
+
+    if (!confirmed) return;
+
+    try {
+        await deleteDoc(doc(db, 'users', currentUserId, 'customPersonas', personaId));
+        showToast(`Persona "${personaName}" đã được xóa.`, 'success');
+        await showPersonaSelectionScreen();
+    } catch (error) {
+        console.error("Lỗi khi xóa persona:", error);
+        showToast('Lỗi khi xóa persona.', 'error');
+    }
+}
+
+// Cập nhật hàm deleteChat để sử dụng modal mới
+async function deleteChat(chatId) {
+    const confirmed = await showConfirmationModal({
+        title: 'Xóa cuộc trò chuyện này?',
+        message: 'Bạn có chắc chắn muốn xóa vĩnh viễn cuộc trò chuyện này không?',
+        confirmText: 'Đồng ý xóa'
+    });
+    
+    if (!confirmed) return;
+    if (!currentUserId) return;
+
+    try {
+        await deleteDoc(doc(db, 'chats', currentUserId, 'conversations', chatId));
+        showToast('Cuộc trò chuyện đã được xóa.', 'success');
+        if(chatId === currentChatId) {
+            currentChatId = null;
+            localHistory = [];
+            await showPersonaSelectionScreen();
+        } else {
+            await renderAllChats();
+        }
+    } catch (error) {
+        console.error("Lỗi khi xóa cuộc trò chuyện:", error);
+        showToast('Lỗi khi xóa cuộc trò chuyện.', 'error');
+    }
 }
 
 
@@ -1046,6 +1154,7 @@ function addMessage(role, text, shouldScroll = true) {
     // === CẬP NHẬT: Gọi hàm xử lý quiz sau khi render nội dung ===
     processQuizBlocks(contentElem);
 
+    // Chỉ thực hiện makeForeignTextClickable nếu persona hiện tại là 'language_tutor'
     if (currentPersona && currentPersona.id === 'language_tutor') {
         makeForeignTextClickable(contentElem);
     }
@@ -1997,9 +2106,23 @@ referencePromptInput.addEventListener('keydown', e => {
 function updateLearningModeIndicator() {
     if (learningModeIndicator) { 
         if (isLearningMode) {
-            learningModeIndicator.classList.remove('hidden');
+            // Assume learningModeIndicator is a text element or similar
+            // This part of the code in your original `index.html` file is just a placeholder and
+            // needs to be properly implemented to show an actual indicator.
+            // For now, it toggles a hidden class, but if you want a visual indicator
+            // like a chip, you'd need to create and append it here.
+            // Example of how you might dynamically add a chip:
+            // if (!document.getElementById('learning-mode-chip')) {
+            //     const chip = document.createElement('span');
+            //     chip.id = 'learning-mode-chip';
+            //     chip.className = 'ml-2 px-2 py-1 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-xs rounded-full';
+            //     chip.textContent = 'Chế độ Học tập';
+            //     chatHeaderInfo.appendChild(chip);
+            // }
+            // For the provided structure, simply ensuring the toggle reflects the state:
+             learningModeToggle.checked = true;
         } else {
-            learningModeIndicator.classList.add('hidden');
+             learningModeToggle.checked = false;
         }
     }
 }
@@ -2026,7 +2149,7 @@ function resetActiveSpeechButton() {
 chatContainer.addEventListener('click', async (e) => {
     const link = e.target.closest('a');
     const button = e.target.closest('button');
-    const clickableForeign = e.target.closest('.clickable-foreign');
+    const clickableForeign = e.target.closest('.clickable-foreign'); // === THÊM MỚI: Bắt sự kiện click cho từ ngoại ngữ ===
     const quizButton = e.target.closest('.quiz-option-btn');
 
     e.stopPropagation();
@@ -2041,7 +2164,7 @@ chatContainer.addEventListener('click', async (e) => {
             const context = messageContentElement ? messageContentElement.dataset.rawText : '';
             await explainTerm(term, context);
         }
-    } else if (quizButton && !quizButton.disabled) {
+    } else if (quizButton && !quizButton.disabled) { // === THÊM MỚI: Xử lý click nút quiz ===
         e.preventDefault();
         handleQuizAnswer(quizButton);
     } else if (button) {
@@ -2067,7 +2190,7 @@ chatContainer.addEventListener('click', async (e) => {
             }
 
             const utterance = new SpeechSynthesisUtterance(button.dataset.text);
-            utterance.lang = 'vi-VN';
+            utterance.lang = 'vi-VN'; // Mặc định tiếng Việt cho nút speak chung
             utterance.onstart = () => {
                 resetActiveSpeechButton();
                 activeSpeech = { utterance, button: button };
@@ -2084,7 +2207,7 @@ chatContainer.addEventListener('click', async (e) => {
          } else if (button.classList.contains('regenerate-btn')) {
             handleRegenerate(button.dataset.targetId);
          }
-    } else if (clickableForeign) {
+    } else if (clickableForeign) { // === THÊM MỚI: Xử lý click vào từ ngoại ngữ để phát âm ===
         e.preventDefault();
         const textToSpeak = clickableForeign.textContent;
         const lang = clickableForeign.dataset.lang;
