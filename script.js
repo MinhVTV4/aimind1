@@ -60,7 +60,8 @@ let allChatsLoaded = false; // Flag to indicate all chats have been loaded
 const CHATS_PER_PAGE = 15; // Number of chats to load per page
 let isLearningMode = false; // State for learning mode
 let confirmationResolve = null; // To handle promise-based confirmation
-let completedTopics = []; // === BIẾN MỚI: Lưu trữ các chủ đề đã học ===
+let completedTopics = []; // Lưu trữ các chủ đề đã học (learning-link)
+let completedQuizIds = []; // === BIẾN MỚI: Lưu trữ ID các quiz đã hoàn thành ===
 
 // System prompt for learning mode. This is prepended to user prompts when learning mode is active.
 const LEARNING_MODE_SYSTEM_PROMPT = `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
@@ -69,10 +70,50 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
 2.  **Tạo Liên kết Tương tác:** Đối với MỖI MỤC trong lộ trình, bạn PHẢI định dạng nó theo cú pháp đặc biệt sau: \`[Tên mục học]{"prompt":"Yêu cầu chi tiết để giải thích về mục học này"}\`
     * **[Tên mục học]**: Là tiêu đề của bài học. QUAN TRỌNG: Bên trong "Tên mục học", bạn không được sử dụng thêm dấu ngoặc vuông \`[]\` để nhấn mạnh bất kỳ thuật ngữ nào nào khác. Hãy viết tên mục một cách tự nhiên.
     * **{"prompt":"..."}**: Là một đối tượng JSON chứa một khóa "prompt". Giá trị của khóa này là một câu lệnh đầy đủ bạn tự tạo ra để yêu cầu chính bạn giải thích sâu về mục học đó. Prompt phải chi tiết và bằng tiếng Việt.
-**Ví dụ yêu cầu từ người dùng:** "Tạo cho tôi lộ trình học Javascript."
-**Ví dụ đầu ra MONG MUỐN từ bạn:**
-* [Giới thiệu về Javascript và Lịch sử]{"prompt":"Hãy giải thích chi tiết Javascript là gì, lịch sử và vai trò của nó trong phát triển web hiện đại."}
-* [Cú pháp cơ bản, Biến và Kiểu dữ liệu]{"prompt":"Trình bày bài học về cú pháp cơ bản của Javascript, cách khai báo biến với var, let, const, và các kiểu dữ liệu nguyên thủy như string, number, boolean, null, undefined."}`;
+
+**Định dạng các loại câu hỏi trắc nghiệm (LUÔN BỌC TRONG KHỐI MÃ \`\`\`quiz... \`\`\`):**
+
+* **Câu hỏi trắc nghiệm nhiều lựa chọn (Multiple Choice):**
+    \`\`\`quiz
+    {
+      "type": "multiple_choice",
+      "question": "Câu hỏi của bạn ở đây bằng tiếng Việt?",
+      "options": {
+        "A": "Lựa chọn A",
+        "B": "Lựa chọn B",
+        "C": "Lựa chọn C"
+      },
+      "answer": "A",
+      "explanation": "Giải thích chi tiết tại sao đáp án đó đúng, bằng tiếng Việt."
+    }
+    \`\`\`
+
+* **Câu hỏi Điền từ (Fill-in-the-Blank):** Sử dụng \`{{BLANK}}\` để đánh dấu vị trí trống.
+    \`\`\`quiz
+    {
+      "type": "fill_in_the_blank",
+      "sentence": "Thủ đô của Việt Nam là {{BLANK}}.",
+      "blanks": ["Hà Nội"],
+      "explanation": "Hà Nội là thủ đô của Việt Nam, nổi tiếng với lịch sử và văn hóa phong phú."
+    }
+    \`\`\`
+    *Lưu ý:* Mảng "blanks" phải chứa ĐÚNG THỨ TỰ các từ/cụm từ cần điền vào các \`{{BLANK}}\`.
+
+* **Câu hỏi Tự luận ngắn (Short Answer):**
+    \`\`\`quiz
+    {
+      "type": "short_answer",
+      "question": "Giải thích ngắn gọn khái niệm 'biến' trong lập trình.",
+      "keywords": ["lưu trữ", "dữ liệu", "giá trị"],
+      "expected_answer_gist": "Biến là một vùng bộ nhớ được đặt tên dùng để lưu trữ dữ liệu hoặc giá trị có thể thay đổi trong quá trình thực thi chương trình.",
+      "explanation": "Trong lập trình, biến (variable) là một tên gọi (identifier) được gán cho một vị trí trong bộ nhớ máy tính. Vị trí này dùng để lưu trữ một giá trị hoặc một đối tượng. Giá trị của biến có thể được thay đổi trong suốt quá trình thực thi chương trình. Biến giúp lập trình viên quản lý dữ liệu một cách linh hoạt."
+    }
+    \`\`\`
+    *Lưu ý:* "keywords" là các từ khóa quan trọng mà AI sẽ tìm kiếm trong câu trả lời của người dùng. "expected_answer_gist" là tóm tắt ý chính của câu trả lời đúng, dùng cho AI đánh giá. "explanation" là câu trả lời đầy đủ để hiển thị sau khi người dùng trả lời.
+
+**Quy tắc chung:**
+* Luôn trả lời bằng tiếng Việt.
+* Khi có thể, hãy lồng ghép các loại câu hỏi quiz sau khi giảng bài.`;
 
 
 // === CẬP NHẬT: Thêm các biến cho modal xác nhận ===
@@ -181,8 +222,8 @@ const defaultPersonas = [
         systemPrompt: `**Chỉ thị hệ thống:** Bạn là một lập trình viên cao cấp với 10 năm kinh nghiệm. Luôn đưa ra câu trả lời dưới dạng mã nguồn được giải thích rõ ràng, tuân thủ các coding convention tốt nhất. Khi được yêu cầu, hãy phân tích ưu và nhược điểm của các giải pháp khác nhau. Hãy ưu tiên tính hiệu quả và khả năng bảo trì của mã nguồn. **Yêu cầu bổ sung:** Khi đề cập đến một hàm, thư viện, hoặc khái niệm lập trình, hãy bọc nó trong dấu ngoặc vuông, ví dụ: [React], [API], [useState].`,
         samplePrompts: [
             "Viết một hàm Python để kiểm tra một chuỗi có phải là palindrome không.",
-            "Giải thích sự khác biệt giữa `let`, `const`, và `var` trong JavaScript.",
-            "Làm thế nào để tối ưu một truy vấn SQL có sử dụng `JOIN` trên nhiều bảng lớn?"
+            "Giải thích sự khác biệt giữa \`let\`, \`const\`, và \`var\` trong JavaScript.",
+            "Làm thế nào để tối ưu một truy vấn SQL có sử dụng \`JOIN\` trên nhiều bảng lớn?"
         ]
     },
     // === PERSONA ĐƯỢC NÂNG CẤP VỚI TÍNH NĂNG TRẮC NGHIỆM ===
@@ -205,6 +246,7 @@ const defaultPersonas = [
 4.  **Tương tác chủ động:** Sau khi giảng dạy một khái niệm (khoảng 3-5 từ vựng hoặc một điểm ngữ pháp), bạn PHẢI chủ động đặt câu hỏi cho người học để kiểm tra sự hiểu biết của họ. Sử dụng cú pháp đặc biệt sau để tạo câu hỏi trắc nghiệm trong một khối mã 'quiz':
     \`\`\`quiz
     {
+      "type": "multiple_choice",
       "question": "Câu hỏi của bạn ở đây bằng tiếng Việt?",
       "options": {
         "A": "Lựa chọn A",
@@ -277,7 +319,7 @@ function showConfirmationModal({ title, message, confirmText = 'Xóa', confirmCo
             confirmationModalConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
         }
 
-        confirmationModalIcon.innerHTML = svgIcons.warning || '<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>';
+        confirmationModalIcon.innerHTML = svgIcons.warning || '<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1-5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>';
 
         confirmationModalOverlay.classList.remove('hidden');
         setTimeout(() => {
@@ -657,17 +699,17 @@ async function handleSavePersona(e) {
 // --- CHAT LOGIC ---
 
 /**
- * === HÀM MỚI: Dành riêng cho việc render HTML của một khối trắc nghiệm ===
- * @param {object} data - Dữ liệu JSON của quiz đã được parse.
- * @param {string} quizId - Một ID duy nhất cho khối quiz này.
- * @returns {HTMLElement} - Phần tử DOM của khối quiz.
+ * Renders an interactive multiple choice quiz block.
+ * @param {object} data - Parsed JSON data for the multiple choice quiz.
+ * @param {string} quizId - Unique ID for this quiz block.
+ * @returns {HTMLElement} - The DOM element of the quiz block.
  */
-function renderQuiz(data, quizId) {
+function renderMultipleChoiceQuiz(data, quizId) {
     let optionsHtml = '';
     const letters = Object.keys(data.options);
     letters.forEach(letter => {
         optionsHtml += `
-            <button class="quiz-option-btn" data-quiz-id="${quizId}" data-option="${letter}">
+            <button class="quiz-option-btn" data-quiz-id="${quizId}" data-option="${letter}" ${completedQuizIds.includes(quizId) ? 'disabled' : ''}>
                 <span class="quiz-option-letter">${letter}</span>
                 <span class="quiz-option-text">${DOMPurify.sanitize(data.options[letter])}</span>
             </button>
@@ -677,8 +719,7 @@ function renderQuiz(data, quizId) {
     const quizWrapper = document.createElement('div');
     quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50";
     quizWrapper.id = quizId;
-    // Lưu trữ toàn bộ dữ liệu quiz trên DOM element để dễ dàng truy xuất sau này
-    quizWrapper.dataset.quizData = JSON.stringify(data);
+    quizWrapper.dataset.quizData = JSON.stringify(data); // Store data on DOM element
 
     quizWrapper.innerHTML = `
         <p class="font-semibold mb-3 text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(data.question)}</p>
@@ -691,22 +732,108 @@ function renderQuiz(data, quizId) {
 }
 
 /**
- * === HÀM MỚI: Xử lý khi người dùng chọn một đáp án trắc nghiệm ===
- * @param {HTMLElement} button - Nút đáp án mà người dùng đã nhấn.
+ * Renders an interactive fill-in-the-blank quiz block.
+ * @param {object} data - Parsed JSON data for the fill-in-the-blank quiz.
+ * @param {string} quizId - Unique ID for this quiz block.
+ * @returns {HTMLElement} - The DOM element of the quiz block.
  */
-function handleQuizAnswer(button) {
-    const quizId = button.dataset.quizId;
-    const selectedOption = button.dataset.option;
+function renderFillInTheBlankQuiz(data, quizId) {
+    const quizWrapper = document.createElement('div');
+    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50";
+    quizWrapper.id = quizId;
+    quizWrapper.dataset.quizData = JSON.stringify(data); // Store data on DOM element
+
+    let sentenceHtml = DOMPurify.sanitize(data.sentence);
+    const blanksCount = (sentenceHtml.match(/\{\{BLANK\}\}/g) || []).length;
+    let inputFields = '';
+
+    if (completedQuizIds.includes(quizId)) {
+        // If completed, show filled sentence and explanation
+        sentenceHtml = sentenceHtml.replace(/\{\{BLANK\}\}/g, (match, index) => {
+            const answer = data.blanks[index] || '???';
+            return `<span class="quiz-filled-blank completed-blank">${DOMPurify.sanitize(answer)}</span>`;
+        });
+        inputFields = `<div class="quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">
+                           ${DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`))}
+                       </div>`;
+    } else {
+        // Otherwise, show input fields for blanks
+        inputFields = '<div class="quiz-blank-inputs space-y-2 mt-3">';
+        for (let i = 0; i < blanksCount; i++) {
+            inputFields += `
+                <input type="text" placeholder="Điền vào chỗ trống ${i + 1}" class="quiz-blank-input w-full p-2 border rounded-md dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200 focus:ring focus:ring-blue-500 focus:border-blue-500" data-blank-index="${i}">
+            `;
+        }
+        inputFields += `
+            <button class="quiz-submit-btn w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors mt-3">Kiểm tra</button>
+        </div>
+        <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>`;
+        
+        sentenceHtml = sentenceHtml.replace(/\{\{BLANK\}\}/g, '<span class="quiz-blank-placeholder">_____</span>');
+    }
+
+    quizWrapper.innerHTML = `
+        <p class="font-semibold mb-3 text-gray-800 dark:text-gray-200">${sentenceHtml}</p>
+        ${inputFields}
+    `;
+    return quizWrapper;
+}
+
+/**
+ * Renders an interactive short answer quiz block.
+ * @param {object} data - Parsed JSON data for the short answer quiz.
+ * @param {string} quizId - Unique ID for this quiz block.
+ * @returns {HTMLElement} - The DOM element of the quiz block.
+ */
+function renderShortAnswerQuiz(data, quizId) {
+    const quizWrapper = document.createElement('div');
+    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50";
+    quizWrapper.id = quizId;
+    quizWrapper.dataset.quizData = JSON.stringify(data); // Store data on DOM element
+
+    let inputArea = '';
+    let explanationDiv = '';
+
+    if (completedQuizIds.includes(quizId)) {
+        // If completed, show explanation
+        inputArea = `<div class="text-sm text-gray-600 dark:text-gray-400">Bạn đã trả lời quiz này.</div>`;
+        explanationDiv = `<div class="quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">
+                              ${DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`))}
+                          </div>`;
+    } else {
+        inputArea = `
+            <textarea placeholder="Nhập câu trả lời của bạn..." rows="3" class="quiz-short-answer-input w-full p-2 border rounded-md dark:bg-slate-700 dark:border-slate-600 dark:text-gray-200 focus:ring focus:ring-blue-500 focus:border-blue-500"></textarea>
+            <button class="quiz-submit-btn w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors mt-3">Kiểm tra</button>
+        `;
+        explanationDiv = `<div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>`;
+    }
+
+    quizWrapper.innerHTML = `
+        <p class="font-semibold mb-3 text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(data.question)}</p>
+        <div class="space-y-2">
+            ${inputArea}
+        </div>
+        ${explanationDiv}
+    `;
+    return quizWrapper;
+}
+
+/**
+ * Handles the logic for a multiple choice quiz answer.
+ * @param {HTMLElement} button - The option button clicked.
+ * @param {string} quizId - The ID of the quiz.
+ * @param {object} quizData - The quiz data.
+ */
+function handleMultipleChoiceAnswer(button, quizId, quizData) {
     const quizContainer = document.getElementById(quizId);
-    
-    if (!quizContainer || !quizContainer.dataset.quizData) return;
+    if (!quizContainer) return;
 
     const allOptions = quizContainer.querySelectorAll('.quiz-option-btn');
-    const quizData = JSON.parse(quizContainer.dataset.quizData);
+    const selectedOption = button.dataset.option;
     const correctAnswer = quizData.answer;
     const explanation = quizData.explanation;
 
-    // Vô hiệu hóa tất cả các lựa chọn và hiển thị kết quả
+    // Disable all options and show results
     allOptions.forEach(opt => {
         opt.disabled = true;
         const optionLetter = opt.dataset.option;
@@ -718,17 +845,180 @@ function handleQuizAnswer(button) {
         }
     });
 
-    // Hiển thị phần giải thích
+    // Display explanation
     const explanationDiv = quizContainer.querySelector('.quiz-explanation');
     if (explanation) {
         explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${explanation}`));
         explanationDiv.classList.remove('hidden');
-        // Thêm class màu nền dựa trên kết quả
         if (selectedOption === correctAnswer) {
             explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
         } else {
             explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
         }
+    }
+    markQuizCompleted(quizId);
+}
+
+/**
+ * Handles the logic for a fill-in-the-blank quiz submission.
+ * @param {HTMLElement} submitButton - The submit button clicked.
+ * @param {string} quizId - The ID of the quiz.
+ * @param {object} quizData - The quiz data.
+ */
+function handleFillInTheBlankSubmit(submitButton, quizId, quizData) {
+    const quizContainer = document.getElementById(quizId);
+    if (!quizContainer) return;
+
+    const inputBlanks = quizContainer.querySelectorAll('.quiz-blank-input');
+    const userAnswers = Array.from(inputBlanks).map(input => input.value.trim());
+    const correctAnswers = quizData.blanks.map(ans => ans.trim());
+    const explanation = quizData.explanation;
+    
+    let allCorrect = true;
+    for (let i = 0; i < userAnswers.length; i++) {
+        if (userAnswers[i].toLowerCase() !== correctAnswers[i].toLowerCase()) {
+            allCorrect = false;
+            break;
+        }
+    }
+
+    const explanationDiv = quizContainer.querySelector('.quiz-explanation');
+    explanationDiv.classList.remove('hidden');
+
+    if (allCorrect) {
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chính xác!** ${explanation}`));
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+        // Replace input fields with filled text
+        let sentenceHtml = DOMPurify.sanitize(quizData.sentence);
+        sentenceHtml = sentenceHtml.replace(/\{\{BLANK\}\}/g, (match, index) => {
+            const answer = quizData.blanks[index] || '???';
+            return `<span class="quiz-filled-blank correct">${DOMPurify.sanitize(answer)}</span>`;
+        });
+        quizContainer.querySelector('p').innerHTML = sentenceHtml;
+        quizContainer.querySelector('.quiz-blank-inputs').remove();
+        markQuizCompleted(quizId);
+    } else {
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chưa chính xác.** Vui lòng thử lại. ${explanation}`));
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
+        // Optionally, highlight incorrect inputs
+        inputBlanks.forEach((input, index) => {
+            if (input.value.trim().toLowerCase() !== correctAnswers[index].toLowerCase()) {
+                input.classList.add('incorrect-input');
+            } else {
+                input.classList.remove('incorrect-input');
+            }
+        });
+    }
+
+    inputBlanks.forEach(input => input.disabled = true);
+    submitButton.disabled = true;
+}
+
+
+/**
+ * Handles the logic for a short answer quiz submission.
+ * @param {HTMLElement} submitButton - The submit button clicked.
+ * @param {string} quizId - The ID of the quiz.
+ * @param {object} quizData - The quiz data.
+ */
+async function handleShortAnswerSubmit(submitButton, quizId, quizData) {
+    const quizContainer = document.getElementById(quizId);
+    if (!quizContainer) return;
+
+    const userAnswerInput = quizContainer.querySelector('.quiz-short-answer-input');
+    const userAnswer = userAnswerInput.value.trim();
+    const explanationDiv = quizContainer.querySelector('.quiz-explanation');
+    const originalButtonText = submitButton.innerHTML;
+
+    if (!userAnswer) {
+        showToast('Vui lòng nhập câu trả lời của bạn.', 'info');
+        return;
+    }
+
+    submitButton.disabled = true;
+    userAnswerInput.disabled = true;
+    submitButton.innerHTML = `<span class="loading-spinner">${svgIcons.spinner}</span> Đang đánh giá...`;
+    
+    try {
+        const evaluationPrompt = `Tôi đã trả lời câu hỏi "${quizData.question}" với câu trả lời: "${userAnswer}".
+        Các từ khóa quan trọng là: ${quizData.keywords.join(', ')}.
+        Câu trả lời gợi ý hoặc ý chính là: "${quizData.expected_answer_gist}".
+        Dựa trên thông tin này, hãy cho biết câu trả lời của tôi CÓ ĐÚNG hay KHÔNG ĐÚNG, và giải thích ngắn gọn tại sao.
+        Chỉ trả lời "ĐÚNG" hoặc "KHÔNG ĐÚNG" ở dòng đầu tiên, sau đó là giải thích.`;
+
+        const result = await fastModel.generateContent(evaluationPrompt);
+        const feedback = result.response.text();
+        const isCorrect = feedback.toLowerCase().startsWith('đúng');
+
+        explanationDiv.classList.remove('hidden');
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Phản hồi:** ${feedback}`));
+
+        if (isCorrect) {
+            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+            markQuizCompleted(quizId);
+        } else {
+            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
+            // Add a "Learn More" button if incorrect
+            const learnMoreBtn = document.createElement('button');
+            learnMoreBtn.className = 'quiz-learn-more-btn flex items-center gap-2 text-xs px-3 py-1 bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-slate-500 transition-colors mt-2';
+            learnMoreBtn.innerHTML = `<span>Học lại</span> 📖`;
+            learnMoreBtn.onclick = () => {
+                const fullExplanationPrompt = `Giải thích đầy đủ về "${quizData.question}" (lấy từ explanation trong JSON quiz).`;
+                sendMessage(fullExplanationPrompt);
+                markQuizCompleted(quizId); // Mark as completed if user chooses to learn more
+            };
+            explanationDiv.appendChild(learnMoreBtn);
+        }
+
+    } catch (error) {
+        console.error("Lỗi khi đánh giá tự luận:", error);
+        explanationDiv.classList.remove('hidden');
+        explanationDiv.innerHTML = `<span class="text-red-500">Lỗi khi đánh giá câu trả lời. Vui lòng thử lại.</span>`;
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
+    } finally {
+        submitButton.innerHTML = originalButtonText;
+        submitButton.disabled = false;
+        if (completedQuizIds.includes(quizId)) {
+            userAnswerInput.disabled = true;
+            submitButton.remove(); // Remove submit button if quiz is completed
+        } else {
+            userAnswerInput.disabled = false;
+        }
+    }
+}
+
+/**
+ * Marks a quiz as completed and updates the database.
+ * @param {string} quizId - The ID of the quiz to mark as completed.
+ */
+function markQuizCompleted(quizId) {
+    if (!completedQuizIds.includes(quizId)) {
+        completedQuizIds.push(quizId);
+        updateConversationInDb(); // Save the updated completed quiz IDs
+    }
+}
+
+
+/**
+ * Dành riêng cho việc render HTML của một khối trắc nghiệm (đa dạng loại).
+ * @param {object} data - Dữ liệu JSON của quiz đã được parse.
+ * @param {string} quizId - Một ID duy nhất cho khối quiz này.
+ * @returns {HTMLElement} - Phần tử DOM của khối quiz.
+ */
+function renderQuiz(data, quizId) {
+    switch (data.type) {
+        case 'multiple_choice':
+            return renderMultipleChoiceQuiz(data, quizId);
+        case 'fill_in_the_blank':
+            return renderFillInTheBlankQuiz(data, quizId);
+        case 'short_answer':
+            return renderShortAnswerQuiz(data, quizId);
+        default:
+            console.warn('Unknown quiz type:', data.type);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = "text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50";
+            errorDiv.textContent = `Lỗi: Loại quiz không xác định hoặc không được hỗ trợ: ${data.type}`;
+            return errorDiv;
     }
 }
 
@@ -744,9 +1034,9 @@ function processQuizBlocks(containerElement) {
         const preElement = codeBlock.parentElement;
         try {
             const quizData = JSON.parse(codeBlock.textContent);
-            const quizId = `quiz-${crypto.randomUUID()}`;
+            const quizId = `quiz-${crypto.randomUUID()}`; // Generate a unique ID for each quiz instance
             const quizHtmlElement = renderQuiz(quizData, quizId);
-            // Thay thế thẻ <pre> bằng khối quiz tương tác
+            // Replace the <pre> tag with the interactive quiz block
             preElement.replaceWith(quizHtmlElement);
         } catch (error) {
             console.error("Lỗi phân tích JSON của quiz:", error, codeBlock.textContent);
@@ -871,10 +1161,10 @@ function preprocessText(text) {
         const title = match[1];
         let prompt;
         try {
-            const promptData = JSON.parse(match[2]);
-            prompt = promptData.prompt;
+            // Updated to handle actual JSON string parsing from the prompt attribute
+            prompt = JSON.parse(match[2]).prompt;
         } catch(e) {
-            prompt = match[2];
+            prompt = match[2]; // Fallback if it's not a valid JSON string
         }
 
         const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -914,6 +1204,7 @@ async function startNewChat(personaId, isCustom = false) {
     clearSuggestions();
     currentPersona = selectedPersona;
     completedTopics = [];
+    completedQuizIds = []; // Reset completed quizzes for a new chat
     
     personaSelectionScreen.classList.add('hidden');
     chatViewContainer.classList.remove('hidden');
@@ -1089,10 +1380,15 @@ function highlightAllCode(container) {
         if (block.textContent.trim().startsWith('{') && block.textContent.trim().endsWith('}')) {
              try {
                 const potentialJson = JSON.parse(block.textContent);
-                if (potentialJson.question && potentialJson.options && potentialJson.answer) {
+                // Check if it matches any of our known quiz structures
+                if (
+                    (potentialJson.type === 'multiple_choice' && potentialJson.question && potentialJson.options && potentialJson.answer) ||
+                    (potentialJson.type === 'fill_in_the_blank' && potentialJson.sentence && potentialJson.blanks) ||
+                    (potentialJson.type === 'short_answer' && potentialJson.question && potentialJson.keywords && potentialJson.expected_answer_gist)
+                ) {
                    block.classList.add('language-quiz');
                 }
-             } catch(e) { /* không phải JSON hợp lệ, bỏ qua */ }
+             } catch(e) { /* not valid JSON, ignore */ }
         }
         hljs.highlightElement(block);
         addCopyButton(block.parentElement);
@@ -1320,7 +1616,8 @@ async function updateConversationInDb() {
         history: localHistory, 
         updatedAt: serverTimestamp(), 
         personaId: currentPersona?.id || 'general',
-        completedTopics: completedTopics || []
+        completedTopics: completedTopics || [],
+        completedQuizIds: completedQuizIds || [] // Save completed quiz IDs
     };
     try {
         if (currentChatId) {
@@ -1355,6 +1652,7 @@ async function loadChat(chatId) {
         if (chatDoc.exists()) {
             const data = chatDoc.data();
             completedTopics = data.completedTopics || [];
+            completedQuizIds = data.completedQuizIds || []; // Load completed quiz IDs
             
             const loadedPersonaId = data.personaId || 'general';
             
@@ -2027,7 +2325,10 @@ chatContainer.addEventListener('click', async (e) => {
     const link = e.target.closest('a');
     const button = e.target.closest('button');
     const clickableForeign = e.target.closest('.clickable-foreign');
-    const quizButton = e.target.closest('.quiz-option-btn');
+    
+    // Check for quiz related clicks
+    const quizOptionButton = e.target.closest('.quiz-option-btn');
+    const quizSubmitButton = e.target.closest('.quiz-submit-btn');
 
     e.stopPropagation();
 
@@ -2041,9 +2342,28 @@ chatContainer.addEventListener('click', async (e) => {
             const context = messageContentElement ? messageContentElement.dataset.rawText : '';
             await explainTerm(term, context);
         }
-    } else if (quizButton && !quizButton.disabled) {
+    } else if (quizOptionButton && !quizOptionButton.disabled) {
         e.preventDefault();
-        handleQuizAnswer(quizButton);
+        const quizId = quizOptionButton.dataset.quizId;
+        const quizContainer = document.getElementById(quizId);
+        if (quizContainer && quizContainer.dataset.quizData) {
+            const quizData = JSON.parse(quizContainer.dataset.quizData);
+            if (quizData.type === 'multiple_choice') {
+                handleMultipleChoiceAnswer(quizOptionButton, quizId, quizData);
+            }
+        }
+    } else if (quizSubmitButton && !quizSubmitButton.disabled) {
+        e.preventDefault();
+        const quizId = quizSubmitButton.closest('[id^="quiz-"]').id;
+        const quizContainer = document.getElementById(quizId);
+        if (quizContainer && quizContainer.dataset.quizData) {
+            const quizData = JSON.parse(quizContainer.dataset.quizData);
+            if (quizData.type === 'fill_in_the_blank') {
+                handleFillInTheBlankSubmit(quizSubmitButton, quizId, quizData);
+            } else if (quizData.type === 'short_answer') {
+                await handleShortAnswerSubmit(quizSubmitButton, quizId, quizData);
+            }
+        }
     } else if (button) {
         e.preventDefault();
          if (button.classList.contains('copy-btn')) {
@@ -2183,3 +2503,4 @@ document.addEventListener('DOMContentLoaded', () => {
         hideConfirmationModal();
     });
 });
+
