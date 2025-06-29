@@ -124,6 +124,32 @@ body {
     display: inline-block;
 }
 
+/* === CSS MỚI: Định dạng cho từ ngoại ngữ có thể nhấp === */
+.clickable-chinese {
+    color: #8b5cf6; /* purple-500 */
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 3px;
+    transition: color 0.2s, background-color 0.2s;
+    border-radius: 3px;
+    padding: 1px 2px;
+    margin: -1px -2px;
+}
+.dark .clickable-chinese {
+    color: #a78bfa; /* purple-400 */
+}
+.clickable-chinese:hover {
+    background-color: #ede9fe; /* purple-50 */
+    color: #7c3aed; /* purple-600 */
+    text-decoration-style: solid;
+}
+.dark .clickable-chinese:hover {
+    background-color: #4c1d95; /* purple-900 */
+    color: #c4b5fd; /* purple-300 */
+}
+
+
 .ai-status { font-size: 0.875rem; line-height: 1.25rem; font-weight: 600; color: #2563eb; padding-right: 0.5rem; }
 .dark .ai-status { color: #60a5fa; }
 #persona-selection-screen { -ms-overflow-style: none; scrollbar-width: none; }
