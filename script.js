@@ -728,6 +728,17 @@ function renderMultipleChoiceQuiz(data, quizId) {
         </div>
         <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>
     `;
+
+    // If quiz is completed, show explanation immediately and disable options
+    if (completedQuizIds.includes(quizId)) {
+        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`));
+        explanationDiv.classList.remove('hidden');
+        // Assume correct for display if already completed (we don't store which option was chosen)
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+    }
+
+
     return quizWrapper;
 }
 
@@ -826,7 +837,7 @@ function renderShortAnswerQuiz(data, quizId) {
  */
 function handleMultipleChoiceAnswer(button, quizId, quizData) {
     const quizContainer = document.getElementById(quizId);
-    if (!quizContainer) return;
+    if (!quizContainer || completedQuizIds.includes(quizId)) return; // Prevent re-answering
 
     const allOptions = quizContainer.querySelectorAll('.quiz-option-btn');
     const selectedOption = button.dataset.option;
@@ -867,7 +878,7 @@ function handleMultipleChoiceAnswer(button, quizId, quizData) {
  */
 function handleFillInTheBlankSubmit(submitButton, quizId, quizData) {
     const quizContainer = document.getElementById(quizId);
-    if (!quizContainer) return;
+    if (!quizContainer || completedQuizIds.includes(quizId)) return; // Prevent re-answering
 
     const inputBlanks = quizContainer.querySelectorAll('.quiz-blank-input');
     const userAnswers = Array.from(inputBlanks).map(input => input.value.trim());
@@ -923,7 +934,7 @@ function handleFillInTheBlankSubmit(submitButton, quizId, quizData) {
  */
 async function handleShortAnswerSubmit(submitButton, quizId, quizData) {
     const quizContainer = document.getElementById(quizId);
-    if (!quizContainer) return;
+    if (!quizContainer || completedQuizIds.includes(quizId)) return; // Prevent re-answering
 
     const userAnswerInput = quizContainer.querySelector('.quiz-short-answer-input');
     const userAnswer = userAnswerInput.value.trim();
@@ -980,7 +991,9 @@ async function handleShortAnswerSubmit(submitButton, quizId, quizData) {
         submitButton.disabled = false;
         if (completedQuizIds.includes(quizId)) {
             userAnswerInput.disabled = true;
-            submitButton.remove(); // Remove submit button if quiz is completed
+            if (quizContainer.querySelector('.quiz-submit-btn')) { // Check if button exists before removing
+                quizContainer.querySelector('.quiz-submit-btn').remove();
+            }
         } else {
             userAnswerInput.disabled = false;
         }
@@ -1014,10 +1027,10 @@ function renderQuiz(data, quizId) {
         case 'short_answer':
             return renderShortAnswerQuiz(data, quizId);
         default:
-            console.warn('Unknown quiz type:', data.type);
+            console.warn('Unknown quiz type or missing type:', data);
             const errorDiv = document.createElement('div');
             errorDiv.className = "text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50";
-            errorDiv.textContent = `Lỗi: Loại quiz không xác định hoặc không được hỗ trợ: ${data.type}`;
+            errorDiv.textContent = `Lỗi: Loại quiz không xác định hoặc không được hỗ trợ: ${data.type || 'undefined'}. Vui lòng kiểm tra định dạng JSON.`;
             return errorDiv;
     }
 }
@@ -1033,8 +1046,26 @@ function processQuizBlocks(containerElement) {
     quizCodeBlocks.forEach(codeBlock => {
         const preElement = codeBlock.parentElement;
         try {
-            const quizData = JSON.parse(codeBlock.textContent);
+            let quizData = JSON.parse(codeBlock.textContent);
             const quizId = `quiz-${crypto.randomUUID()}`; // Generate a unique ID for each quiz instance
+            
+            // === CẬP NHẬT: Xử lý quiz cũ không có trường "type" ===
+            if (!quizData.type) {
+                // If 'type' is missing, assume it's an old-format multiple_choice quiz
+                if (quizData.question && quizData.options && quizData.answer) {
+                    quizData.type = 'multiple_choice';
+                    // If old format, also check for old explanation field name
+                    if (!quizData.explanation && quizData.explanationText) {
+                        quizData.explanation = quizData.explanationText;
+                    }
+                } else {
+                    // If it doesn't match old multiple_choice, it's truly an unrecognized format
+                    console.warn('Unrecognized old quiz format:', quizData);
+                    preElement.innerHTML = `<div class="text-red-500">Lỗi hiển thị quiz: Định dạng quiz không hợp lệ.</div>`;
+                    return;
+                }
+            }
+
             const quizHtmlElement = renderQuiz(quizData, quizId);
             // Replace the <pre> tag with the interactive quiz block
             preElement.replaceWith(quizHtmlElement);
@@ -1381,10 +1412,13 @@ function highlightAllCode(container) {
              try {
                 const potentialJson = JSON.parse(block.textContent);
                 // Check if it matches any of our known quiz structures
+                // === CẬP NHẬT: Thêm logic để nhận diện quiz cũ không có type ===
                 if (
                     (potentialJson.type === 'multiple_choice' && potentialJson.question && potentialJson.options && potentialJson.answer) ||
                     (potentialJson.type === 'fill_in_the_blank' && potentialJson.sentence && potentialJson.blanks) ||
-                    (potentialJson.type === 'short_answer' && potentialJson.question && potentialJson.keywords && potentialJson.expected_answer_gist)
+                    (potentialJson.type === 'short_answer' && potentialJson.question && potentialJson.keywords && potentialJson.expected_answer_gist) ||
+                    // Check for old multiple_choice format (no type field)
+                    (potentialJson.question && potentialJson.options && potentialJson.answer) 
                 ) {
                    block.classList.add('language-quiz');
                 }
