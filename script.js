@@ -159,7 +159,7 @@ const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-
 const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
 
 
-// --- CẬP NHẬT: Thêm persona mới và sửa persona cũ ---
+// --- CẬP NHẬT: Nâng cấp persona "Gia sư Ngoại ngữ" ---
 const defaultPersonas = [
     { 
         id: 'general', 
@@ -185,58 +185,42 @@ const defaultPersonas = [
             "Làm thế nào để tối ưu một truy vấn SQL có sử dụng `JOIN` trên nhiều bảng lớn?"
         ]
     },
-    // === PERSONA MỚI ===
-    { 
-        id: 'english_tutor', 
-        name: 'Gia sư Tiếng Anh', 
-        icon: '🇬🇧', 
-        description: 'Dạy từ vựng, ngữ pháp, và luyện phát âm Anh-Mỹ.', 
-        systemPrompt: `**System Instructions:** You are a friendly and professional English tutor specializing in American English. Your primary goal is to help Vietnamese speakers learn English. Follow these rules strictly:
-
-1.  **Vocabulary Format:** When introducing new vocabulary, present it clearly. For example: '• **Hello** - Xin chào'.
-2.  **Example Sentences:** Always provide at least one practical example sentence for each vocabulary word or grammar point.
-3.  **Structured Lessons:** Use Markdown (headings, lists) to organize lessons logically. Your tone should be encouraging and patient.
-4.  **Interactive Quizzes:** After teaching a concept (around 3-5 vocabulary words or a grammar point), you MUST proactively quiz the learner to check their understanding. Use the following special syntax to create a multiple-choice quiz in a 'quiz' code block:
-    \`\`\`quiz
-    {
-      "question": "Your question in Vietnamese?",
-      "options": {
-        "A": "Option A",
-        "B": "Option B",
-        "C": "Option C"
-      },
-      "answer": "A",
-      "explanation": "A detailed explanation in Vietnamese of why the answer is correct."
-    }
-    \`\`\`
-5.  **Learning Roadmaps:** When the user asks for a learning plan (e.g., "teach me basic English"), use the special link format \`[Topic Name]{"prompt":"Detailed prompt to explain this topic"}\` to create interactive lessons.`,
-        samplePrompts: [
-            "Teach me 5 common English greetings.",
-            "What is the difference between 'am', 'is', and 'are'? Give me a quiz.",
-            "Create a short dialogue about ordering food in a restaurant."
-        ]
-    },
-    // === PERSONA CŨ ĐƯỢC ĐỔI TÊN ===
+    // === PERSONA ĐƯỢC NÂNG CẤP VỚI TÍNH NĂNG TRẮC NGHIỆM ===
     { 
         id: 'language_tutor', 
-        name: 'Gia sư Ngôn ngữ Á Đông', 
+        name: 'Gia sư Ngoại ngữ', 
         icon: '🌐', 
-        description: 'Dạy từ vựng, ngữ pháp các ngôn ngữ Á Đông.', 
-        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp và thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
+        description: 'Dạy từ vựng, ngữ pháp và kiểm tra kiến thức.', 
+        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp, thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
+
 1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc, sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt.
     * **Tiếng Trung:** 你好 (Nǐ hǎo) - Xin chào.
     * **Tiếng Nhật:** こんにちは (Konnichiwa) - Xin chào.
     * **Tiếng Hàn:** 안녕하세요 (Annyeonghaseyo) - Xin chào.
-2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm, và bản dịch.
+
+2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm, và bản dịch.
+
 3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và kiên nhẫn.
-4.  **Tương tác chủ động (Quiz):** Sau khi giảng dạy, bạn PHẢI chủ động đặt câu hỏi trắc nghiệm bằng cú pháp sau trong khối mã 'quiz':
+
+4.  **Tương tác chủ động:** Sau khi giảng dạy một khái niệm (khoảng 3-5 từ vựng hoặc một điểm ngữ pháp), bạn PHẢI chủ động đặt câu hỏi cho người học để kiểm tra sự hiểu biết của họ. Sử dụng cú pháp đặc biệt sau để tạo câu hỏi trắc nghiệm trong một khối mã 'quiz':
     \`\`\`quiz
-    { "question": "Câu hỏi?", "options": {"A":"...", "B":"..."}, "answer": "A", "explanation": "Giải thích."}
-    \`\`\``,
+    {
+      "question": "Câu hỏi của bạn ở đây bằng tiếng Việt?",
+      "options": {
+        "A": "Lựa chọn A",
+        "B": "Lựa chọn B",
+        "C": "Lựa chọn C"
+      },
+      "answer": "A",
+      "explanation": "Giải thích chi tiết tại sao đáp án đó đúng, bằng tiếng Việt."
+    }
+    \`\`\`
+
+5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Nhật cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.`,
         samplePrompts: [
-            "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung.",
-            "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật.",
-            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì?"
+            "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung và sau đó kiểm tra tôi.",
+            "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật, rồi đố tôi một câu hỏi.",
+            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm."
         ]
     },
     { 
@@ -249,6 +233,18 @@ const defaultPersonas = [
             "Viết mở đầu cho một câu chuyện trinh thám lấy bối cảnh ở Sài Gòn năm 1960.",
             "Gợi ý 3 cốt truyện khác nhau chỉ từ một câu: 'Chiếc la bàn không chỉ về hướng bắc.'",
             "Tôi có một nhân vật là một nghệ sĩ violin. Hãy viết một đoạn độc thoại nội tâm cho cô ấy."
+        ]
+    },
+    { 
+        id: 'marketing', 
+        name: 'Chuyên gia Marketing', 
+        icon: '📈', 
+        description: 'Tư vấn chiến lược, phân tích thị trường, quảng cáo.', 
+        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một giám đốc marketing dày dặn kinh nghiệm. Hãy cung cấp các phân tích thị trường sắc bén, đề xuất các chiến lược marketing marketing sáng tạo, và giúp viết các nội dung quảng cáo (copywriting) hấp dẫn, tập trung vào lợi ích của khách hàng và lời kêu gọi hành động (CTA) rõ ràng.`,
+        samplePrompts: [
+            "Lên ý tưởng cho một chiến dịch quảng cáo trên mạng xã hội cho một thương hiệu cà phê mới.",
+            "Viết 3 tiêu đề email hấp dẫn để quảng bá một khóa học trực tuyến.",
+            "Phân tích các đối thủ cạnh tranh chính cho một ứng dụng giao đồ ăn."
         ]
     }
 ];
@@ -661,10 +657,10 @@ async function handleSavePersona(e) {
 // --- CHAT LOGIC ---
 
 /**
- * Renders an interactive quiz block from JSON data.
- * @param {object} data - The parsed quiz JSON data.
- * @param {string} quizId - A unique ID for this quiz block.
- * @returns {HTMLElement} The quiz block DOM element.
+ * === HÀM MỚI: Dành riêng cho việc render HTML của một khối trắc nghiệm ===
+ * @param {object} data - Dữ liệu JSON của quiz đã được parse.
+ * @param {string} quizId - Một ID duy nhất cho khối quiz này.
+ * @returns {HTMLElement} - Phần tử DOM của khối quiz.
  */
 function renderQuiz(data, quizId) {
     let optionsHtml = '';
@@ -681,6 +677,7 @@ function renderQuiz(data, quizId) {
     const quizWrapper = document.createElement('div');
     quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50";
     quizWrapper.id = quizId;
+    // Lưu trữ toàn bộ dữ liệu quiz trên DOM element để dễ dàng truy xuất sau này
     quizWrapper.dataset.quizData = JSON.stringify(data);
 
     quizWrapper.innerHTML = `
@@ -694,8 +691,8 @@ function renderQuiz(data, quizId) {
 }
 
 /**
- * Handles the logic when a user clicks a quiz answer.
- * @param {HTMLElement} button - The answer button that was clicked.
+ * === HÀM MỚI: Xử lý khi người dùng chọn một đáp án trắc nghiệm ===
+ * @param {HTMLElement} button - Nút đáp án mà người dùng đã nhấn.
  */
 function handleQuizAnswer(button) {
     const quizId = button.dataset.quizId;
@@ -709,6 +706,7 @@ function handleQuizAnswer(button) {
     const correctAnswer = quizData.answer;
     const explanation = quizData.explanation;
 
+    // Vô hiệu hóa tất cả các lựa chọn và hiển thị kết quả
     allOptions.forEach(opt => {
         opt.disabled = true;
         const optionLetter = opt.dataset.option;
@@ -720,10 +718,12 @@ function handleQuizAnswer(button) {
         }
     });
 
+    // Hiển thị phần giải thích
     const explanationDiv = quizContainer.querySelector('.quiz-explanation');
     if (explanation) {
         explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${explanation}`));
         explanationDiv.classList.remove('hidden');
+        // Thêm class màu nền dựa trên kết quả
         if (selectedOption === correctAnswer) {
             explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
         } else {
@@ -733,10 +733,12 @@ function handleQuizAnswer(button) {
 }
 
 /**
- * Finds and replaces 'quiz' code blocks with interactive HTML.
- * @param {HTMLElement} containerElement - The message container element.
+ * === HÀM MỚI: Tìm và thay thế các khối mã quiz bằng HTML tương tác ===
+ * Hàm này sẽ được gọi sau khi nội dung markdown đã được render.
+ * @param {HTMLElement} containerElement - Phần tử chứa nội dung tin nhắn.
  */
 function processQuizBlocks(containerElement) {
+    // Tìm các khối mã có class 'language-quiz' do marked.js tạo ra
     const quizCodeBlocks = containerElement.querySelectorAll('pre code.language-quiz');
     quizCodeBlocks.forEach(codeBlock => {
         const preElement = codeBlock.parentElement;
@@ -744,9 +746,10 @@ function processQuizBlocks(containerElement) {
             const quizData = JSON.parse(codeBlock.textContent);
             const quizId = `quiz-${crypto.randomUUID()}`;
             const quizHtmlElement = renderQuiz(quizData, quizId);
+            // Thay thế thẻ <pre> bằng khối quiz tương tác
             preElement.replaceWith(quizHtmlElement);
         } catch (error) {
-            console.error("Quiz JSON parsing error:", error, codeBlock.textContent);
+            console.error("Lỗi phân tích JSON của quiz:", error, codeBlock.textContent);
             preElement.innerHTML = `<div class="text-red-500">Lỗi hiển thị quiz. Định dạng JSON không hợp lệ.</div>`;
         }
     });
@@ -756,7 +759,7 @@ function processQuizBlocks(containerElement) {
 /**
  * Speaks a given text using the browser's Speech Synthesis API.
  * @param {string} text - The text to be spoken.
- * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'en-US').
+ * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'ko-KR').
  */
 function speakText(text, lang) {
     if (!('speechSynthesis' in window)) {
@@ -782,89 +785,66 @@ function speakText(text, lang) {
 
     utterance.onerror = (event) => {
         console.error("SpeechSynthesisUtterance error:", event);
-        showToast(`Lỗi phát âm: ${event.error}`, 'error');
+        if (event.error === 'no-speech' || event.error === 'not-allowed') {
+             showToast(`Không tìm thấy hoặc không thể dùng giọng đọc cho ngôn ngữ ${lang}.`, 'error');
+        } else {
+             showToast(`Lỗi phát âm: ${event.error}`, 'error');
+        }
     };
 
     speechSynthesis.speak(utterance);
 }
 
 /**
- * CẬP NHẬT: Finds foreign language words (Asian languages and English)
- * and wraps them in a clickable span for pronunciation.
+ * Finds foreign characters (Chinese, Japanese, Korean) in an element's text nodes 
+ * and wraps them in a clickable span that can be used for pronunciation.
  * @param {HTMLElement} container - The element whose text nodes should be processed.
  */
 function makeForeignTextClickable(container) {
-    // Regex for Asian languages
-    const asianLangRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]+/g;
-    // Regex for English words (3+ letters, can contain hyphens/apostrophes)
-    const englishWordRegex = /\b[a-zA-Z-']{3,}\b/g;
-
-    // Regexes for identifying the specific Asian language of a matched string
+    const foreignRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]+/g;
     const hiraganaKatakanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
     const hangulRegex = /[\uAC00-\uD7AF]/;
-
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
     const nodesToProcess = [];
     let currentNode;
     while (currentNode = walker.nextNode()) {
-        if (currentNode.parentElement.closest('script, style, .clickable-foreign')) {
-            continue;
-        }
         nodesToProcess.push(currentNode);
     }
 
     nodesToProcess.forEach(textNode => {
+        if (textNode.parentElement.closest('script, style, .clickable-foreign')) {
+            return;
+        }
+
         const text = textNode.nodeValue;
-
-        const asianMatches = Array.from(text.matchAll(asianLangRegex)).map(m => ({ match: m, type: 'asian' }));
-        const englishMatches = Array.from(text.matchAll(englishWordRegex)).map(m => ({ match: m, type: 'english' }));
-        
-        const allMatches = [...asianMatches, ...englishMatches].sort((a, b) => a.match.index - b.match.index);
-
-        if (allMatches.length === 0) return;
+        foreignRegex.lastIndex = 0;
+        if (!foreignRegex.test(text)) {
+            return;
+        }
+        foreignRegex.lastIndex = 0;
 
         const fragment = document.createDocumentFragment();
         let lastIndex = 0;
+        let match;
 
-        allMatches.forEach(({ match: matchInfo, type }) => {
-            const matchedText = matchInfo[0];
-            const matchIndex = matchInfo.index;
-
-            if (matchIndex > lastIndex) {
-                fragment.appendChild(document.createTextNode(text.substring(lastIndex, matchIndex)));
+        while ((match = foreignRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
             }
-
             const span = document.createElement('span');
             span.className = 'clickable-foreign';
-            span.textContent = matchedText;
-            
-            let shouldWrap = false;
-            if (type === 'english') {
-                if (!textNode.parentElement.closest('button, .suggestion-chip, .note-header, .summary-header, .quiz-option-btn')) {
-                    span.dataset.lang = 'en-US';
-                    span.title = `Phát âm (en-US)`;
-                    shouldWrap = true;
-                }
-            } else { // 'asian'
-                if (hangulRegex.test(matchedText)) {
-                    span.dataset.lang = 'ko-KR';
-                } else if (hiraganaKatakanaRegex.test(matchedText)) {
-                    span.dataset.lang = 'ja-JP';
-                } else {
-                    span.dataset.lang = 'zh-CN';
-                }
-                span.title = `Phát âm (${span.dataset.lang})`;
-                shouldWrap = true;
-            }
-            
-            if (shouldWrap) {
-                fragment.appendChild(span);
+            span.textContent = match[0];
+            if (hangulRegex.test(match[0])) {
+                span.dataset.lang = 'ko-KR';
+            } else if (hiraganaKatakanaRegex.test(match[0])) {
+                span.dataset.lang = 'ja-JP';
             } else {
-                fragment.appendChild(document.createTextNode(matchedText));
+                span.dataset.lang = 'zh-CN';
             }
-
-            lastIndex = matchIndex + matchedText.length;
-        });
+            span.title = `Phát âm (${span.dataset.lang})`;
+            fragment.appendChild(span);
+            lastIndex = foreignRegex.lastIndex;
+        }
         
         if (lastIndex < text.length) {
             fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
@@ -891,7 +871,8 @@ function preprocessText(text) {
         const title = match[1];
         let prompt;
         try {
-            prompt = JSON.parse(match[2]).prompt;
+            const promptData = JSON.parse(match[2]);
+            prompt = promptData.prompt;
         } catch(e) {
             prompt = match[2];
         }
@@ -918,9 +899,12 @@ function preprocessText(text) {
 }
 
 async function startNewChat(personaId, isCustom = false) {
-    let selectedPersona = isCustom 
-        ? customPersonas.find(p => p.id === personaId)
-        : defaultPersonas.find(p => p.id === personaId);
+    let selectedPersona;
+    if (isCustom) {
+        selectedPersona = customPersonas.find(p => p.id === personaId);
+    } else {
+        selectedPersona = defaultPersonas.find(p => p.id === personaId);
+    }
 
     if (!selectedPersona) { 
         showToast('Không tìm thấy Persona.', 'error');
@@ -1032,11 +1016,24 @@ function addMessage(role, text, shouldScroll = true) {
         contentElem = messageWrapper.querySelector('.message-content');
     } else if (role === 'note') {
         messageWrapper.className = 'note-wrapper';
-        messageWrapper.innerHTML = `...`; // Same as before
+        messageWrapper.innerHTML = `
+            <div class="note-header">
+                ${svgIcons.note}
+                <span>Ghi chú</span>
+            </div>
+            <div class="note-content message-content" data-raw-text="${text.replace(/"/g, '&quot;')}"></div>
+        `;
         contentElem = messageWrapper.querySelector('.note-content');
     } else if (role === 'summary') {
         messageWrapper.className = 'summary-wrapper';
-        messageWrapper.innerHTML = `...`; // Same as before
+        messageWrapper.innerHTML = `
+            <div class="summary-header">
+                ${svgIcons.summarize}
+                <span>Tóm tắt cuộc trò chuyện</span>
+            </div>
+            <div class="summary-content message-content" data-raw-text="${text.replace(/"/g, '&quot;')}"></div>
+            <div class="message-actions mt-1 flex justify-end items-center gap-2"></div>
+        `;
         contentElem = messageWrapper.querySelector('.summary-content');
         actionsContainer = messageWrapper.querySelector('.message-actions');
     }
@@ -1045,11 +1042,11 @@ function addMessage(role, text, shouldScroll = true) {
     contentElem.innerHTML = DOMPurify.sanitize(marked.parse(preprocessedText), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
 
     highlightAllCode(contentElem);
+    
+    // === CẬP NHẬT: Gọi hàm xử lý quiz sau khi render nội dung ===
     processQuizBlocks(contentElem);
 
-    // CẬP NHẬT: Kiểm tra cả hai persona gia sư ngôn ngữ
-    const languageTutorIds = ['language_tutor', 'english_tutor'];
-    if (currentPersona && languageTutorIds.includes(currentPersona.id)) {
+    if (currentPersona && currentPersona.id === 'language_tutor') {
         makeForeignTextClickable(contentElem);
     }
     
@@ -1088,13 +1085,14 @@ function addCopyButton(preElement) {
 function highlightAllCode(container) {
     const codeBlocks = container.querySelectorAll('pre code');
     codeBlocks.forEach((block) => {
+        // Thêm class language-quiz nếu khối mã là quiz để hàm processQuizBlocks có thể tìm thấy
         if (block.textContent.trim().startsWith('{') && block.textContent.trim().endsWith('}')) {
              try {
                 const potentialJson = JSON.parse(block.textContent);
                 if (potentialJson.question && potentialJson.options && potentialJson.answer) {
                    block.classList.add('language-quiz');
                 }
-             } catch(e) { /* not valid JSON, ignore */ }
+             } catch(e) { /* không phải JSON hợp lệ, bỏ qua */ }
         }
         hljs.highlightElement(block);
         addCopyButton(block.parentElement);
@@ -1116,14 +1114,18 @@ async function handleSummary() {
     }
 
     isSummarizing = true;
+    const originalIconContainer = summarizeBtn.firstElementChild;
     summarizeBtn.innerHTML = svgIcons.spinner;
     summarizeBtn.disabled = true;
 
     try {
         const prompt = `Dựa vào cuộc trò chuyện sau, hãy tóm tắt lại các ý chính một cách súc tích, rõ ràng theo từng gạch đầu dòng:\n\n---\n${conversationToSummarize}\n---`;
         const result = await fastModel.generateContent(prompt);
-        const { messageId } = addMessage('summary', result.response.text());
-        localHistory.push({ id: messageId, role: 'summary', parts: [{ text: result.response.text() }] });
+        const summaryText = result.response.text();
+
+        const { messageId } = addMessage('summary', summaryText);
+        
+        localHistory.push({ id: messageId, role: 'summary', parts: [{ text: summaryText }] });
         await updateConversationInDb();
 
     } catch (error) {
@@ -1131,17 +1133,18 @@ async function handleSummary() {
         showToast('Không thể tạo bản tóm tắt lúc này.', 'error');
     } finally {
         isSummarizing = false;
-        summarizeBtn.innerHTML = `<span data-icon="summarize"></span>`;
-        loadIcons();
+        summarizeBtn.innerHTML = '';
+        summarizeBtn.appendChild(originalIconContainer);
         summarizeBtn.disabled = false;
     }
 }
 
 async function sendMessage(promptTextOverride = null) {
     welcomeScreen.classList.add('hidden');
+    welcomeScreen.classList.remove('flex');
     chatContainer.classList.remove('hidden');
 
-    const userDisplayedText = promptTextOverride || promptInput.value.trim(); 
+    const userDisplayedText = promptTextOverride ? promptTextOverride : promptInput.value.trim(); 
     if (!userDisplayedText || isSummarizing) return;
 
     if (!promptTextOverride) {
@@ -1151,32 +1154,44 @@ async function sendMessage(promptTextOverride = null) {
     sendBtn.disabled = true;
     clearSuggestions();
 
-    const { messageId: userMessageId } = addMessage('user', userDisplayedText);
-    localHistory.push({ id: userMessageId, role: 'user', parts: [{ text: userDisplayedText }] });
+    const userMessage = addMessage('user', userDisplayedText);
+    localHistory.push({ id: userMessage.messageId, role: 'user', parts: [{ text: userDisplayedText }] });
 
     const { messageWrapper, contentElem, statusElem, actionsContainer, messageId: aiMessageId } = addMessage('ai', '<span class="blinking-cursor"></span>');
     if (statusElem) statusElem.textContent = 'Đang suy nghĩ...';
 
     try {
-        const historyForThisCall = localHistory.filter(m => ['user', 'model'].includes(m.role)).slice(0, -1).map(({role, parts}) => ({role, parts}));
-        const finalPrompt = isLearningMode && !promptTextOverride 
-            ? `${LEARNING_MODE_SYSTEM_PROMPT}\n\nYêu cầu của người học: "${userDisplayedText}"`
-            : userDisplayedText;
+        let historyForThisCall = [];
+        const validHistory = localHistory.filter(m => ['user', 'model'].includes(m.role));
+        if (validHistory.length > 1) {
+             historyForThisCall = validHistory.slice(0, -1).map(({role, parts}) => ({role, parts}));
+        }
+
+        let finalPrompt;
+        if (isLearningMode && !promptTextOverride) { 
+            finalPrompt = `${LEARNING_MODE_SYSTEM_PROMPT}\n\nYêu cầu của người học: "${userDisplayedText}"`;
+        } else {
+            finalPrompt = userDisplayedText;
+        }
 
         const chatSession = model.startChat({ history: historyForThisCall });
         const result = await chatSession.sendMessageStream(finalPrompt);
 
         let fullResponseText = "";
+        let isFirstChunk = true;
+
         for await (const chunk of result.stream) {
-            if (statusElem.textContent === 'Đang suy nghĩ...') statusElem.textContent = 'Đang viết...';
+            if (isFirstChunk && statusElem) {
+                statusElem.textContent = 'Đang viết...';
+                isFirstChunk = false;
+            }
             fullResponseText += chunk.text();
             
+            // Tạm thời chỉ render link, không render quiz khi đang stream để tránh lỗi JSON
             const processedChunkForStreaming = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunkForStreaming), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
             highlightAllCode(contentElem);
-            // CẬP NHẬT: Kiểm tra cả hai persona gia sư ngôn ngữ
-            const languageTutorIds = ['language_tutor', 'english_tutor'];
-            if (currentPersona && languageTutorIds.includes(currentPersona.id)) {
+            if (currentPersona && currentPersona.id === 'language_tutor') {
                 makeForeignTextClickable(contentElem);
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -1184,15 +1199,14 @@ async function sendMessage(promptTextOverride = null) {
         
         if (statusElem) statusElem.classList.add('hidden');
         
+        // Render cuối cùng với đầy đủ quiz
         const finalProcessedText = preprocessText(fullResponseText);
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = fullResponseText;
         
         highlightAllCode(contentElem);
-        processQuizBlocks(contentElem);
-        // CẬP NHẬT: Kiểm tra cả hai persona gia sư ngôn ngữ
-        const languageTutorIds = ['language_tutor', 'english_tutor'];
-        if (currentPersona && languageTutorIds.includes(currentPersona.id)) {
+        processQuizBlocks(contentElem); // Xử lý quiz sau khi render xong
+        if (currentPersona && currentPersona.id === 'language_tutor') {
             makeForeignTextClickable(contentElem);
         }
 
@@ -1205,12 +1219,14 @@ async function sendMessage(promptTextOverride = null) {
         
         if (!isLearningMode) {
             await getFollowUpSuggestions(fullResponseText);
+        } else {
+            clearSuggestions();
         }
 
     } catch (error) {
         console.error("Error during sendMessage:", error);
         contentElem.innerHTML = `**Lỗi:** ${error.message}`;
-        localHistory.pop();
+        if (localHistory.length > 0) localHistory.pop();
         showToast(`Lỗi gửi tin nhắn: ${error.message}`, 'error');
     } finally {
         sendBtn.disabled = false;
@@ -1222,7 +1238,10 @@ async function handleRegenerate(targetMessageId) {
     if (!messageWrapper) return;
 
     const messageIndex = localHistory.findIndex(m => m.id === targetMessageId);
-    if (messageIndex < 1 || localHistory[messageIndex].role !== 'model') return;
+    if (messageIndex < 1 || localHistory[messageIndex].role !== 'model') {
+        showToast('Không thể tái tạo tin nhắn này.', 'error');
+        return;
+    }
 
     let userPrompt = null;
     let historyForCall = [];
@@ -1234,9 +1253,13 @@ async function handleRegenerate(targetMessageId) {
         }
     }
     
-    if (!userPrompt) return;
+    if (!userPrompt) {
+        showToast('Không tìm thấy prompt gốc.', 'error');
+        return;
+    }
 
-    messageWrapper.querySelectorAll('.message-actions button').forEach(btn => btn.disabled = true);
+    const allButtons = messageWrapper.querySelectorAll('.message-actions button');
+    allButtons.forEach(btn => btn.disabled = true);
     
     const contentElem = messageWrapper.querySelector('.message-content');
     const statusElem = messageWrapper.querySelector('.ai-status');
@@ -1259,9 +1282,7 @@ async function handleRegenerate(targetMessageId) {
             const processedChunk = preprocessText(newFullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
             highlightAllCode(contentElem);
-             // CẬP NHẬT: Kiểm tra cả hai persona gia sư ngôn ngữ
-            const languageTutorIds = ['language_tutor', 'english_tutor'];
-            if (currentPersona && languageTutorIds.includes(currentPersona.id)) {
+            if (currentPersona && currentPersona.id === 'language_tutor') {
                 makeForeignTextClickable(contentElem);
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -1274,10 +1295,8 @@ async function handleRegenerate(targetMessageId) {
         contentElem.dataset.rawText = newFullResponseText;
         
         highlightAllCode(contentElem);
-        processQuizBlocks(contentElem);
-        // CẬP NHẬT: Kiểm tra cả hai persona gia sư ngôn ngữ
-        const languageTutorIds = ['language_tutor', 'english_tutor'];
-        if (currentPersona && languageTutorIds.includes(currentPersona.id)) {
+        processQuizBlocks(contentElem); // Xử lý quiz sau khi render xong
+        if (currentPersona && currentPersona.id === 'language_tutor') {
             makeForeignTextClickable(contentElem);
         }
 
@@ -1290,7 +1309,7 @@ async function handleRegenerate(targetMessageId) {
         contentElem.innerHTML = `**Lỗi:** Không thể tái tạo câu trả lời.`;
         showToast('Lỗi khi tái tạo câu trả lời.', 'error');
     } finally {
-        messageWrapper.querySelectorAll('.message-actions button').forEach(btn => btn.disabled = false);
+        allButtons.forEach(btn => btn.disabled = false);
     }
 }
 
@@ -1325,11 +1344,13 @@ async function loadChat(chatId) {
     
     personaSelectionScreen.classList.add('hidden');
     chatViewContainer.classList.remove('hidden');
+    chatViewContainer.classList.add('flex');
     showHistorySkeleton();
     closeSidebar();
 
     try {
-        const chatDoc = await getDoc(doc(db, 'chats', currentUserId, 'conversations', chatId));
+        const chatDocRef = doc(db, 'chats', currentUserId, 'conversations', chatId);
+        const chatDoc = await getDoc(chatDocRef);
 
         if (chatDoc.exists()) {
             const data = chatDoc.data();
@@ -1337,15 +1358,18 @@ async function loadChat(chatId) {
             
             const loadedPersonaId = data.personaId || 'general';
             
-            let foundPersona = defaultPersonas.find(p => p.id === loadedPersonaId) 
-                || customPersonas.find(p => p.id === loadedPersonaId);
-
+            let foundPersona = defaultPersonas.find(p => p.id === loadedPersonaId);
             if (!foundPersona) {
-                const personaDoc = await getDoc(doc(db, 'users', currentUserId, 'customPersonas', loadedPersonaId));
-                if (personaDoc.exists()) {
-                    foundPersona = { id: personaDoc.id, ...personaDoc.data() };
-                } else {
-                    foundPersona = { id: 'deleted', name: 'Persona đã xóa', icon: '❓', description: '', systemPrompt: 'Hãy trả lời một cách bình thường.' };
+                await fetchCustomPersonas();
+                foundPersona = customPersonas.find(p => p.id === loadedPersonaId);
+                if (!foundPersona) {
+                     const personaDocRef = doc(db, 'users', currentUserId, 'customPersonas', loadedPersonaId);
+                    const personaDoc = await getDoc(personaDocRef);
+                    if (personaDoc.exists()) {
+                        foundPersona = { id: personaDoc.id, ...personaDoc.data() };
+                    } else {
+                        foundPersona = { id: 'deleted', name: 'Persona đã xóa', icon: '❓', description: '', systemPrompt: 'Hãy trả lời một cách bình thường.' };
+                    }
                 }
             }
             currentPersona = foundPersona;
@@ -1357,24 +1381,41 @@ async function loadChat(chatId) {
             
             await renderAllChats();
             welcomeScreen.classList.add('hidden');
+            welcomeScreen.classList.remove('flex');
             chatContainer.classList.remove('hidden');
             chatContainer.innerHTML = ''; 
             chatContainer.appendChild(notificationArea);
+
             clearSuggestions();
 
-            localHistory.slice(2).forEach(msg => addMessage(msg.role, msg.parts[0].text, false));
+            const messagesToDisplay = localHistory.slice(2);
+            messagesToDisplay.forEach(msg => {
+                if (!msg.id) {
+                    msg.id = crypto.randomUUID();
+                }
+                addMessage(msg.role, msg.parts[0].text, false);
+            });
             setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 0);
 
-            const lastModelMessage = localHistory.slice().reverse().find(msg => msg.role === 'model');
-            if (!isLearningMode && lastModelMessage) {
-                await getFollowUpSuggestions(lastModelMessage.parts[0].text);
+            if (!isLearningMode) {
+                const lastModelMessage = localHistory.slice().reverse().find(msg => msg.role === 'model');
+                if (lastModelMessage) {
+                    await getFollowUpSuggestions(lastModelMessage.parts[0].text);
+                } else {
+                    clearSuggestions();
+                }
+            } else {
+                clearSuggestions();
             }
+
         } else {
+            addMessage('ai', '**Lỗi:** Không tìm thấy cuộc trò chuyện.');
             showToast('Cuộc trò chuyện không tồn tại.', 'error');
         }
     } catch (error) {
         console.error("Lỗi khi tải cuộc trò chuyện:", error);
         showToast('Lỗi khi tải cuộc trò chuyện.', 'error');
+        addMessage('ai', '**Lỗi:** Không thể tải cuộc trò chuyện.');
     }
 }
 
@@ -1388,11 +1429,23 @@ async function getFollowUpSuggestions(lastResponse) {
     try {
         const suggestionPrompt = `Dựa vào câu trả lời sau: "${lastResponse.substring(0, 500)}". Hãy đề xuất 3 câu hỏi tiếp theo ngắn gọn và thú vị mà người dùng có thể hỏi. QUAN TRỌNG: Chỉ trả về 3 câu hỏi, mỗi câu trên một dòng. Không đánh số, không dùng gạch đầu dòng, không thêm bất kỳ văn bản nào khác.`;
         const result = await fastModel.generateContent(suggestionPrompt);
-        displaySuggestions(result.response.text().split('\n').filter(s => s.trim() !== ''));
+        const responseText = result.response.text();
+        const suggestions = responseText.split('\n').filter(s => s.trim() !== '');
+        displaySuggestions(suggestions);
     } catch (error) {
         console.error("Error getting suggestions:", error);
     }
 }
+
+async function handleSuggestionClickAndSendToReference(suggestionText) {
+    showReferenceModal('Trợ lý Phụ', true); 
+    await new Promise(resolve => setTimeout(resolve, 50)); 
+    if (referencePromptInput) {
+        referencePromptInput.value = suggestionText;
+    }
+    await sendReferenceMessage(suggestionText);
+}
+
 
 function displaySuggestions(suggestions) {
     suggestionsContainer.innerHTML = '';
@@ -1402,7 +1455,9 @@ function displaySuggestions(suggestions) {
             const chip = document.createElement('button');
             chip.className = 'suggestion-chip border border-blue-200 dark:border-slate-600 bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-400 rounded-full px-3 py-1 text-sm hover:bg-blue-100 dark:hover:bg-slate-600 transition-colors';
             chip.textContent = suggestionText;
-            chip.onclick = () => sendMessage(suggestionText);
+            chip.onclick = () => { 
+                sendMessage(suggestionText);
+            };
             suggestionsContainer.appendChild(chip);
         });
     } else {
@@ -1414,6 +1469,7 @@ async function showWelcomeScreenForPersona(persona) {
     if (!persona) return; 
 
     welcomeScreen.classList.remove('hidden');
+    welcomeScreen.classList.add('flex');
     chatContainer.classList.add('hidden');
 
     document.getElementById('welcome-persona-icon').textContent = persona.icon;
@@ -1424,19 +1480,47 @@ async function showWelcomeScreenForPersona(persona) {
     suggestionsContainer.innerHTML = '';
 
     if (isLearningMode) {
-         suggestionsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Ở Chế độ Học tập, bạn sẽ nhận được các liên kết và câu hỏi tương tác.</p>';
+         suggestionsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Ở Chế độ Học tập, bạn sẽ nhận được các liên kết tương tác và câu hỏi trắc nghiệm thay vì gợi ý.</p>';
          return;
     }
     
     const suggestions = persona.samplePrompts;
+
     if (suggestions && suggestions.length > 0) {
         suggestions.forEach(text => {
             const card = document.createElement('button');
             card.className = 'w-full p-4 text-left border dark:border-gray-700 rounded-lg welcome-suggestion-card';
             card.textContent = text;
-            card.onclick = () => sendMessage(text);
+            card.onclick = () => {
+                sendMessage(text);
+            };
             suggestionsContainer.appendChild(card);
         });
+    } else {
+        suggestionsContainer.innerHTML = `
+            <div class="w-full p-4 border border-dashed dark:border-gray-700 rounded-lg animate-pulse h-12"></div>
+            <div class="w-full p-4 border border-dashed dark:border-gray-700 rounded-lg animate-pulse h-12"></div>
+        `;
+        try {
+            const prompt = `Bạn là chuyên gia về ${persona.name}. Hãy tạo ra 3 câu hỏi gợi ý, ngắn gọn và thú vị mà người dùng có thể hỏi bạn để bắt đầu. Mỗi câu hỏi trên một dòng. Không dùng định dạng markdown, không đánh số hay gạch đầu dòng.`;
+            const result = await fastModel.generateContent(prompt);
+            const responseText = result.response.text();
+            const aiSuggestions = responseText.split('\n').filter(s => s.trim() !== '');
+            
+            suggestionsContainer.innerHTML = '';
+            aiSuggestions.forEach(text => {
+                const card = document.createElement('button');
+                card.className = 'w-full p-4 text-left border dark:border-gray-700 rounded-lg welcome-suggestion-card';
+                card.textContent = text;
+                card.onclick = () => {
+                    sendMessage(text);
+                };
+                suggestionsContainer.appendChild(card);
+            });
+        } catch (error) {
+            console.error("Error generating welcome suggestions:", error);
+            suggestionsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Không thể tải gợi ý. Vui lòng bắt đầu bằng cách nhập câu hỏi của bạn.</p>';
+        }
     }
 }
 
@@ -1459,27 +1543,58 @@ function closeSidebar() {
 }
 
 function showHistorySkeleton() {
-    chatContainer.innerHTML = `<div class="w-full space-y-2"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full skeleton-box"></div><div class="w-20 h-4 skeleton-box"></div></div><div class="ml-9 space-y-2"><div class="w-10/12 h-4 skeleton-box"></div><div class="w-8/12 h-4 skeleton-box"></div></div></div><div class="flex justify-end"><div class="w-7/12"><div class="h-16 skeleton-box rounded-2xl"></div></div></div>`;
+    welcomeScreen.classList.add('hidden');
+    welcomeScreen.classList.remove('flex');
+    chatContainer.classList.remove('hidden');
+    chatContainer.innerHTML = `<div class="w-full space-y-2">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full skeleton-box"></div>
+                <div class="w-20 h-4 skeleton-box"></div>
+            </div>
+            <div class="ml-9 space-y-2">
+                <div class="w-10/12 h-4 skeleton-box"></div>
+                <div class="w-8/12 h-4 skeleton-box"></div>
+            </div>
+        </div>
+        <div class="flex justify-end">
+            <div class="w-7/12">
+                <div class="h-16 skeleton-box rounded-2xl"></div>
+            </div>
+        </div>`;
     chatContainer.appendChild(notificationArea);
 }
 
 async function renderAllChats() {
-    if (!currentUserId || !currentPersona) return;
+    if (!currentUserId || !currentPersona) {
+        savedChatsList.innerHTML = '';
+        pinnedChatsList.innerHTML = '';
+        pinnedChatsSection.classList.add('hidden');
+        return;
+    };
     isFetchingChats = false;
     allChatsLoaded = false;
     lastVisibleChat = null;
+    pinnedChatsList.innerHTML = '';
+    savedChatsList.innerHTML = '';
     await fetchPinnedChats();
     await fetchRecentChats();
 }
 
 async function fetchPinnedChats() {
-     const q = query(collection(db, 'chats', currentUserId, 'conversations'), where('personaId', '==', currentPersona.id), where('isPinned', '==', true), orderBy('updatedAt', 'desc'));
+     const chatsCollection = collection(db, 'chats', currentUserId, 'conversations');
+     const q = query(chatsCollection, where('personaId', '==', currentPersona.id), where('isPinned', '==', true), orderBy('updatedAt', 'desc'));
      try {
         const querySnapshot = await getDocs(q);
         pinnedChatsSection.classList.toggle('hidden', querySnapshot.empty);
         pinnedChatsList.innerHTML = ''; 
-        querySnapshot.forEach(docSnap => pinnedChatsList.appendChild(createChatItem(docSnap)));
-     } catch (error) { console.error("Lỗi khi lấy chat đã ghim:", error); }
+        querySnapshot.forEach(docSnap => {
+            const li = createChatItem(docSnap);
+            pinnedChatsList.appendChild(li);
+        });
+     }
+    catch (error) {
+        console.error("Lỗi khi lấy chat đã ghim (cần tạo index trên Firebase):", error);
+    }
 }
 
 async function fetchRecentChats(loadMore = false) {
@@ -1487,18 +1602,28 @@ async function fetchRecentChats(loadMore = false) {
     isFetchingChats = true;
     if (!loadMore) savedChatsSkeleton.classList.remove('hidden');
 
+    const chatsCollection = collection(db, 'chats', currentUserId, 'conversations');
     const constraints = [where('personaId', '==', currentPersona.id), where('isPinned', '==', false), orderBy('updatedAt', 'desc'), limit(CHATS_PER_PAGE)];
-    if (lastVisibleChat && loadMore) constraints.push(startAfter(lastVisibleChat));
-    
-    const q = query(collection(db, 'chats', currentUserId, 'conversations'), ...constraints);
+    if (lastVisibleChat && loadMore) {
+        constraints.push(startAfter(lastVisibleChat));
+    }
+    const q = query(chatsCollection, ...constraints);
 
     try {
         const querySnapshot = await getDocs(q);
         if (!loadMore) savedChatsList.innerHTML = '';
         if (querySnapshot.empty && !loadMore) {
-             savedChatsList.innerHTML = `<li class="text-center p-4"><div class="flex justify-center">${svgIcons.emptyChat}</div><h4 class="font-semibold text-sm">Bắt đầu trò chuyện</h4></li>`;
+             savedChatsList.innerHTML = `
+                <li id="empty-chats-state" class="text-center p-4 space-y-2">
+                    <div class="flex justify-center">${svgIcons.emptyChat}</div>
+                    <h4 class="font-semibold text-sm text-gray-600 dark:text-gray-300">Bắt đầu trò chuyện</h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Các cuộc hội thoại với ${currentPersona.name} sẽ xuất hiện tại đây.</p>
+                </li>`;
         } 
-        querySnapshot.forEach(docSnap => savedChatsList.appendChild(createChatItem(docSnap)));
+        querySnapshot.forEach(docSnap => {
+            const li = createChatItem(docSnap);
+            savedChatsList.appendChild(li);
+        });
 
         if (querySnapshot.docs.length > 0) {
             lastVisibleChat = querySnapshot.docs[querySnapshot.docs.length - 1];
@@ -1507,10 +1632,24 @@ async function fetchRecentChats(loadMore = false) {
             allChatsLoaded = true;
         }
     } catch (error) {
-        console.error("Lỗi khi lấy lịch sử trò chuyện:", error);
+        console.error("Lỗi khi lấy lịch sử trò chuyện (cần tạo index trên Firebase):", error);
     } finally {
         isFetchingChats = false;
         savedChatsSkeleton.classList.add('hidden');
+    }
+}
+
+async function updateChatTitle(chatId, newTitle) {
+    if (!currentUserId || !newTitle) return;
+    const docRef = doc(db, 'chats', currentUserId, 'conversations', chatId);
+    try {
+        await updateDoc(docRef, { title: newTitle });
+        showToast('Tiêu đề đã được cập nhật!', 'success');
+        await renderAllChats(); 
+    } catch (error) {
+        console.error("Lỗi khi cập nhật tiêu đề:", error);
+        showToast('Lỗi khi cập nhật tiêu đề.', 'error');
+        await renderAllChats();
     }
 }
 
@@ -1519,56 +1658,378 @@ function createChatItem(docSnap) {
     const chatId = docSnap.id;
     const li = document.createElement('li');
     li.className = "p-2 hover:bg-gray-100 dark:hover:bg-slate-700 flex justify-between items-center rounded-md group";
-    li.innerHTML = `
-        <div class="flex-1 truncate pr-2">
-            <span class="text-sm">${chatItemData.title || 'Cuộc trò chuyện mới'}</span>
-        </div>
-        <div class="flex items-center opacity-0 group-hover:opacity-100">
-            <button class="pin-btn p-1" title="${chatItemData.isPinned ? 'Bỏ ghim' : 'Ghim'}">${chatItemData.isPinned ? svgIcons.unpin : svgIcons.pin}</button>
-            <button class="delete-btn p-1" title="Xóa">${svgIcons.delete}</button>
-        </div>
-    `;
-    li.onclick = () => loadChat(chatId);
-    li.querySelector('.pin-btn').onclick = e => { e.stopPropagation(); togglePinChat(chatId, !chatItemData.isPinned); };
-    li.querySelector('.delete-btn').onclick = e => { e.stopPropagation(); deleteChat(chatId); };
+    li.dataset.chatId = chatId;
+
+    const titleContainer = document.createElement('div');
+    titleContainer.className = "flex-1 truncate pr-2";
+
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = chatItemData.title || 'Cuộc trò chuyện mới';
+    titleSpan.className = "text-gray-800 dark:text-gray-200 text-sm";
+    titleContainer.appendChild(titleSpan);
+
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.value = chatItemData.title || 'Cuộc trò chuyện mới';
+    titleInput.className = "w-full bg-slate-200 dark:bg-slate-600 rounded px-1 text-sm hidden";
+    titleContainer.appendChild(titleInput);
+
+    li.appendChild(titleContainer);
+
+    const buttonsWrapper = document.createElement('div');
+    buttonsWrapper.className = 'flex items-center opacity-0 group-hover:opacity-100 transition-opacity';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'p-1 text-gray-400 hover:text-blue-500 rounded-full';
+    editBtn.title = "Sửa tiêu đề";
+    editBtn.innerHTML = svgIcons.edit;
+    
+    const saveBtnIcon = svgIcons.save;
+    const editBtnIcon = svgIcons.edit;
+
+    const pinBtn = document.createElement('button');
+    pinBtn.className = 'p-1 text-gray-400 hover:text-yellow-500 rounded-full';
+    pinBtn.title = chatItemData.isPinned ? "Bỏ ghim" : "Ghim";
+    pinBtn.innerHTML = chatItemData.isPinned ? svgIcons.unpin : svgIcons.pin;
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'p-1 text-gray-400 hover:text-red-600 rounded-full';
+    deleteBtn.title = "Xóa cuộc trò chuyện";
+    deleteBtn.innerHTML = svgIcons.delete;
+    
+    buttonsWrapper.appendChild(editBtn);
+    buttonsWrapper.appendChild(pinBtn);
+    buttonsWrapper.appendChild(deleteBtn);
+    li.appendChild(buttonsWrapper);
+
+    const toggleEditMode = (isEditing) => {
+        titleSpan.classList.toggle('hidden', isEditing);
+        titleInput.classList.toggle('hidden', !isEditing);
+        if (isEditing) {
+            editBtn.innerHTML = saveBtnIcon;
+            editBtn.title = 'Lưu';
+            titleInput.focus();
+            titleInput.select();
+        } else {
+            editBtn.innerHTML = editBtnIcon;
+            editBtn.title = 'Sửa tiêu đề';
+        }
+    };
+
+    const saveTitle = async () => {
+        const newTitle = titleInput.value.trim();
+        const originalTitle = chatItemData.title || 'Cuộc trò chuyện mới';
+        if (newTitle && newTitle !== originalTitle) {
+            titleSpan.textContent = newTitle;
+            await updateChatTitle(chatId, newTitle);
+        }
+        toggleEditMode(false);
+    };
+    
+    editBtn.onclick = (e) => {
+        e.stopPropagation();
+        const isEditing = !titleInput.classList.contains('hidden');
+        if (isEditing) {
+            saveTitle();
+        } else {
+            toggleEditMode(true);
+        }
+    };
+
+    titleInput.onkeydown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { 
+            e.preventDefault(); 
+            saveTitle(); 
+        } else if (e.key === 'Escape') {
+            titleInput.value = chatItemData.title || 'Cuộc trò chuyện mới';
+            toggleEditMode(false);
+        }
+    };
+
+    titleInput.addEventListener('blur', () => {
+         setTimeout(()=> {
+             if(!titleInput.classList.contains('hidden')) {
+                 saveTitle();
+             }
+         }, 100);
+    });
+
+    pinBtn.onclick = (e) => { e.stopPropagation(); togglePinChat(chatId, chatItemData.isPinned || false); };
+    deleteBtn.onclick = (e) => { e.stopPropagation(); deleteChat(chatId); };
+    
+    li.onclick = (e) => {
+        if (e.target === titleInput || (titleInput.classList.contains('hidden') === false && e.target !== editBtn)) return;
+        loadChat(chatId);
+    };
+
     return li;
 }
 
-async function togglePinChat(chatId, shouldPin) {
+
+async function togglePinChat(chatId, isCurrentlyPinned) {
     if (!currentUserId) return;
-    await updateDoc(doc(db, 'chats', currentUserId, 'conversations', chatId), { isPinned: shouldPin });
-    await renderAllChats();
+    const docRef = doc(db, 'chats', currentUserId, 'conversations', chatId);
+    try {
+        await updateDoc(docRef, { isPinned: !isCurrentlyPinned });
+        showToast(isCurrentlyPinned ? 'Đã bỏ ghim cuộc trò chuyện.' : 'Đã ghim cuộc trò chuyện.', 'info');
+        await renderAllChats();
+    } catch(error) {
+        console.error("Lỗi khi ghim cuộc trò chuyện:", error);
+        showToast('Lỗi khi ghim/bỏ ghim.', 'error');
+    }
 }
 
 
-// --- GLOBAL EVENT LISTENERS & INIT ---
-document.addEventListener('DOMContentLoaded', () => {
-    loadIcons(); 
-    updateThemeIcon();
-    // Modal confirmation listeners
-    confirmationModalCancelBtn.addEventListener('click', () => { if (confirmationResolve) confirmationResolve(false); hideConfirmationModal(); });
-    confirmationModalOverlay.addEventListener('click', e => { if (e.target === e.currentTarget) { if (confirmationResolve) confirmationResolve(false); hideConfirmationModal(); } });
-    confirmationModalConfirmBtn.addEventListener('click', () => { if (confirmationResolve) confirmationResolve(true); hideConfirmationModal(); });
-    // ... other listeners
-});
+// --- REFERENCE MODAL FUNCTIONS ---
+function showReferenceModal(title, showInput) {
+    referenceTitle.textContent = title;
+    referenceInputArea.style.display = showInput ? 'block' : 'none';
+    referenceModalOverlay.classList.remove('hidden');
+    referenceModal.classList.remove('hidden');
+    if (showInput) {
+        referenceHistory = [];
+        referenceChat = fastModel.startChat({ history: [] });
+        referenceContent.innerHTML = '';
+        addMessageToReference('ai', 'Đây là trợ lý phụ. Bạn cần tra cứu nhanh gì không?');
+    }
+}
 
+function closeReferenceModal() {
+    referenceModalOverlay.classList.add('hidden');
+    referenceModal.classList.add('hidden');
+}
+
+function addMessageToReference(role, text) {
+     const messageWrapper = document.createElement('div');
+    let contentElem, statusElem;
+
+    if (role === 'ai') {
+        messageWrapper.className = 'w-full space-y-2';
+        messageWrapper.innerHTML = `<div class="flex items-center justify-between"><div class="flex items-center gap-2"><div class="w-7 h-7 rounded-full flex-shrink-0 bg-gradient-to-tr from-green-400 to-cyan-500 flex items-center justify-center">${svgIcons.refAssistant}</div><span class="font-semibold text-gray-800 dark:text-gray-200">Trợ lý Phụ</span></div><div class="ai-status"></div></div><div class="message-content text-gray-800 dark:text-gray-200"></div><div class="message-actions mt-2 flex justify-end gap-2"></div>`;
+         contentElem = messageWrapper.querySelector('.message-content');
+         statusElem = messageWrapper.querySelector('.ai-status');
+    } else {
+         messageWrapper.className = 'flex justify-end';
+        messageWrapper.innerHTML = `<div class="message-content px-4 py-2 rounded-2xl bg-blue-600 text-white max-w-xs sm:max-w-md lg:max-w-2xl"></div>`;
+         contentElem = messageWrapper.querySelector('.message-content');
+    }
+   
+    contentElem.innerHTML = DOMPurify.sanitize(marked.parse(text));
+    referenceContent.appendChild(messageWrapper);
+    messageWrapper.scrollIntoView({ behavior: "smooth", block: "end" });
+    return { messageWrapper, contentElem, statusElem };
+}
+
+async function sendReferenceMessage(userPromptOverride = null) {
+    const userPrompt = userPromptOverride || referencePromptInput.value.trim();
+    if (!userPrompt) return;
+    
+    referenceSendBtn.disabled = true;
+    if (!userPromptOverride) {
+        referencePromptInput.value = '';
+    }
+    addMessageToReference('user', userPrompt);
+    const { messageWrapper, contentElem } = addMessageToReference('ai', '<span class="blinking-cursor"></span>');
+
+    try {
+        const result = await referenceChat.sendMessageStream(userPrompt);
+        let fullResponseText = "";
+        for await (const chunk of result.stream) {
+            fullResponseText += chunk.text();
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(fullResponseText)) + '<span class="blinking-cursor"></span>';
+            referenceContent.scrollTop = referenceContent.scrollHeight;
+        }
+        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(fullResponseText));
+
+        const actionsContainer = messageWrapper.querySelector('.message-actions');
+        if (actionsContainer && fullResponseText.trim()) {
+            const saveNoteBtn = document.createElement('button');
+            saveNoteBtn.className = 'flex items-center gap-2 text-xs px-3 py-1 bg-yellow-200 dark:bg-slate-600 text-yellow-800 dark:text-yellow-200 rounded-full hover:bg-yellow-300 dark:hover:bg-slate-500 transition-colors';
+            saveNoteBtn.innerHTML = `${svgIcons.saveNote} <span>Lưu Ghi chú</span>`;
+            saveNoteBtn.onclick = () => saveAsNote(userPrompt, fullResponseText);
+            actionsContainer.appendChild(saveNoteBtn);
+        }
+        
+        setTimeout(() => {
+             messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+
+    } catch (error) {
+        contentElem.innerHTML = `**Lỗi:** ${error.message}`;
+        showToast('Lỗi khi gửi tin nhắn cho trợ lý phụ.', 'error');
+    } finally {
+        referenceSendBtn.disabled = false;
+    }
+}
+
+async function saveAsNote(prompt, response) {
+    if (!response.trim()) return;
+    const fullNoteText = `**Hỏi:** ${prompt}\n\n<hr class="my-2 border-yellow-300 dark:border-slate-600"/>\n\n**Đáp:**\n${response}`;
+    const { messageId } = addMessage('note', fullNoteText);
+    const noteMessage = { id: messageId, role: 'note', parts: [{ text: fullNoteText }] };
+    localHistory.push(noteMessage);
+    await updateConversationInDb();
+    closeReferenceModal();
+    showToast('Đã lưu ghi chú vào cuộc trò chuyện!', 'info');
+}
+
+async function explainTerm(term, context, isDeepDive = false) {
+    if (!isDeepDive) {
+        showReferenceModal(`Giải thích: ${term}`, false);
+    }
+    referenceContent.innerHTML = '';
+    
+    const prompt = isDeepDive 
+        ? `Hãy giải thích chuyên sâu về thuật ngữ "${term}", bao gồm định nghĩa đầy đủ, ví dụ cụ thể, và các ứng dụng chính của nó.`
+        : `Trong ngữ cảnh của câu sau: "${context.substring(0, 500)}", hãy giải thích thuật ngữ "${term}" một cách ngắn gọn và dễ hiểu trong 1-2 câu.`;
+
+    const { contentElem, messageWrapper, statusElem } = addMessageToReference('ai', '<span class="blinking-cursor"></span>');
+    if (statusElem) {
+        statusElem.textContent = 'Đang suy nghĩ...';
+        statusElem.classList.remove('hidden');
+    }
+    
+    try {
+        const result = await fastModel.generateContent(prompt);
+        const responseText = result.response.text();
+        if(statusElem) statusElem.classList.add('hidden');
+        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(responseText));
+
+        if (!isDeepDive) {
+            const actionsContainer = messageWrapper.querySelector('.message-actions');
+            if(actionsContainer){
+                const deepDiveBtn = document.createElement('button');
+                deepDiveBtn.className = 'flex items-center gap-2 text-xs px-3 py-1 bg-blue-100 dark:bg-slate-600 text-blue-800 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-slate-500 transition-colors';
+                deepDiveBtn.innerHTML = `<span>Tìm hiểu sâu hơn</span> 📖`;
+                deepDiveBtn.onclick = () => explainTerm(term, context, true);
+                actionsContainer.appendChild(deepDiveBtn);
+            }
+        }
+
+    } catch (error) {
+         if(statusElem) statusElem.classList.add('hidden');
+        contentElem.innerHTML = `**Lỗi:** ${error.message}`;
+        showToast('Không thể giải thích thuật ngữ.', 'error');
+    }
+}
+
+async function generateSystemPrompt() {
+    const name = personaNameInput.value.trim();
+    const description = personaDescriptionInput.value.trim();
+
+    if (!name || !description) {
+        showToast('Vui lòng nhập Tên và Mô tả ngắn.', 'error');
+        return;
+    }
+
+    const originalBtnContainer = generatePromptBtn.firstElementChild;
+    generatePromptBtn.innerHTML = svgIcons.spinner;
+    generatePromptBtn.disabled = true;
+
+    try {
+        const prompt = `Dựa trên một chuyên gia có tên là '${name}' và mô tả '${description}', hãy viết một Chỉ thị Hệ thống (System Prompt) chi tiết và chuyên nghiệp bằng tiếng Việt. Chỉ thị này cần bao gồm: phong cách, quy tắc hoạt động, và các yêu cầu về định dạng đầu ra. **Yêu cầu bổ sung:** Trong quá trình trả lời, khi bạn đề cập đến một thuật ngữ kỹ thuật, một khái niệm quan trọng, hoặc một tên riêng, hãy bọc thuật ngữ đó trong cặp dấu ngoặc vuông để có thể nhấp để giải thích thêm. Ví dụ: 'sử dụng ngôn ngữ [Python] để phát triển [backend]'.`;
+        const result = await fastModel.generateContent(prompt);
+        personaPromptInput.value = result.response.text();
+    } catch (error) {
+        console.error("Lỗi khi tạo gợi ý prompt:", error);
+        personaPromptInput.value = "Rất tiếc, không thể tạo gợi ý lúc này. Vui lòng thử lại.";
+        showToast('Không thể tạo gợi ý prompt.', 'error');
+    } finally {
+        generatePromptBtn.innerHTML = '';
+        generatePromptBtn.appendChild(originalBtnContainer);
+        generatePromptBtn.disabled = false;
+    }
+}
+
+async function handleLearningPromptClick(linkElement) {
+    const promptForAI = linkElement.dataset.prompt;
+    if (!promptForAI) return;
+
+    if (!completedTopics.includes(promptForAI)) {
+        completedTopics.push(promptForAI);
+        linkElement.classList.add('completed');
+        await updateConversationInDb();
+    }
+
+    const titleForDisplay = linkElement.textContent;
+    await sendMessage(titleForDisplay);
+}
+
+// --- GLOBAL EVENT LISTENERS ---
 createPersonaBtn.addEventListener('click', () => openPersonaModal());
-// ... all other listeners from the original file should be here
+closePersonaModalBtn.addEventListener('click', closePersonaModal);
+cancelPersonaBtn.addEventListener('click', closePersonaModal);
+personaModalOverlay.addEventListener('click', closePersonaModal);
+personaForm.addEventListener('submit', handleSavePersona);
+generatePromptBtn.addEventListener('click', generateSystemPrompt);
 newChatBtn.addEventListener('click', showPersonaSelectionScreen);
+newTopicBtn.addEventListener('click', () => {
+    if (currentPersona) {
+        startNewChat(currentPersona.id, !!currentPersona.ownerId);
+    } else {
+        showPersonaSelectionScreen();
+    }
+});
+summarizeBtn.addEventListener('click', handleSummary);
 sendBtn.addEventListener('click', () => sendMessage());
-promptInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+promptInput.addEventListener('keydown', e => { 
+    if (e.key === 'Enter' && !e.shiftKey) { 
+        e.preventDefault(); 
+        sendMessage(); 
+    } 
+});
+promptInput.addEventListener('input', adjustInputHeight);
 menuBtn.addEventListener('click', openSidebar);
 closeSidebarBtn.addEventListener('click', closeSidebar);
 sidebarOverlay.addEventListener('click', closeSidebar);
+toggleSuggestionsBtn.addEventListener('click', () => suggestionsContainer.classList.toggle('hidden'));
+referenceBtn.addEventListener('click', () => showReferenceModal('Trợ lý Phụ', true));
+closeReferenceModalBtn.addEventListener('click', closeReferenceModal);
+referenceModalOverlay.addEventListener('click', closeReferenceModal);
+referenceSendBtn.addEventListener('click', () => sendReferenceMessage());
+referencePromptInput.addEventListener('keydown', e => { 
+    if (e.key === 'Enter' && !e.shiftKey) { 
+        e.preventDefault(); 
+        sendReferenceMessage(); 
+    } 
+});
 
+function updateLearningModeIndicator() {
+    if (learningModeIndicator) { 
+        if (isLearningMode) {
+            learningModeIndicator.classList.remove('hidden');
+        } else {
+            learningModeIndicator.classList.add('hidden');
+        }
+    }
+}
 
+learningModeToggle.addEventListener('change', async (e) => { 
+    isLearningMode = e.target.checked;
+    showToast(`Chế độ Học tập đã được ${isLearningMode ? 'bật' : 'tắt'}.`, 'info');
+    updateLearningModeIndicator();
+
+    if (welcomeScreen.classList.contains('flex')) {
+        await showWelcomeScreenForPersona(currentPersona);
+    }
+});
+
+function resetActiveSpeechButton() {
+    if (activeSpeech && activeSpeech.button) {
+        activeSpeech.button.innerHTML = '🔊';
+        activeSpeech.button.dataset.state = 'idle';
+        activeSpeech.button.title = 'Đọc văn bản';
+    }
+}
+
+// === CẬP NHẬT: Thêm xử lý cho nút quiz và các nút khác ===
 chatContainer.addEventListener('click', async (e) => {
+    const link = e.target.closest('a');
+    const button = e.target.closest('button');
+    const clickableForeign = e.target.closest('.clickable-foreign');
+    const quizButton = e.target.closest('.quiz-option-btn');
+
     e.stopPropagation();
-    const target = e.target;
-    const link = target.closest('a');
-    const button = target.closest('button');
-    const clickableForeign = target.closest('.clickable-foreign');
-    const quizButton = target.closest('.quiz-option-btn');
 
     if (link) {
         e.preventDefault();
@@ -1576,18 +2037,149 @@ chatContainer.addEventListener('click', async (e) => {
             await handleLearningPromptClick(link);
         } else if (link.classList.contains('term-link')) {
             const term = link.dataset.term;
-            const context = link.closest('.message-content')?.dataset.rawText || '';
+            const messageContentElement = link.closest('.message-content');
+            const context = messageContentElement ? messageContentElement.dataset.rawText : '';
             await explainTerm(term, context);
         }
     } else if (quizButton && !quizButton.disabled) {
+        e.preventDefault();
         handleQuizAnswer(quizButton);
-    } else if (button?.classList.contains('copy-btn')) {
-        copyToClipboard(button.dataset.text);
-    } else if (button?.classList.contains('speak-btn')) {
-        speakText(button.dataset.text, 'vi-VN');
-    } else if (button?.classList.contains('regenerate-btn')) {
-        handleRegenerate(button.dataset.targetId);
+    } else if (button) {
+        e.preventDefault();
+         if (button.classList.contains('copy-btn')) {
+            copyToClipboard(button.dataset.text);
+         } else if (button.classList.contains('speak-btn')) {
+            if (speechSynthesis.speaking || speechSynthesis.paused) {
+                if (activeSpeech && activeSpeech.button === button) {
+                    const currentState = button.dataset.state;
+                    if (currentState === 'paused') {
+                        speechSynthesis.resume();
+                        button.innerHTML = '⏸️'; button.dataset.state = 'playing'; button.title = 'Tạm dừng';
+                        return;
+                    }
+                    if (currentState === 'playing') {
+                        speechSynthesis.pause();
+                        button.innerHTML = '▶️'; button.dataset.state = 'Tiếp tục';
+                        return;
+                    }
+                }
+                speechSynthesis.cancel();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(button.dataset.text);
+            utterance.lang = 'vi-VN';
+            utterance.onstart = () => {
+                resetActiveSpeechButton();
+                activeSpeech = { utterance, button: button };
+                button.innerHTML = '⏸️'; button.dataset.state = 'playing'; button.title = 'Tạm dừng';
+            };
+            utterance.onend = () => { resetActiveSpeechButton(); activeSpeech = null; };
+            utterance.onerror = (event) => { 
+                console.error("SpeechSynthesisUtterance error:", event);
+                showToast(`Lỗi phát âm: ${event.error}`, 'error');
+                resetActiveSpeechButton(); 
+                activeSpeech = null; 
+            };
+            speechSynthesis.speak(utterance);
+         } else if (button.classList.contains('regenerate-btn')) {
+            handleRegenerate(button.dataset.targetId);
+         }
     } else if (clickableForeign) {
-        speakText(clickableForeign.textContent, clickableForeign.dataset.lang);
+        e.preventDefault();
+        const textToSpeak = clickableForeign.textContent;
+        const lang = clickableForeign.dataset.lang;
+        if (lang) {
+            speakText(textToSpeak, lang);
+        }
     }
+});
+
+sidebarContent.addEventListener('scroll', () => {
+    const isNearBottom = sidebarContent.scrollHeight - sidebarContent.scrollTop - sidebarContent.clientHeight < 100;
+    if (isNearBottom && !isFetchingChats && !allChatsLoaded) {
+        fetchRecentChats(true);
+    }
+});
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'vi-VN';
+    recognition.interimResults = false;
+
+    recognition.onstart = () => { 
+        isRecording = true; 
+        recordBtn.classList.add('recording'); 
+        promptInput.placeholder = 'Đang lắng nghe...'; 
+    };
+    recognition.onend = () => { 
+        isRecording = false; 
+        recordBtn.classList.remove('recording'); 
+        promptInput.placeholder = 'Nhập câu hỏi...'; 
+    };
+    recognition.onresult = (event) => { 
+        promptInput.value = event.results[event.results.length - 1][0].transcript.trim(); 
+        adjustInputHeight(); 
+        sendMessage(); 
+    };
+    recognition.onerror = (event) => { 
+        showToast(`Lỗi ghi âm: ${event.error}`, 'error'); 
+        console.error("Speech Recognition error:", event.error);
+    };
+    recordBtn.addEventListener('click', () => { 
+        isRecording ? recognition.stop() : recognition.start(); 
+    });
+} else { 
+    recordBtn.classList.add('hidden');
+}
+
+function toggleScrollToTopButton() {
+    if (!scrollToTopBtn || !chatScrollContainer) return; 
+
+    if (chatScrollContainer.scrollTop > chatScrollContainer.clientHeight * 0.5) { 
+        scrollToTopBtn.classList.add('show');
+    } else {
+        scrollToTopBtn.classList.remove('show');
+    }
+}
+
+function scrollToTop() {
+    if (chatScrollContainer) {
+        chatScrollContainer.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadIcons(); 
+    
+    updateThemeIcon();
+
+    if (chatScrollContainer) {
+        chatScrollContainer.addEventListener("scroll", toggleScrollToTopButton);
+    }
+    if (scrollToTopBtn) { 
+        scrollToTopBtn.addEventListener("click", scrollToTop);
+    }
+    updateLearningModeIndicator();
+    
+    confirmationModalCancelBtn.addEventListener('click', () => {
+        if (confirmationResolve) confirmationResolve(false);
+        hideConfirmationModal();
+    });
+
+    confirmationModalOverlay.addEventListener('click', (e) => {
+        if (e.target === confirmationModalOverlay) {
+            if (confirmationResolve) confirmationResolve(false);
+            hideConfirmationModal();
+        }
+    });
+
+    confirmationModalConfirmBtn.addEventListener('click', () => {
+        if (confirmationResolve) confirmationResolve(true);
+        hideConfirmationModal();
+    });
 });
