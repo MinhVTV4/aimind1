@@ -159,7 +159,7 @@ const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-
 const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
 
 
-// --- UPDATED: Pre-defined default personas with curated sample prompts ---
+// --- CẬP NHẬT: Thêm persona "Gia sư Ngoại ngữ" ---
 const defaultPersonas = [
     { 
         id: 'general', 
@@ -183,6 +183,22 @@ const defaultPersonas = [
             "Viết một hàm Python để kiểm tra một chuỗi có phải là palindrome không.",
             "Giải thích sự khác biệt giữa `let`, `const`, và `var` trong JavaScript.",
             "Làm thế nào để tối ưu một truy vấn SQL có sử dụng `JOIN` trên nhiều bảng lớn?"
+        ]
+    },
+    // === PERSONA MỚI ===
+    { 
+        id: 'language_tutor', 
+        name: 'Gia sư Ngoại ngữ', 
+        icon: '🌐', 
+        description: 'Dạy từ vựng, ngữ pháp, và văn hóa các ngôn ngữ.', 
+        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp và thân thiện. Khi dạy một ngôn ngữ, đặc biệt là tiếng Trung, hãy tuân thủ nghiêm ngặt các quy tắc sau:
+1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc (Hán tự), sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt. Ví dụ: 你好 (Nǐ hǎo) - Xin chào.
+2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm, và bản dịch.
+3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và kiên nhẫn.`,
+        samplePrompts: [
+            "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung.",
+            "Sự khác biệt giữa '是' (shì) và '在' (zài) trong tiếng Trung là gì?",
+            "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật."
         ]
     },
     { 
@@ -385,6 +401,7 @@ function copyToClipboard(text) {
     }
     document.body.removeChild(textarea);
 }
+
 
 // --- AUTHENTICATION ---
 onAuthStateChanged(auth, async user => {
@@ -616,7 +633,94 @@ async function handleSavePersona(e) {
 
 
 // --- CHAT LOGIC ---
-// === SỬA LỖI: Cập nhật hàm preprocessText ===
+
+/**
+ * === HÀM MỚI ===
+ * Speaks a given text using the browser's Speech Synthesis API.
+ * @param {string} text - The text to be spoken.
+ * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'en-US').
+ */
+function speakText(text, lang) {
+    if (!('speechSynthesis' in window)) {
+        showToast("Trình duyệt không hỗ trợ phát âm.", "error");
+        return;
+    }
+    // Cancel any previous speech to avoid overlap
+    speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+
+    // Optional: try to find a specific voice for better quality
+    const voices = speechSynthesis.getVoices();
+    const specificVoice = voices.find(voice => voice.lang === lang);
+    if (specificVoice) {
+        utterance.voice = specificVoice;
+    }
+
+    utterance.onerror = (event) => {
+        console.error("SpeechSynthesisUtterance error:", event);
+        showToast(`Lỗi phát âm: ${event.error}`, 'error');
+    };
+
+    speechSynthesis.speak(utterance);
+}
+
+/**
+ * === HÀM MỚI ===
+ * Finds Chinese characters in an element's text nodes and wraps them in a clickable span.
+ * @param {HTMLElement} container - The element whose text nodes should be processed.
+ */
+function makeForeignTextClickable(container) {
+    // Regex to find sequences of Chinese characters.
+    const chineseRegex = /[\u4E00-\u9FFF]+/g;
+
+    // Use TreeWalker to efficiently iterate through only text nodes.
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const nodesToProcess = [];
+    let node;
+    while (node = walker.nextNode()) {
+        nodesToProcess.push(node);
+    }
+
+    nodesToProcess.forEach(textNode => {
+        // Avoid processing text inside scripts, styles, or already processed elements.
+        if (textNode.parentElement.closest('script, style, .clickable-chinese')) {
+            return;
+        }
+
+        const text = textNode.nodeValue;
+        if (chineseRegex.test(text)) {
+            const fragment = document.createDocumentFragment();
+            let lastIndex = 0;
+            let match;
+            chineseRegex.lastIndex = 0; // Reset regex state before loop
+
+            while ((match = chineseRegex.exec(text)) !== null) {
+                // Add the text before the match
+                if (match.index > lastIndex) {
+                    fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+                }
+                // Create and add the clickable span for the Chinese text
+                const span = document.createElement('span');
+                span.className = 'clickable-chinese';
+                span.textContent = match[0];
+                span.title = 'Nhấn để nghe phát âm';
+                fragment.appendChild(span);
+                lastIndex = chineseRegex.lastIndex;
+            }
+            // Add any remaining text after the last match
+            if (lastIndex < text.length) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+            }
+            // Replace the original text node with the new fragment containing spans
+            textNode.parentNode.replaceChild(fragment, textNode);
+        }
+    });
+}
+
+
+// Sửa lỗi: Cập nhật hàm preprocessText
 function preprocessText(text) {
     const learningLinkRegex = /\[([^\]]+?)\]\{"prompt":"([^"]+?)"\}/g;
     const termLinkRegex = /\[([^\]]+?)\]/g;
@@ -686,7 +790,7 @@ async function startNewChat(personaId, isCustom = false) {
     
     clearSuggestions();
     currentPersona = selectedPersona;
-    completedTopics = []; // === CẬP NHẬT: Reset tiến độ khi bắt đầu chat mới ===
+    completedTopics = []; // CẬP NHẬT: Reset tiến độ khi bắt đầu chat mới
     
     personaSelectionScreen.classList.add('hidden');
     chatViewContainer.classList.remove('hidden');
@@ -817,13 +921,17 @@ function addMessage(role, text, shouldScroll = true) {
     const preprocessedText = preprocessText(text);
     contentElem.innerHTML = DOMPurify.sanitize(marked.parse(preprocessedText), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
 
+    highlightAllCode(contentElem);
+
+    // === CẬP NHẬT: Áp dụng tính năng click-để-phát-âm ===
+    if (currentPersona && currentPersona.id === 'language_tutor') {
+        makeForeignTextClickable(contentElem);
+    }
+    
     if (actionsContainer) {
         // Truyền messageId vào hàm addMessageActions
         addMessageActions(actionsContainer, text, messageId);
     }
-    
-    // === CẬP NHẬT: Kích hoạt highlight code sau khi thêm tin nhắn ===
-    highlightAllCode(contentElem);
 
     chatContainer.insertBefore(messageWrapper, notificationArea);
     if (shouldScroll) {
@@ -964,6 +1072,9 @@ async function sendMessage(promptTextOverride = null) {
             const processedChunk = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
             highlightAllCode(contentElem);
+            if (currentPersona && currentPersona.id === 'language_tutor') {
+                makeForeignTextClickable(contentElem);
+            }
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
@@ -974,6 +1085,10 @@ async function sendMessage(promptTextOverride = null) {
         contentElem.dataset.rawText = fullResponseText;
         
         highlightAllCode(contentElem);
+        if (currentPersona && currentPersona.id === 'language_tutor') {
+            makeForeignTextClickable(contentElem);
+        }
+
         addMessageActions(actionsContainer, fullResponseText, aiMessageId);
         
         setTimeout(() => messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
@@ -1050,6 +1165,9 @@ async function handleRegenerate(targetMessageId) {
             const processedChunk = preprocessText(newFullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
             highlightAllCode(contentElem);
+            if (currentPersona && currentPersona.id === 'language_tutor') {
+                makeForeignTextClickable(contentElem);
+            }
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
@@ -1060,6 +1178,9 @@ async function handleRegenerate(targetMessageId) {
         contentElem.dataset.rawText = newFullResponseText;
         
         highlightAllCode(contentElem);
+        if (currentPersona && currentPersona.id === 'language_tutor') {
+            makeForeignTextClickable(contentElem);
+        }
 
         localHistory[messageIndex].parts[0].text = newFullResponseText;
         addMessageActions(actionsContainer, newFullResponseText, targetMessageId);
@@ -1123,12 +1244,16 @@ async function loadChat(chatId) {
             
             let foundPersona = defaultPersonas.find(p => p.id === loadedPersonaId);
             if (!foundPersona) {
-                const personaDocRef = doc(db, 'users', currentUserId, 'customPersonas', loadedPersonaId);
-                const personaDoc = await getDoc(personaDocRef);
-                if (personaDoc.exists()) {
-                    foundPersona = { id: personaDoc.id, ...personaDoc.data() };
-                } else {
-                    foundPersona = { id: 'deleted', name: 'Persona đã xóa', icon: '❓', description: '', systemPrompt: 'Hãy trả lời một cách bình thường.' };
+                await fetchCustomPersonas(); // Fetch custom ones if not found in default
+                foundPersona = customPersonas.find(p => p.id === loadedPersonaId);
+                if (!foundPersona) {
+                     const personaDocRef = doc(db, 'users', currentUserId, 'customPersonas', loadedPersonaId);
+                    const personaDoc = await getDoc(personaDocRef);
+                    if (personaDoc.exists()) {
+                        foundPersona = { id: personaDoc.id, ...personaDoc.data() };
+                    } else {
+                        foundPersona = { id: 'deleted', name: 'Persona đã xóa', icon: '❓', description: '', systemPrompt: 'Hãy trả lời một cách bình thường.' };
+                    }
                 }
             }
             currentPersona = foundPersona;
@@ -1791,10 +1916,11 @@ function resetActiveSpeechButton() {
     }
 }
 
-// CẬP NHẬT: Thêm xử lý cho nút Tái tạo
+// === CẬP NHẬT: Thêm xử lý cho clickable-chinese và các nút khác ===
 chatContainer.addEventListener('click', async (e) => {
     const link = e.target.closest('a');
     const button = e.target.closest('button');
+    const clickableChinese = e.target.closest('.clickable-chinese');
 
     if (link) {
         e.preventDefault();
@@ -1831,7 +1957,7 @@ chatContainer.addEventListener('click', async (e) => {
             }
 
             const utterance = new SpeechSynthesisUtterance(button.dataset.text);
-            utterance.lang = 'vi-VN';
+            utterance.lang = 'vi-VN'; // Nút chính luôn đọc tiếng Việt
             utterance.onstart = () => {
                 resetActiveSpeechButton();
                 activeSpeech = { utterance, button: button };
@@ -1849,6 +1975,11 @@ chatContainer.addEventListener('click', async (e) => {
             e.preventDefault(); e.stopPropagation();
             handleRegenerate(button.dataset.targetId);
          }
+    } else if (clickableChinese) { // XỬ LÝ CHO TỪ TIẾNG TRUNG
+        e.preventDefault();
+        e.stopPropagation();
+        const textToSpeak = clickableChinese.textContent;
+        speakText(textToSpeak, 'zh-CN'); // Gọi hàm phát âm tiếng Trung
     }
 });
 
