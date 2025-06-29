@@ -181,27 +181,24 @@ const defaultPersonas = [
         systemPrompt: `**Chỉ thị hệ thống:** Bạn là một lập trình viên cao cấp với 10 năm kinh nghiệm. Luôn đưa ra câu trả lời dưới dạng mã nguồn được giải thích rõ ràng, tuân thủ các coding convention tốt nhất. Khi được yêu cầu, hãy phân tích ưu và nhược điểm của các giải pháp khác nhau. Hãy ưu tiên tính hiệu quả và khả năng bảo trì của mã nguồn. **Yêu cầu bổ sung:** Khi đề cập đến một hàm, thư viện, hoặc khái niệm lập trình, hãy bọc nó trong dấu ngoặc vuông, ví dụ: [React], [API], [useState].`,
         samplePrompts: [
             "Viết một hàm Python để kiểm tra một chuỗi có phải là palindrome không.",
-            "Giải thích sự khác biệt giữa \`let\`, \`const\`, và \`var\` trong JavaScript.",
-            "Làm thế nào để tối ưu một truy vấn SQL có sử dụng \`JOIN\` trên nhiều bảng lớn?"
+            "Giải thích sự khác biệt giữa `let`, `const`, và `var` trong JavaScript.",
+            "Làm thế nào để tối ưu một truy vấn SQL có sử dụng `JOIN` trên nhiều bảng lớn?"
         ]
     },
-    // === PERSONA ĐƯỢC NÂNG CẤP VỚI TÍNH NĂNG TRẮC NGHIỆM VÀ PHÁT ÂM ===
+    // === PERSONA ĐƯỢC NÂNG CẤP VỚI TÍNH NĂNG TRẮC NGHIỆM ===
     { 
         id: 'language_tutor', 
         name: 'Gia sư Ngoại ngữ', 
         icon: '🌐', 
         description: 'Dạy từ vựng, ngữ pháp và kiểm tra kiến thức.', 
-        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp, thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn) và Tiếng Anh. Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
+        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp, thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
 
-1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc (nếu có), sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt.
-    * **Tiếng Anh:** Hello (həˈloʊ) - Xin chào.
+1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc, sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt.
     * **Tiếng Trung:** 你好 (Nǐ hǎo) - Xin chào.
     * **Tiếng Nhật:** こんにちは (Konnichiwa) - Xin chào.
     * **Tiếng Hàn:** 안녕하세요 (Annyeonghaseyo) - Xin chào.
 
-2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm (nếu là ngôn ngữ Á Đông), và bản dịch tiếng Việt.
-    * **Tiếng Anh ví dụ:** Good morning (ɡʊd ˈmɔːrnɪŋ) - Chào buổi sáng.
-    * **Tiếng Trung ví dụ:** 早上好 (Zǎo shàng hǎo) - Chào buổi sáng.
+2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm, và bản dịch.
 
 3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và kiên nhẫn.
 
@@ -219,13 +216,11 @@ const defaultPersonas = [
     }
     \`\`\`
 
-5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Nhật cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.
-6.  **Hỗ trợ phát âm:** Khi bạn đưa ra các từ/cụm từ tiếng Trung, Nhật, Hàn hoặc Anh, đặc biệt là các từ mới, hãy luôn kèm theo phiên âm. Người dùng sẽ có thể nhấp vào từ đó để nghe phát âm.`,
+5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Nhật cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.`,
         samplePrompts: [
             "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung và sau đó kiểm tra tôi.",
             "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật, rồi đố tôi một câu hỏi.",
-            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm.",
-            "Dạy tôi cách chào hỏi cơ bản trong tiếng Anh và kiểm tra tôi."
+            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm."
         ]
     },
     { 
@@ -630,7 +625,7 @@ async function handleSavePersona(e) {
 
     const personaData = {
         name: personaNameInput.value.trim(),
-        icon: personaIconInput.value.trim() || '',
+        icon: personaIconInput.value.trim() || '🤖',
         description: personaDescriptionInput.value.trim(),
         systemPrompt: personaPromptInput.value.trim(),
         ownerId: currentUserId
@@ -764,7 +759,7 @@ function processQuizBlocks(containerElement) {
 /**
  * Speaks a given text using the browser's Speech Synthesis API.
  * @param {string} text - The text to be spoken.
- * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'ko-KR', 'en-US').
+ * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'ko-KR').
  */
 function speakText(text, lang) {
     if (!('speechSynthesis' in window)) {
@@ -785,12 +780,6 @@ function speakText(text, lang) {
         const fallbackVoice = voices.find(voice => voice.lang.startsWith(baseLang));
         if (fallbackVoice) {
             utterance.voice = fallbackVoice;
-        } else {
-            // Fallback for English if no specific voice is found
-            if (baseLang === 'en') {
-                const enVoice = voices.find(voice => voice.lang.startsWith('en'));
-                if (enVoice) utterance.voice = enVoice;
-            }
         }
     }
 
@@ -807,17 +796,15 @@ function speakText(text, lang) {
 }
 
 /**
- * Finds segments of text and wraps them in a clickable span for pronunciation,
- * using a language detection library.
+ * Finds foreign characters (Chinese, Japanese, Korean) in an element's text nodes 
+ * and wraps them in a clickable span that can be used for pronunciation.
  * @param {HTMLElement} container - The element whose text nodes should be processed.
  */
 function makeForeignTextClickable(container) {
-    if (!langDetector) { // Ensure language detector is initialized
-        console.warn("Language detector not initialized.");
-        return;
-    }
-
-    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+    const foreignRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]+/g;
+    const hiraganaKatakanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
+    const hangulRegex = /[\uAC00-\uD7AF]/;
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
     const nodesToProcess = [];
     let currentNode;
     while (currentNode = walker.nextNode()) {
@@ -825,68 +812,43 @@ function makeForeignTextClickable(container) {
     }
 
     nodesToProcess.forEach(textNode => {
-        // Avoid processing inside code blocks or already processed clickable spans
-        if (textNode.parentElement.closest('pre, code, .clickable-foreign')) {
+        if (textNode.parentElement.closest('script, style, .clickable-foreign')) {
             return;
         }
 
         const text = textNode.nodeValue;
+        foreignRegex.lastIndex = 0;
+        if (!foreignRegex.test(text)) {
+            return;
+        }
+        foreignRegex.lastIndex = 0;
+
         const fragment = document.createDocumentFragment();
-        
-        // Simple splitting by spaces and punctuation, keeping punctuation with words for detection
-        // This regex splits on spaces but keeps punctuation attached to words.
-        const parts = text.split(/(\s+|[.,!?;:()"])/).filter(p => p.length > 0);
+        let lastIndex = 0;
+        let match;
 
-        const confidenceThreshold = 0.6; // 60% confidence is a good starting point
-
-        parts.forEach(part => {
-            if (part.trim() === '') { // If it's just whitespace
-                fragment.appendChild(document.createTextNode(part));
-                return;
+        while ((match = foreignRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
             }
-
-            const detections = langDetector.detect(part, 1); // Detect top 1 language with score
-            let detectedLang = null;
-            let confidence = 0;
-
-            if (detections.length > 0) {
-                detectedLang = detections[0][0]; // e.g., 'english', 'vietnamese', 'chinese'
-                confidence = detections[0][1];
-            }
-
-            let finalLangCode = null;
-
-            if (confidence >= confidenceThreshold) {
-                switch (detectedLang) {
-                    case 'english':
-                        finalLangCode = 'en-US';
-                        break;
-                    case 'chinese':
-                        finalLangCode = 'zh-CN';
-                        break;
-                    case 'japanese':
-                        finalLangCode = 'ja-JP';
-                        break;
-                    case 'korean':
-                        finalLangCode = 'ko-KR';
-                        break;
-                    // For 'vietnamese' or other languages, finalLangCode remains null
-                    default:
-                        break;
-                }
-            }
-
-            if (finalLangCode) {
-                const span = document.createElement('span');
-                span.className = 'clickable-foreign';
-                span.textContent = part;
-                span.dataset.lang = finalLangCode;
-                span.title = `Phát âm (${finalLangCode})`;
-                fragment.appendChild(span);
+            const span = document.createElement('span');
+            span.className = 'clickable-foreign';
+            span.textContent = match[0];
+            if (hangulRegex.test(match[0])) {
+                span.dataset.lang = 'ko-KR';
+            } else if (hiraganaKatakanaRegex.test(match[0])) {
+                span.dataset.lang = 'ja-JP';
             } else {
-                fragment.appendChild(document.createTextNode(part));
+                span.dataset.lang = 'zh-CN';
             }
-        });
+            span.title = `Phát âm (${span.dataset.lang})`;
+            fragment.appendChild(span);
+            lastIndex = foreignRegex.lastIndex;
+        }
+        
+        if (lastIndex < text.length) {
+            fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+        }
         
         if (fragment.hasChildNodes()) {
              textNode.parentNode.replaceChild(fragment, textNode);
@@ -1084,7 +1046,6 @@ function addMessage(role, text, shouldScroll = true) {
     // === CẬP NHẬT: Gọi hàm xử lý quiz sau khi render nội dung ===
     processQuizBlocks(contentElem);
 
-    // Chỉ thực hiện makeForeignTextClickable nếu persona hiện tại là 'language_tutor'
     if (currentPersona && currentPersona.id === 'language_tutor') {
         makeForeignTextClickable(contentElem);
     }
@@ -1994,9 +1955,6 @@ async function handleLearningPromptClick(linkElement) {
     await sendMessage(titleForDisplay);
 }
 
-// Global instance of LanguageDetect
-let langDetector;
-
 // --- GLOBAL EVENT LISTENERS ---
 createPersonaBtn.addEventListener('click', () => openPersonaModal());
 closePersonaModalBtn.addEventListener('click', closePersonaModal);
@@ -2039,23 +1997,9 @@ referencePromptInput.addEventListener('keydown', e => {
 function updateLearningModeIndicator() {
     if (learningModeIndicator) { 
         if (isLearningMode) {
-            // Assume learningModeIndicator is a text element or similar
-            // This part of the code in your original `index.html` file is just a placeholder and
-            // needs to be properly implemented to show an actual indicator.
-            // For now, it toggles a hidden class, but if you want a visual indicator
-            // like a chip, you'd need to create and append it here.
-            // Example of how you might dynamically add a chip:
-            // if (!document.getElementById('learning-mode-chip')) {
-            //     const chip = document.createElement('span');
-            //     chip.id = 'learning-mode-chip';
-            //     chip.className = 'ml-2 px-2 py-1 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-xs rounded-full';
-            //     chip.textContent = 'Chế độ Học tập';
-            //     chatHeaderInfo.appendChild(chip);
-            // }
-            // For the provided structure, simply ensuring the toggle reflects the state:
-             learningModeToggle.checked = true;
+            learningModeIndicator.classList.remove('hidden');
         } else {
-             learningModeToggle.checked = false;
+            learningModeIndicator.classList.add('hidden');
         }
     }
 }
@@ -2082,7 +2026,7 @@ function resetActiveSpeechButton() {
 chatContainer.addEventListener('click', async (e) => {
     const link = e.target.closest('a');
     const button = e.target.closest('button');
-    const clickableForeign = e.target.closest('.clickable-foreign'); // === THÊM MỚI: Bắt sự kiện click cho từ ngoại ngữ ===
+    const clickableForeign = e.target.closest('.clickable-foreign');
     const quizButton = e.target.closest('.quiz-option-btn');
 
     e.stopPropagation();
@@ -2097,7 +2041,7 @@ chatContainer.addEventListener('click', async (e) => {
             const context = messageContentElement ? messageContentElement.dataset.rawText : '';
             await explainTerm(term, context);
         }
-    } else if (quizButton && !quizButton.disabled) { // === THÊM MỚI: Xử lý click nút quiz ===
+    } else if (quizButton && !quizButton.disabled) {
         e.preventDefault();
         handleQuizAnswer(quizButton);
     } else if (button) {
@@ -2123,7 +2067,7 @@ chatContainer.addEventListener('click', async (e) => {
             }
 
             const utterance = new SpeechSynthesisUtterance(button.dataset.text);
-            utterance.lang = 'vi-VN'; // Mặc định tiếng Việt cho nút speak chung
+            utterance.lang = 'vi-VN';
             utterance.onstart = () => {
                 resetActiveSpeechButton();
                 activeSpeech = { utterance, button: button };
@@ -2140,7 +2084,7 @@ chatContainer.addEventListener('click', async (e) => {
          } else if (button.classList.contains('regenerate-btn')) {
             handleRegenerate(button.dataset.targetId);
          }
-    } else if (clickableForeign) { // === THÊM MỚI: Xử lý click vào từ ngoại ngữ để phát âm ===
+    } else if (clickableForeign) {
         e.preventDefault();
         const textToSpeak = clickableForeign.textContent;
         const lang = clickableForeign.dataset.lang;
@@ -2213,13 +2157,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadIcons(); 
     
     updateThemeIcon();
-
-    // Initialize language detector
-    if (typeof window.LanguageDetect !== 'undefined') {
-        langDetector = new window.LanguageDetect();
-    } else {
-        console.warn("LanguageDetect library not found. Language pronunciation for foreign text may not work as expected.");
-    }
 
     if (chatScrollContainer) {
         chatScrollContainer.addEventListener("scroll", toggleScrollToTopButton);
