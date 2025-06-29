@@ -72,6 +72,7 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     * **{"prompt":"..."}**: Là một đối tượng JSON chứa một khóa "prompt". Giá trị của khóa này là một câu lệnh đầy đủ bạn tự tạo ra để yêu cầu chính bạn giải thích sâu về mục học đó. Prompt phải chi tiết và bằng tiếng Việt.
 
 **Định dạng các loại câu hỏi trắc nghiệm (LUÔN BỌC TRONG KHỐI MÃ \`\`\`quiz... \`\`\`):**
+**QUAN TRỌNG: Các giá trị TRONG JSON (ví dụ: "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist") PHẢI LÀ CHUỖI VĂN BẢN THUẦN TÚY, KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO NHƯ [LIÊN KẾT], **IN ĐẬM**, hay *IN NGHIÊNG*! Nếu bạn cần làm nổi bật, hãy dùng dấu nháy đơn '...' hoặc bỏ qua định dạng.**
 
 * **Câu hỏi trắc nghiệm nhiều lựa chọn (Multiple Choice):**
     \`\`\`quiz
@@ -1056,12 +1057,14 @@ function processQuizBlocks(containerElement) {
         const preElement = codeBlock.parentElement;
         let quizData = null;
         try {
-            quizData = JSON.parse(codeBlock.textContent);
+            // Loại bỏ các thẻ HTML trước khi parse JSON
+            const cleanJsonText = codeBlock.textContent.replace(/<[^>]*>/g, ''); 
+            quizData = JSON.parse(cleanJsonText);
             
             // === CẬP NHẬT: Xử lý quiz cũ không có trường "type" hoặc định dạng không hoàn chỉnh ===
             if (!quizData.type) {
                 // Nếu là quiz trắc nghiệm cũ (có question, options, answer)
-                if (quizData.question && quizData.options && quizData.answer) {
+                if (quizData.question && (quizData.options || quizData.blanks || quizData.keywords) && quizData.answer) { 
                     quizData.type = 'multiple_choice';
                     // Nếu định dạng cũ, cũng kiểm tra tên trường giải thích cũ
                     if (!quizData.explanation && quizData.explanationText) {
@@ -2506,7 +2509,7 @@ function toggleScrollToTopButton() {
     if (chatScrollContainer.scrollTop > chatScrollContainer.clientHeight * 0.5) { 
         scrollToTopBtn.classList.add('show');
     } else {
-        scrollToTopBtn.classList.remove('show');
+        scrollToToppBtn.classList.remove('show');
     }
 }
 
