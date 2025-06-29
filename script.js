@@ -74,90 +74,8 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
 * [Giới thiệu về Javascript và Lịch sử]{"prompt":"Hãy giải thích chi tiết Javascript là gì, lịch sử và vai trò của nó trong phát triển web hiện đại."}
 * [Cú pháp cơ bản, Biến và Kiểu dữ liệu]{"prompt":"Trình bày bài học về cú pháp cơ bản của Javascript, cách khai báo biến với var, let, const, và các kiểu dữ liệu nguyên thủy như string, number, boolean, null, undefined."}`;
 
-
-// === CẬP NHẬT: Thêm các biến cho modal xác nhận ===
-const authContainer = document.getElementById('auth-container');
-const appContainer = document.getElementById('app-container');
-const loginView = document.getElementById('login-view');
-const registerView = document.getElementById('register-view');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const googleLoginBtn = document.getElementById('google-login-btn');
-const showRegisterBtn = document.getElementById('show-register');
-const showLoginBtn = document.getElementById('show-login');
-const authError = document.getElementById('auth-error');
-const personaSelectionScreen = document.getElementById('persona-selection-screen');
-const welcomeUserName = document.getElementById('welcome-user-name');
-const createPersonaBtn = document.getElementById('create-persona-btn');
-const customPersonasSection = document.getElementById('custom-personas-section');
-const customPersonaGrid = document.getElementById('custom-persona-grid');
-const emptyCustomPersonaState = document.getElementById('empty-custom-persona-state');
-const defaultPersonaGrid = document.getElementById('default-persona-grid');
-const logoutBtnPersona = document.getElementById('logout-btn-persona');
-const chatViewContainer = document.getElementById('chat-view-container');
-const mainHeader = document.getElementById('main-header');
-const menuBtn = document.getElementById('menu-btn');
-const chatHeaderInfo = document.getElementById('chat-header-info');
-const newTopicBtn = document.getElementById('new-topic-btn');
-const summarizeBtn = document.getElementById('summarize-btn');
-const themeToggle = document.getElementById('theme-toggle');
-const logoutBtn = document.getElementById('logout-btn');
-const sidebarOverlay = document.getElementById('sidebar-overlay');
-const sidebar = document.getElementById('sidebar');
-const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-const sidebarContent = document.getElementById('sidebar-content');
-const newChatBtn = document.getElementById('new-chat-btn');
-const pinnedChatsSection = document.getElementById('pinned-chats-section');
-const pinnedChatsList = document.getElementById('pinned-chats-list');
-const savedChatsList = document.getElementById('saved-chats-list');
-const savedChatsSkeleton = document.getElementById('saved-chats-skeleton');
-const mainContent = document.getElementById('main-content');
-const welcomeScreen = document.getElementById('welcome-screen');
-const chatContainer = document.getElementById('chat-container');
-const notificationArea = document.getElementById('notification-area');
-const suggestionArea = document.getElementById('suggestion-area');
-const toggleSuggestionsBtn = document.getElementById('toggle-suggestions-btn');
-const suggestionsContainer = document.getElementById('suggestions-container');
-const inputAreaWrapper = document.getElementById('input-area-wrapper');
-const inputArea = document.getElementById('input-area');
-const referenceBtn = document.getElementById('reference-btn');
-const promptInput = document.getElementById('prompt-input');
-const recordBtn = document.getElementById('record-btn');
-const sendBtn = document.getElementById('send-btn');
-const personaModalOverlay = document.getElementById('persona-modal-overlay');
-const personaModal = document.getElementById('persona-modal');
-const personaModalTitle = document.getElementById('persona-modal-title');
-const closePersonaModalBtn = document.getElementById('close-persona-modal-btn');
-const personaForm = document.getElementById('persona-form');
-const personaIdInput = document.getElementById('persona-id');
-const personaNameInput = document.getElementById('persona-name');
-const personaIconInput = document.getElementById('persona-icon');
-const personaDescriptionInput = document.getElementById('persona-description');
-const personaPromptInput = document.getElementById('persona-prompt');
-const generatePromptBtn = document.getElementById('generate-prompt-btn');
-const cancelPersonaBtn = document.getElementById('cancel-persona-btn');
-const savePersonaBtn = document.getElementById('save-persona-btn');
-const referenceModalOverlay = document.getElementById('reference-modal-overlay');
-const referenceModal = document.getElementById('reference-modal');
-const referenceHeader = document.getElementById('reference-header');
-const referenceTitle = document.getElementById('reference-title');
-const closeReferenceModalBtn = document.getElementById('close-reference-modal-btn');
-const referenceContent = document.getElementById('reference-content');
-const referenceInputArea = document.getElementById('reference-input-area');
-const referencePromptInput = document.getElementById('reference-prompt-input');
-const referenceSendBtn = document.getElementById('reference-send-btn');
-const learningModeToggle = document.getElementById('learning-mode-toggle'); 
-const learningModeIndicator = document.getElementById('learning-mode-indicator');
-const chatScrollContainer = document.getElementById("chat-container");
-const scrollToTopBtn = document.getElementById("scrollToTopBtn");
-const confirmationModalOverlay = document.getElementById('confirmation-modal-overlay');
-const confirmationModal = document.getElementById('confirmation-modal');
-const confirmationModalIcon = document.getElementById('confirmation-modal-icon');
-const confirmationModalTitle = document.getElementById('confirmation-modal-title');
-const confirmationModalMessage = document.getElementById('confirmation-modal-message');
-const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-confirm-btn');
-const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
-
+// Declare DOMElements object globally
+let DOMElements = {};
 
 // --- CẬP NHẬT: Nâng cấp persona "Gia sư Ngoại ngữ" ---
 const defaultPersonas = [
@@ -262,7 +180,7 @@ const defaultPersonas = [
  * @param {'info'|'success'|'error'} type - The type of toast (determines color and icon).
  */
 function showToast(message, type = 'info') {
-    const toastContainer = document.getElementById('toast-container');
+    const toastContainer = DOMElements.toastContainer;
     if (!toastContainer) return;
     const toast = document.createElement('div');
     
@@ -334,152 +252,69 @@ function copyToClipboard(text) {
 
 
 // --- AUTHENTICATION ---
-const authContainer = document.getElementById('auth-container');
-const appContainer = document.getElementById('app-container');
-const loginView = document.getElementById('login-view');
-const registerView = document.getElementById('register-view');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const googleLoginBtn = document.getElementById('google-login-btn');
-const showRegisterBtn = document.getElementById('show-register');
-const showLoginBtn = document.getElementById('show-login');
-const authError = document.getElementById('auth-error');
-const personaSelectionScreen = document.getElementById('persona-selection-screen');
-const welcomeUserName = document.getElementById('welcome-user-name');
-const createPersonaBtn = document.getElementById('create-persona-btn');
-const customPersonasSection = document.getElementById('custom-personas-section');
-const customPersonaGrid = document.getElementById('custom-persona-grid');
-const emptyCustomPersonaState = document.getElementById('empty-custom-persona-state');
-const defaultPersonaGrid = document.getElementById('default-persona-grid');
-const logoutBtnPersona = document.getElementById('logout-btn-persona');
-const chatViewContainer = document.getElementById('chat-view-container');
-const mainHeader = document.getElementById('main-header');
-const menuBtn = document.getElementById('menu-btn');
-const chatHeaderInfo = document.getElementById('chat-header-info');
-const newTopicBtn = document.getElementById('new-topic-btn');
-const summarizeBtn = document.getElementById('summarize-btn');
-const themeToggle = document.getElementById('theme-toggle');
-const logoutBtn = document.getElementById('logout-btn');
-const sidebarOverlay = document.getElementById('sidebar-overlay');
-const sidebar = document.getElementById('sidebar');
-const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-const sidebarContent = document.getElementById('sidebar-content');
-const newChatBtn = document.getElementById('new-chat-btn');
-const pinnedChatsSection = document.getElementById('pinned-chats-section');
-const pinnedChatsList = document.getElementById('pinned-chats-list');
-const savedChatsList = document.getElementById('saved-chats-list');
-const savedChatsSkeleton = document.getElementById('saved-chats-skeleton');
-const mainContent = document.getElementById('main-content');
-const welcomeScreen = document.getElementById('welcome-screen');
-const chatContainer = document.getElementById('chat-container');
-const notificationArea = document.getElementById('notification-area');
-const suggestionArea = document.getElementById('suggestion-area');
-const toggleSuggestionsBtn = document.getElementById('toggle-suggestions-btn');
-const suggestionsContainer = document.getElementById('suggestions-container');
-const inputAreaWrapper = document.getElementById('input-area-wrapper');
-const inputArea = document.getElementById('input-area');
-const referenceBtn = document.getElementById('reference-btn');
-const promptInput = document.getElementById('prompt-input');
-const recordBtn = document.getElementById('record-btn');
-const sendBtn = document.getElementById('send-btn');
-const personaModalOverlay = document.getElementById('persona-modal-overlay');
-const personaModal = document.getElementById('persona-modal');
-const personaModalTitle = document.getElementById('persona-modal-title');
-const closePersonaModalBtn = document.getElementById('close-persona-modal-btn');
-const personaForm = document.getElementById('persona-form');
-const personaIdInput = document.getElementById('persona-id');
-const personaNameInput = document.getElementById('persona-name');
-const personaIconInput = document.getElementById('persona-icon');
-const personaDescriptionInput = document.getElementById('persona-description');
-const personaPromptInput = document.getElementById('persona-prompt');
-const generatePromptBtn = document.getElementById('generate-prompt-btn');
-const cancelPersonaBtn = document.getElementById('cancel-persona-btn');
-const savePersonaBtn = document.getElementById('save-persona-btn');
-const referenceModalOverlay = document.getElementById('reference-modal-overlay');
-const referenceModal = document.getElementById('reference-modal');
-const referenceHeader = document.getElementById('reference-header');
-const referenceTitle = document.getElementById('reference-title');
-const closeReferenceModalBtn = document.getElementById('close-reference-modal-btn');
-const referenceContent = document.getElementById('reference-content');
-const referenceInputArea = document.getElementById('reference-input-area');
-const referencePromptInput = document.getElementById('reference-prompt-input');
-const referenceSendBtn = document.getElementById('reference-send-btn');
-const learningModeToggle = document.getElementById('learning-mode-toggle'); 
-const learningModeIndicator = document.getElementById('learning-mode-indicator');
-const chatScrollContainer = document.getElementById("chat-container");
-const scrollToTopBtn = document.getElementById("scrollToTopBtn");
-const confirmationModalOverlay = document.getElementById('confirmation-modal-overlay');
-const confirmationModal = document.getElementById('confirmation-modal');
-const confirmationModalIcon = document.getElementById('confirmation-modal-icon');
-const confirmationModalTitle = document.getElementById('confirmation-modal-title');
-const confirmationModalMessage = document.getElementById('confirmation-modal-message');
-const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-confirm-btn');
-const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
-
-
 onAuthStateChanged(auth, async user => {
     if (user) {
         currentUserId = user.uid;
         const email = user.email || '';
         currentUserName = user.displayName || email.split('@')[0]; 
-        welcomeUserName.textContent = currentUserName;
+        DOMElements.welcomeUserName.textContent = currentUserName;
         
-        authContainer.classList.add('hidden');
-        appContainer.classList.remove('hidden');
+        DOMElements.authContainer.classList.add('hidden');
+        DOMElements.appContainer.classList.remove('hidden');
 
         await showPersonaSelectionScreen();
         await renderAllChats();
     } else {
         currentUserId = null;
         currentUserName = '';
-        authContainer.classList.remove('hidden');
-        appContainer.classList.add('hidden');
-        chatViewContainer.classList.add('hidden');
-        personaSelectionScreen.classList.add('hidden');
+        DOMElements.authContainer.classList.remove('hidden');
+        DOMElements.appContainer.classList.add('hidden');
+        DOMElements.chatViewContainer.classList.add('hidden');
+        DOMElements.personaSelectionScreen.classList.add('hidden');
     }
 });
 
-loginForm.addEventListener('submit', async e => { 
+DOMElements.loginForm.addEventListener('submit', async e => { 
     e.preventDefault(); 
     try { 
-        await signInWithEmailAndPassword(auth, loginForm['login-email'].value, loginForm['login-password'].value); 
-        authError.textContent = ''; 
+        await signInWithEmailAndPassword(auth, DOMElements.loginForm['login-email'].value, DOMElements.loginForm['login-password'].value); 
+        DOMElements.authError.textContent = ''; 
     } catch (error) { 
-        authError.textContent = "Email hoặc mật khẩu không đúng."; 
+        DOMElements.authError.textContent = "Email hoặc mật khẩu không đúng."; 
         showToast('Email hoặc mật khẩu không đúng.', 'error'); 
     } 
 });
-registerForm.addEventListener('submit', async e => { 
+DOMElements.registerForm.addEventListener('submit', async e => { 
     e.preventDefault(); 
     try { 
-        await createUserWithEmailAndPassword(auth, registerForm['register-email'].value, registerForm['register-password'].value); 
-        authError.textContent = ''; 
+        await createUserWithEmailAndPassword(auth, DOMElements.registerForm['register-email'].value, DOMElements.registerForm['register-password'].value); 
+        DOMElements.authError.textContent = ''; 
     } catch (error) { 
-        authError.textContent = "Không thể tạo tài khoản. Vui lòng thử lại."; 
+        DOMElements.authError.textContent = "Không thể tạo tài khoản. Vui lòng thử lại."; 
         showToast('Không thể tạo tài khoản. Vui lòng thử lại.', 'error'); 
     } 
 });
-googleLoginBtn.addEventListener('click', async () => { 
+DOMElements.googleLoginBtn.addEventListener('click', async () => { 
     try { 
         await signInWithPopup(auth, new GoogleAuthProvider()); 
-        authError.textContent = ''; 
+        DOMElements.authError.textContent = ''; 
     } catch (error) { 
-        authError.textContent = "Đăng nhập Google thất bại."; 
+        DOMElements.authError.textContent = "Đăng nhập Google thất bại."; 
         showToast('Đăng nhập Google thất bại.', 'error');
     } 
 });
 const handleSignOut = () => signOut(auth);
-logoutBtn.addEventListener('click', handleSignOut);
-logoutBtnPersona.addEventListener('click', handleSignOut);
-showRegisterBtn.addEventListener('click', () => { 
-    loginView.classList.add('hidden'); 
-    registerView.classList.remove('hidden'); 
-    authError.textContent = ''; 
+DOMElements.logoutBtn.addEventListener('click', handleSignOut);
+DOMElements.logoutBtnPersona.addEventListener('click', handleSignOut);
+DOMElements.showRegisterBtn.addEventListener('click', () => { 
+    DOMElements.loginView.classList.add('hidden'); 
+    DOMElements.registerView.classList.remove('hidden'); 
+    DOMElements.authError.textContent = ''; 
 });
-showLoginBtn.addEventListener('click', () => { 
-    registerView.classList.add('hidden'); 
-    loginView.classList.remove('hidden'); 
-    authError.textContent = ''; 
+DOMElements.showLoginBtn.addEventListener('click', () => { 
+    DOMElements.registerView.classList.add('hidden'); 
+    DOMElements.loginView.classList.remove('hidden'); 
+    DOMElements.authError.textContent = ''; 
 });
 
 // --- THEME ---
@@ -496,7 +331,7 @@ const updateThemeIcon = () => {
         lightIconContainer.style.display = 'none';
     }
 };
-themeToggle.addEventListener('click', () => {
+DOMElements.themeToggle.addEventListener('click', () => {
     document.documentElement.classList.toggle('dark');
     localStorage.setItem('color-theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
     updateThemeIcon();
@@ -506,10 +341,10 @@ themeToggle.addEventListener('click', () => {
 async function showPersonaSelectionScreen() {
     clearSuggestions();
 
-    welcomeScreen.classList.add('hidden');
-    welcomeScreen.classList.remove('flex');
-    personaSelectionScreen.classList.remove('hidden');
-    chatViewContainer.classList.add('hidden');
+    DOMElements.welcomeScreen.classList.add('hidden');
+    DOMElements.welcomeScreen.classList.remove('flex');
+    DOMElements.personaSelectionScreen.classList.remove('hidden');
+    DOMElements.chatViewContainer.classList.add('hidden');
 
     await fetchCustomPersonas();
     renderDefaultPersonas();
@@ -526,27 +361,27 @@ async function showPersonaSelectionScreen() {
 }
 
 function renderDefaultPersonas() {
-    defaultPersonaGrid.innerHTML = '';
+    DOMElements.defaultPersonaGrid.innerHTML = '';
     defaultPersonas.forEach(persona => {
         const card = createPersonaCard(persona, false);
         card.onclick = () => startNewChat(persona.id);
-        defaultPersonaGrid.appendChild(card);
+        DOMElements.defaultPersonaGrid.appendChild(card);
     });
 }
 
 function renderCustomPersonas() {
-    customPersonaGrid.innerHTML = '';
+    DOMElements.customPersonaGrid.innerHTML = '';
     if (customPersonas.length > 0) {
-        customPersonaGrid.classList.remove('hidden');
-        emptyCustomPersonaState.classList.add('hidden');
+        DOMElements.customPersonaGrid.classList.remove('hidden');
+        DOMElements.emptyCustomPersonaState.classList.add('hidden');
         customPersonas.forEach(persona => {
             const card = createPersonaCard(persona, true);
             card.onclick = () => startNewChat(persona.id, true);
-            customPersonaGrid.appendChild(card);
+            DOMElements.customPersonaGrid.appendChild(card);
         });
     } else {
-        customPersonaGrid.classList.add('hidden');
-        emptyCustomPersonaState.classList.remove('hidden');
+        DOMElements.customPersonaGrid.classList.add('hidden');
+        DOMElements.emptyCustomPersonaState.classList.remove('hidden');
     }
 }
 
@@ -574,30 +409,30 @@ function createPersonaCard(persona, isCustom) {
 
 // --- PERSONA MODAL ---
 function openPersonaModal(personaToEdit = null) {
-    personaForm.reset();
+    DOMElements.personaForm.reset();
     if (personaToEdit) {
-        personaModalTitle.textContent = 'Chỉnh sửa Persona';
-        personaIdInput.value = personaToEdit.id;
-        personaNameInput.value = personaToEdit.name;
-        personaIconInput.value = personaToEdit.icon;
-        personaDescriptionInput.value = personaToEdit.description;
-        personaPromptInput.value = personaToEdit.systemPrompt;
+        DOMElements.personaModalTitle.textContent = 'Chỉnh sửa Persona';
+        DOMElements.personaIdInput.value = personaToEdit.id;
+        DOMElements.personaNameInput.value = personaToEdit.name;
+        DOMElements.personaIconInput.value = personaToEdit.icon;
+        DOMElements.personaDescriptionInput.value = personaToEdit.description;
+        DOMElements.personaPromptInput.value = personaToEdit.systemPrompt;
     } else {
-        personaModalTitle.textContent = 'Tạo Chuyên gia AI của bạn';
-        personaIdInput.value = '';
+        DOMElements.personaModalTitle.textContent = 'Tạo Chuyên gia AI của bạn';
+        DOMElements.personaIdInput.value = '';
     }
-    personaModalOverlay.classList.remove('hidden');
-    personaModal.classList.remove('hidden');
+    DOMElements.personaModalOverlay.classList.remove('hidden');
+    DOMElements.personaModal.classList.remove('hidden');
     requestAnimationFrame(() => {
-        personaModal.classList.remove('scale-95', 'opacity-0');
+        DOMElements.personaModal.classList.remove('scale-95', 'opacity-0');
     });
 }
 
 function closePersonaModal() {
-    personaModal.classList.add('scale-95', 'opacity-0');
+    DOMElements.personaModal.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {
-        personaModalOverlay.classList.add('hidden');
-        personaModal.classList.add('hidden');
+        DOMElements.personaModalOverlay.classList.add('hidden');
+        DOMElements.personaModal.classList.add('hidden');
     }, 300);
 }
 
@@ -615,15 +450,15 @@ async function handleSavePersona(e) {
     if (!currentUserId) return;
 
     const personaData = {
-        name: personaNameInput.value.trim(),
-        icon: personaIconInput.value.trim() || '🤖',
-        description: personaDescriptionInput.value.trim(),
-        systemPrompt: personaPromptInput.value.trim(),
+        name: DOMElements.personaNameInput.value.trim(),
+        icon: DOMElements.personaIconInput.value.trim() || '🤖',
+        description: DOMElements.personaDescriptionInput.value.trim(),
+        systemPrompt: DOMElements.personaPromptInput.value.trim(),
         ownerId: currentUserId
     };
 
-    const personaId = personaIdInput.value;
-    savePersonaBtn.disabled = true;
+    const personaId = DOMElements.personaIdInput.value;
+    DOMElements.savePersonaBtn.disabled = true;
     try {
         if (personaId) {
             const docRef = doc(db, 'users', currentUserId, 'customPersonas', personaId);
@@ -640,7 +475,7 @@ async function handleSavePersona(e) {
         console.error("Lỗi khi lưu persona:", error);
         showToast('Lỗi khi lưu persona.', 'error');
     } finally {
-        savePersonaBtn.disabled = false;
+        DOMElements.savePersonaBtn.disabled = false;
     }
 }
 
@@ -798,13 +633,13 @@ function speakText(text, lang) {
  * @param {HTMLElement} container - The element whose text nodes should be processed.
  */
 function makeForeignTextClickable(container) {
-    // Combined regex for CJK and English words.
-    // This regex will NOT match Vietnamese characters (e.g., "á", "à", "ẽ")
+    // Regex updated to exclude common Vietnamese accented characters.
     // It specifically looks for CJK Unicode ranges and standard English alphabet characters.
-    const foreignAndEnglishRegex = /([\u4E00-\u9FFF]+|[\u3040-\u309F\u30A0-\u30FF]+|[\uAC00-\uD7AF]+|[a-zA-Z']+)/g;
+    const foreignAndEnglishRegex = /([\u4E00-\u9FFF]+|[\u3040-\u309F\u30A0-\u30FF]+|[\uAC00-\uD7AF]+|[a-zA-Z]+(?:'[a-zA-Z]+)?)(?![^\u0000-\u007F]*[\u0300-\u036F\u1EA0-\u1EFF\u00C0-\u00FF])/g;
+
     const hiraganaKatakanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
     const hangulRegex = /[\uAC00-\uD7AF]/;
-    const englishRegex = /[a-zA-Z']+/; // Simple regex for English words (letters and apostrophes)
+    const englishRegex = /[a-zA-Z]+(?:'[a-zA-Z]+)?/; // Improved English word regex to include apostrophes
 
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
     const nodesToProcess = [];
@@ -844,8 +679,7 @@ function makeForeignTextClickable(container) {
             } else if (hiraganaKatakanaRegex.test(match[0])) {
                 span.dataset.lang = 'ja-JP';
             } else if (englishRegex.test(match[0])) { 
-                // A stricter check for English words (no Vietnamese diacritics)
-                // This might need more refinement if dealing with complex mixed text
+                // This check for English should now be more reliable after regex improvement
                 span.dataset.lang = 'en-US'; 
             } else { 
                 // Assume Chinese for remaining CJK characters
@@ -881,36 +715,36 @@ function showConfirmationModal({ title, message, confirmText = 'Xóa', confirmCo
     return new Promise(resolve => {
         confirmationResolve = resolve; // Lưu hàm resolve để sử dụng sau
 
-        confirmationModalTitle.textContent = title;
-        confirmationModalMessage.textContent = message;
-        confirmationModalConfirmBtn.textContent = confirmText;
+        DOMElements.confirmationModalTitle.textContent = title;
+        DOMElements.confirmationModalMessage.textContent = message;
+        DOMElements.confirmationModalConfirmBtn.textContent = confirmText;
 
         // Reset màu nút
-        confirmationModalConfirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'bg-blue-600', 'hover:bg-blue-700');
+        DOMElements.confirmationModalConfirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'bg-blue-600', 'hover:bg-blue-700');
         
         if (confirmColor === 'red') {
-            confirmationModalConfirmBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+            DOMElements.confirmationModalConfirmBtn.classList.add('bg-red-600', 'hover:bg-red-700');
         } else {
-            confirmationModalConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            DOMElements.confirmationModalConfirmBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
         }
 
-        confirmationModalIcon.innerHTML = svgIcons.warning || '<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>';
+        DOMElements.confirmationModalIcon.innerHTML = svgIcons.warning || '<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>';
 
-        confirmationModalOverlay.classList.remove('hidden');
+        DOMElements.confirmationModalOverlay.classList.remove('hidden');
         setTimeout(() => {
-            confirmationModalOverlay.classList.add('opacity-100');
-            confirmationModal.classList.add('scale-100', 'opacity-100');
-            confirmationModal.classList.remove('scale-95', 'opacity-0');
+            DOMElements.confirmationModalOverlay.classList.add('opacity-100');
+            DOMElements.confirmationModal.classList.add('scale-100', 'opacity-100');
+            DOMElements.confirmationModal.classList.remove('scale-95', 'opacity-0');
         }, 10);
     });
 }
 
 function hideConfirmationModal() {
-    confirmationModalOverlay.classList.remove('opacity-100');
-    confirmationModal.classList.remove('scale-100', 'opacity-100');
-    confirmationModal.classList.add('scale-95', 'opacity-0');
+    DOMElements.confirmationModalOverlay.classList.remove('opacity-100');
+    DOMElements.confirmationModal.classList.remove('scale-100', 'opacity-100');
+    DOMElements.confirmationModal.classList.add('scale-95', 'opacity-0');
     setTimeout(() => {
-        confirmationModalOverlay.classList.add('hidden');
+        DOMElements.confirmationModalOverlay.classList.add('hidden');
     }, 300);
 }
 
@@ -1023,9 +857,9 @@ async function startNewChat(personaId, isCustom = false) {
     currentPersona = selectedPersona;
     completedTopics = [];
     
-    personaSelectionScreen.classList.add('hidden');
-    chatViewContainer.classList.remove('hidden');
-    chatViewContainer.classList.add('flex');
+    DOMElements.personaSelectionScreen.classList.add('hidden');
+    DOMElements.chatViewContainer.classList.remove('hidden');
+    DOMElements.chatViewContainer.classList.add('flex');
 
     updateChatHeader(currentPersona);
     updateLearningModeIndicator();
@@ -1042,8 +876,8 @@ async function startNewChat(personaId, isCustom = false) {
         parts: [{ text: "Đã hiểu! Tôi đã sẵn sàng. Bạn cần tôi giúp gì?" }],
     }];
     
-    chatContainer.innerHTML = '';
-    chatContainer.appendChild(notificationArea);
+    DOMElements.chatContainer.innerHTML = '';
+    DOMElements.chatContainer.appendChild(DOMElements.notificationArea);
     
     await renderAllChats();
     closeSidebar();
@@ -1054,13 +888,13 @@ async function startNewChat(personaId, isCustom = false) {
 
 function updateChatHeader(persona) {
     if(persona) {
-        chatHeaderInfo.innerHTML = `
+        DOMElements.chatHeaderInfo.innerHTML = `
             <span class="text-2xl">${persona.icon}</span>
             <span class="text-lg font-bold text-gray-800 dark:text-gray-100">${persona.name}</span>
         `;
         updateLearningModeIndicator();
     } else {
-        chatHeaderInfo.innerHTML = '';
+        DOMElements.chatHeaderInfo.innerHTML = '';
     }
 }
 
@@ -1163,9 +997,9 @@ function addMessage(role, text, shouldScroll = true) {
         addMessageActions(actionsContainer, text, messageId);
     }
 
-    chatContainer.insertBefore(messageWrapper, notificationArea);
+    DOMElements.chatContainer.insertBefore(messageWrapper, DOMElements.notificationArea);
     if (shouldScroll) {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+        DOMElements.chatContainer.scrollTop = DOMElements.chatContainer.scrollHeight;
     }
 
     return { messageWrapper, contentElem, statusElem, actionsContainer, messageId };
@@ -1223,9 +1057,9 @@ async function handleSummary() {
     }
 
     isSummarizing = true;
-    const originalIconContainer = summarizeBtn.firstElementChild;
-    summarizeBtn.innerHTML = svgIcons.spinner;
-    summarizeBtn.disabled = true;
+    const originalIconContainer = DOMElements.summarizeBtn.firstElementChild;
+    DOMElements.summarizeBtn.innerHTML = svgIcons.spinner;
+    DOMElements.summarizeBtn.disabled = true;
 
     try {
         const prompt = `Dựa vào cuộc trò chuyện sau, hãy tóm tắt lại các ý chính một cách súc tích, rõ ràng theo từng gạch đầu dòng:\n\n---\n${conversationToSummarize}\n---`;
@@ -1242,25 +1076,25 @@ async function handleSummary() {
         showToast('Không thể tạo bản tóm tắt lúc này.', 'error');
     } finally {
         isSummarizing = false;
-        summarizeBtn.innerHTML = '';
-        summarizeBtn.appendChild(originalIconContainer);
-        summarizeBtn.disabled = false;
+        DOMElements.summarizeBtn.innerHTML = '';
+        DOMElements.summarizeBtn.appendChild(originalIconContainer);
+        DOMElements.summarizeBtn.disabled = false;
     }
 }
 
 async function sendMessage(promptTextOverride = null) {
-    welcomeScreen.classList.add('hidden');
-    welcomeScreen.classList.remove('flex');
-    chatContainer.classList.remove('hidden');
+    DOMElements.welcomeScreen.classList.add('hidden');
+    DOMElements.welcomeScreen.classList.remove('flex');
+    DOMElements.chatContainer.classList.remove('hidden');
 
-    const userDisplayedText = promptTextOverride ? promptTextOverride : promptInput.value.trim(); 
+    const userDisplayedText = promptTextOverride ? promptTextOverride : DOMElements.promptInput.value.trim(); 
     if (!userDisplayedText || isSummarizing) return;
 
     if (!promptTextOverride) {
-        promptInput.value = '';
+        DOMElements.promptInput.value = '';
         adjustInputHeight();
     }
-    sendBtn.disabled = true;
+    DOMElements.sendBtn.disabled = true;
     clearSuggestions();
 
     const userMessage = addMessage('user', userDisplayedText);
@@ -1303,7 +1137,7 @@ async function sendMessage(promptTextOverride = null) {
             if (currentPersona && currentPersona.id === 'language_tutor') {
                 makeForeignTextClickable(contentElem);
             }
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            DOMElements.chatContainer.scrollTop = DOMElements.chatContainer.scrollHeight;
         }
         
         if (statusElem) statusElem.classList.add('hidden');
@@ -1338,7 +1172,7 @@ async function sendMessage(promptTextOverride = null) {
         if (localHistory.length > 0) localHistory.pop();
         showToast(`Lỗi gửi tin nhắn: ${error.message}`, 'error');
     } finally {
-        sendBtn.disabled = false;
+        DOMElements.sendBtn.disabled = false;
     }
 }
 
@@ -1394,7 +1228,7 @@ async function handleRegenerate(targetMessageId) {
             if (currentPersona && currentPersona.id === 'language_tutor') {
                 makeForeignTextClickable(contentElem);
             }
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            DOMElements.chatContainer.scrollTop = DOMElements.chatContainer.scrollHeight;
         }
 
         if(statusElem) statusElem.classList.add('hidden');
@@ -1451,9 +1285,9 @@ async function updateConversationInDb() {
 async function loadChat(chatId) {
     if (speechSynthesis.speaking) speechSynthesis.cancel();
     
-    personaSelectionScreen.classList.add('hidden');
-    chatViewContainer.classList.remove('hidden');
-    chatViewContainer.classList.add('flex');
+    DOMElements.personaSelectionScreen.classList.add('hidden');
+    DOMElements.chatViewContainer.classList.remove('hidden');
+    DOMElements.chatViewContainer.classList.add('flex');
     showHistorySkeleton();
     closeSidebar();
 
@@ -1489,11 +1323,11 @@ async function loadChat(chatId) {
             localHistory = data.history || [];
             
             await renderAllChats();
-            welcomeScreen.classList.add('hidden');
-            welcomeScreen.classList.remove('flex');
-            chatContainer.classList.remove('hidden');
-            chatContainer.innerHTML = ''; 
-            chatContainer.appendChild(notificationArea);
+            DOMElements.welcomeScreen.classList.add('hidden');
+            DOMElements.welcomeScreen.classList.remove('flex');
+            DOMElements.chatContainer.classList.remove('hidden');
+            DOMElements.chatContainer.innerHTML = ''; 
+            DOMElements.chatContainer.appendChild(DOMElements.notificationArea);
 
             clearSuggestions();
 
@@ -1504,7 +1338,7 @@ async function loadChat(chatId) {
                 }
                 addMessage(msg.role, msg.parts[0].text, false);
             });
-            setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 0);
+            setTimeout(() => DOMElements.chatContainer.scrollTop = DOMElements.chatContainer.scrollHeight, 0);
 
             if (!isLearningMode) {
                 const lastModelMessage = localHistory.slice().reverse().find(msg => msg.role === 'model');
@@ -1529,9 +1363,9 @@ async function loadChat(chatId) {
 }
 
 function clearSuggestions() {
-    suggestionsContainer.innerHTML = '';
-    suggestionsContainer.classList.add('hidden');
-    toggleSuggestionsBtn.classList.add('hidden');
+    DOMElements.suggestionsContainer.innerHTML = '';
+    DOMElements.suggestionsContainer.classList.add('hidden');
+    DOMElements.toggleSuggestionsBtn.classList.add('hidden');
 }
 
 async function getFollowUpSuggestions(lastResponse) {
@@ -1549,17 +1383,17 @@ async function getFollowUpSuggestions(lastResponse) {
 async function handleSuggestionClickAndSendToReference(suggestionText) {
     showReferenceModal('Trợ lý Phụ', true); 
     await new Promise(resolve => setTimeout(resolve, 50)); 
-    if (referencePromptInput) {
-        referencePromptInput.value = suggestionText;
+    if (DOMElements.referencePromptInput) {
+        DOMElements.referencePromptInput.value = suggestionText;
     }
     await sendReferenceMessage(suggestionText);
 }
 
 
 function displaySuggestions(suggestions) {
-    suggestionsContainer.innerHTML = '';
+    DOMElements.suggestionsContainer.innerHTML = '';
     if(suggestions.length > 0) {
-        toggleSuggestionsBtn.classList.remove('hidden');
+        DOMElements.toggleSuggestionsBtn.classList.remove('hidden');
         suggestions.forEach(suggestionText => {
             const chip = document.createElement('button');
             chip.className = 'suggestion-chip border border-blue-200 dark:border-slate-600 bg-blue-50 dark:bg-slate-700 text-blue-700 dark:text-blue-400 rounded-full px-3 py-1 text-sm hover:bg-blue-100 dark:hover:bg-slate-600 transition-colors';
@@ -1567,19 +1401,19 @@ function displaySuggestions(suggestions) {
             chip.onclick = () => { 
                 sendMessage(suggestionText);
             };
-            suggestionsContainer.appendChild(chip);
+            DOMElements.suggestionsContainer.appendChild(chip);
         });
     } else {
-         toggleSuggestionsBtn.classList.add('hidden');
+         DOMElements.toggleSuggestionsBtn.classList.add('hidden');
     }
 }
 
 async function showWelcomeScreenForPersona(persona) {
     if (!persona) return; 
 
-    welcomeScreen.classList.remove('hidden');
-    welcomeScreen.classList.add('flex');
-    chatContainer.classList.add('hidden');
+    DOMElements.welcomeScreen.classList.remove('hidden');
+    DOMElements.welcomeScreen.classList.add('flex');
+    DOMElements.chatContainer.classList.add('hidden');
 
     document.getElementById('welcome-persona-icon').textContent = persona.icon;
     document.getElementById('welcome-persona-name').textContent = persona.name;
@@ -1635,27 +1469,27 @@ async function showWelcomeScreenForPersona(persona) {
 
 
 function adjustInputHeight() {
-    promptInput.style.height = 'auto';
-    promptInput.style.height = promptInput.scrollHeight + 'px';
+    DOMElements.promptInput.style.height = 'auto';
+    DOMElements.promptInput.style.height = DOMElements.promptInput.scrollHeight + 'px';
 }
 
 function openSidebar() {
-    sidebar.classList.remove('-translate-x-full');
-    sidebarOverlay.classList.remove('hidden');
-    setTimeout(() => sidebarOverlay.classList.add('opacity-100'), 10);
+    DOMElements.sidebar.classList.remove('-translate-x-full');
+    DOMElements.sidebarOverlay.classList.remove('hidden');
+    setTimeout(() => DOMElements.sidebarOverlay.classList.add('opacity-100'), 10);
 }
 
 function closeSidebar() {
-    sidebar.classList.add('-translate-x-full');
-    sidebarOverlay.classList.remove('opacity-100');
-    setTimeout(() => sidebarOverlay.classList.add('hidden'), 300);
+    DOMElements.sidebar.classList.add('-translate-x-full');
+    DOMElements.sidebarOverlay.classList.remove('opacity-100');
+    setTimeout(() => DOMElements.sidebarOverlay.classList.add('hidden'), 300);
 }
 
 function showHistorySkeleton() {
-    welcomeScreen.classList.add('hidden');
-    welcomeScreen.classList.remove('flex');
-    chatContainer.classList.remove('hidden');
-    chatContainer.innerHTML = `<div class="w-full space-y-2">
+    DOMElements.welcomeScreen.classList.add('hidden');
+    DOMElements.welcomeScreen.classList.remove('flex');
+    DOMElements.chatContainer.classList.remove('hidden');
+    DOMElements.chatContainer.innerHTML = `<div class="w-full space-y-2">
             <div class="flex items-center gap-2">
                 <div class="w-7 h-7 rounded-full skeleton-box"></div>
                 <div class="w-20 h-4 skeleton-box"></div>
@@ -1670,21 +1504,21 @@ function showHistorySkeleton() {
                 <div class="h-16 skeleton-box rounded-2xl"></div>
             </div>
         </div>`;
-    chatContainer.appendChild(notificationArea);
+    DOMElements.chatContainer.appendChild(DOMElements.notificationArea);
 }
 
 async function renderAllChats() {
     if (!currentUserId || !currentPersona) {
-        savedChatsList.innerHTML = '';
-        pinnedChatsList.innerHTML = '';
-        pinnedChatsSection.classList.add('hidden');
+        DOMElements.savedChatsList.innerHTML = '';
+        DOMElements.pinnedChatsList.innerHTML = '';
+        DOMElements.pinnedChatsSection.classList.add('hidden');
         return;
     };
     isFetchingChats = false;
     allChatsLoaded = false;
     lastVisibleChat = null;
-    pinnedChatsList.innerHTML = '';
-    savedChatsList.innerHTML = '';
+    DOMElements.pinnedChatsList.innerHTML = '';
+    DOMElements.savedChatsList.innerHTML = '';
     await fetchPinnedChats();
     await fetchRecentChats();
 }
@@ -1694,11 +1528,11 @@ async function fetchPinnedChats() {
      const q = query(chatsCollection, where('personaId', '==', currentPersona.id), where('isPinned', '==', true), orderBy('updatedAt', 'desc'));
      try {
         const querySnapshot = await getDocs(q);
-        pinnedChatsSection.classList.toggle('hidden', querySnapshot.empty);
-        pinnedChatsList.innerHTML = ''; 
+        DOMElements.pinnedChatsSection.classList.toggle('hidden', querySnapshot.empty);
+        DOMElements.pinnedChatsList.innerHTML = ''; 
         querySnapshot.forEach(docSnap => {
             const li = createChatItem(docSnap);
-            pinnedChatsList.appendChild(li);
+            DOMElements.pinnedChatsList.appendChild(li);
         });
      }
     catch (error) {
@@ -1709,7 +1543,7 @@ async function fetchPinnedChats() {
 async function fetchRecentChats(loadMore = false) {
     if (isFetchingChats || allChatsLoaded) return;
     isFetchingChats = true;
-    if (!loadMore) savedChatsSkeleton.classList.remove('hidden');
+    if (!loadMore) DOMElements.savedChatsSkeleton.classList.remove('hidden');
 
     const chatsCollection = collection(db, 'chats', currentUserId, 'conversations');
     const constraints = [where('personaId', '==', currentPersona.id), where('isPinned', '==', false), orderBy('updatedAt', 'desc'), limit(CHATS_PER_PAGE)];
@@ -1720,9 +1554,9 @@ async function fetchRecentChats(loadMore = false) {
 
     try {
         const querySnapshot = await getDocs(q);
-        if (!loadMore) savedChatsList.innerHTML = '';
+        if (!loadMore) DOMElements.savedChatsList.innerHTML = '';
         if (querySnapshot.empty && !loadMore) {
-             savedChatsList.innerHTML = `
+             DOMElements.savedChatsList.innerHTML = `
                 <li id="empty-chats-state" class="text-center p-4 space-y-2">
                     <div class="flex justify-center">${svgIcons.emptyChat}</div>
                     <h4 class="font-semibold text-sm text-gray-600 dark:text-gray-300">Bắt đầu trò chuyện</h4>
@@ -1731,7 +1565,7 @@ async function fetchRecentChats(loadMore = false) {
         } 
         querySnapshot.forEach(docSnap => {
             const li = createChatItem(docSnap);
-            savedChatsList.appendChild(li);
+            DOMElements.savedChatsList.appendChild(li);
         });
 
         if (querySnapshot.docs.length > 0) {
@@ -1744,7 +1578,7 @@ async function fetchRecentChats(loadMore = false) {
         console.error("Lỗi khi lấy lịch sử trò chuyện (cần tạo index trên Firebase):", error);
     } finally {
         isFetchingChats = false;
-        savedChatsSkeleton.classList.add('hidden');
+        DOMElements.savedChatsSkeleton.classList.add('hidden');
     }
 }
 
@@ -1891,21 +1725,21 @@ async function togglePinChat(chatId, isCurrentlyPinned) {
 
 // --- REFERENCE MODAL FUNCTIONS ---
 function showReferenceModal(title, showInput) {
-    referenceTitle.textContent = title;
-    referenceInputArea.style.display = showInput ? 'block' : 'none';
-    referenceModalOverlay.classList.remove('hidden');
-    referenceModal.classList.remove('hidden');
+    DOMElements.referenceTitle.textContent = title;
+    DOMElements.referenceInputArea.style.display = showInput ? 'block' : 'none';
+    DOMElements.referenceModalOverlay.classList.remove('hidden');
+    DOMElements.referenceModal.classList.remove('hidden');
     if (showInput) {
         referenceHistory = [];
         referenceChat = fastModel.startChat({ history: [] });
-        referenceContent.innerHTML = '';
+        DOMElements.referenceContent.innerHTML = '';
         addMessageToReference('ai', 'Đây là trợ lý phụ. Bạn cần tra cứu nhanh gì không?');
     }
 }
 
 function closeReferenceModal() {
-    referenceModalOverlay.classList.add('hidden');
-    referenceModal.classList.add('hidden');
+    DOMElements.referenceModalOverlay.classList.add('hidden');
+    DOMElements.referenceModal.classList.add('hidden');
 }
 
 function addMessageToReference(role, text) {
@@ -1924,18 +1758,18 @@ function addMessageToReference(role, text) {
     }
    
     contentElem.innerHTML = DOMPurify.sanitize(marked.parse(text));
-    referenceContent.appendChild(messageWrapper);
+    DOMElements.referenceContent.appendChild(messageWrapper);
     messageWrapper.scrollIntoView({ behavior: "smooth", block: "end" });
     return { messageWrapper, contentElem, statusElem };
 }
 
 async function sendReferenceMessage(userPromptOverride = null) {
-    const userPrompt = userPromptOverride || referencePromptInput.value.trim();
+    const userPrompt = userPromptOverride || DOMElements.referencePromptInput.value.trim();
     if (!userPrompt) return;
     
-    referenceSendBtn.disabled = true;
+    DOMElements.referenceSendBtn.disabled = true;
     if (!userPromptOverride) {
-        referencePromptInput.value = '';
+        DOMElements.referencePromptInput.value = '';
     }
     addMessageToReference('user', userPrompt);
     const { messageWrapper, contentElem } = addMessageToReference('ai', '<span class="blinking-cursor"></span>');
@@ -1946,7 +1780,7 @@ async function sendReferenceMessage(userPromptOverride = null) {
         for await (const chunk of result.stream) {
             fullResponseText += chunk.text();
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(fullResponseText)) + '<span class="blinking-cursor"></span>';
-            referenceContent.scrollTop = referenceContent.scrollHeight;
+            DOMElements.referenceContent.scrollTop = DOMElements.referenceContent.scrollHeight;
         }
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(fullResponseText));
 
@@ -1967,7 +1801,7 @@ async function sendReferenceMessage(userPromptOverride = null) {
         contentElem.innerHTML = `**Lỗi:** ${error.message}`;
         showToast('Lỗi khi gửi tin nhắn cho trợ lý phụ.', 'error');
     } finally {
-        referenceSendBtn.disabled = false;
+        DOMElements.referenceSendBtn.disabled = false;
     }
 }
 
@@ -1986,7 +1820,7 @@ async function explainTerm(term, context, isDeepDive = false) {
     if (!isDeepDive) {
         showReferenceModal(`Giải thích: ${term}`, false);
     }
-    referenceContent.innerHTML = '';
+    DOMElements.referenceContent.innerHTML = '';
     
     const prompt = isDeepDive 
         ? `Hãy giải thích chuyên sâu về thuật ngữ "${term}", bao gồm định nghĩa đầy đủ, ví dụ cụ thể, và các ứng dụng chính của nó.`
@@ -2023,30 +1857,30 @@ async function explainTerm(term, context, isDeepDive = false) {
 }
 
 async function generateSystemPrompt() {
-    const name = personaNameInput.value.trim();
-    const description = personaDescriptionInput.value.trim();
+    const name = DOMElements.personaNameInput.value.trim();
+    const description = DOMElements.personaDescriptionInput.value.trim();
 
     if (!name || !description) {
         showToast('Vui lòng nhập Tên và Mô tả ngắn.', 'error');
         return;
     }
 
-    const originalBtnContainer = generatePromptBtn.firstElementChild;
-    generatePromptBtn.innerHTML = svgIcons.spinner;
-    generatePromptBtn.disabled = true;
+    const originalBtnContainer = DOMElements.generatePromptBtn.firstElementChild;
+    DOMElements.generatePromptBtn.innerHTML = svgIcons.spinner;
+    DOMElements.generatePromptBtn.disabled = true;
 
     try {
         const prompt = `Dựa trên một chuyên gia có tên là '${name}' và mô tả '${description}', hãy viết một Chỉ thị Hệ thống (System Prompt) chi tiết và chuyên nghiệp bằng tiếng Việt. Chỉ thị này cần bao gồm: phong cách, quy tắc hoạt động, và các yêu cầu về định dạng đầu ra. **Yêu cầu bổ sung:** Trong quá trình trả lời, khi bạn đề cập đến một thuật ngữ kỹ thuật, một khái niệm quan trọng, hoặc một tên riêng, hãy bọc thuật ngữ đó trong cặp dấu ngoặc vuông để có thể nhấp để giải thích thêm. Ví dụ: 'sử dụng ngôn ngữ [Python] để phát triển [backend]'.`;
         const result = await fastModel.generateContent(prompt);
-        personaPromptInput.value = result.response.text();
+        DOMElements.personaPromptInput.value = result.response.text();
     } catch (error) {
         console.error("Lỗi khi tạo gợi ý prompt:", error);
-        personaPromptInput.value = "Rất tiếc, không thể tạo gợi ý lúc này. Vui lòng thử lại.";
+        DOMElements.personaPromptInput.value = "Rất tiếc, không thể tạo gợi ý lúc này. Vui lòng thử lại.";
         showToast('Không thể tạo gợi ý prompt.', 'error');
     } finally {
-        generatePromptBtn.innerHTML = '';
-        generatePromptBtn.appendChild(originalBtnContainer);
-        generatePromptBtn.disabled = false;
+        DOMElements.generatePromptBtn.innerHTML = '';
+        DOMElements.generatePromptBtn.appendChild(originalBtnContainer);
+        DOMElements.generatePromptBtn.disabled = false;
     }
 }
 
@@ -2065,38 +1899,38 @@ async function handleLearningPromptClick(linkElement) {
 }
 
 // --- GLOBAL EVENT LISTENERS ---
-createPersonaBtn.addEventListener('click', () => openPersonaModal());
-closePersonaModalBtn.addEventListener('click', closePersonaModal);
-cancelPersonaBtn.addEventListener('click', closePersonaModal);
-personaModalOverlay.addEventListener('click', closePersonaModal);
-personaForm.addEventListener('submit', handleSavePersona);
-generatePromptBtn.addEventListener('click', generateSystemPrompt);
-newChatBtn.addEventListener('click', showPersonaSelectionScreen);
-newTopicBtn.addEventListener('click', () => {
+DOMElements.createPersonaBtn.addEventListener('click', () => openPersonaModal());
+DOMElements.closePersonaModalBtn.addEventListener('click', closePersonaModal);
+DOMElements.cancelPersonaBtn.addEventListener('click', closePersonaModal);
+DOMElements.personaModalOverlay.addEventListener('click', closePersonaModal);
+DOMElements.personaForm.addEventListener('submit', handleSavePersona);
+DOMElements.generatePromptBtn.addEventListener('click', generateSystemPrompt);
+DOMElements.newChatBtn.addEventListener('click', showPersonaSelectionScreen);
+DOMElements.newTopicBtn.addEventListener('click', () => {
     if (currentPersona) {
         startNewChat(currentPersona.id, !!currentPersona.ownerId);
     } else {
         showPersonaSelectionScreen();
     }
 });
-summarizeBtn.addEventListener('click', handleSummary);
-sendBtn.addEventListener('click', () => sendMessage());
-promptInput.addEventListener('keydown', e => { 
+DOMElements.summarizeBtn.addEventListener('click', handleSummary);
+DOMElements.sendBtn.addEventListener('click', () => sendMessage());
+DOMElements.promptInput.addEventListener('keydown', e => { 
     if (e.key === 'Enter' && !e.shiftKey) { 
         e.preventDefault(); 
         sendMessage(); 
     } 
 });
-promptInput.addEventListener('input', adjustInputHeight);
-menuBtn.addEventListener('click', openSidebar);
-closeSidebarBtn.addEventListener('click', closeSidebar);
-sidebarOverlay.addEventListener('click', closeSidebar);
-toggleSuggestionsBtn.addEventListener('click', () => suggestionsContainer.classList.toggle('hidden'));
-referenceBtn.addEventListener('click', () => showReferenceModal('Trợ lý Phụ', true));
-closeReferenceModalBtn.addEventListener('click', closeReferenceModal);
-referenceModalOverlay.addEventListener('click', closeReferenceModal);
-referenceSendBtn.addEventListener('click', () => sendReferenceMessage());
-referencePromptInput.addEventListener('keydown', e => { 
+DOMElements.promptInput.addEventListener('input', adjustInputHeight);
+DOMElements.menuBtn.addEventListener('click', openSidebar);
+DOMElements.closeSidebarBtn.addEventListener('click', closeSidebar);
+DOMElements.sidebarOverlay.addEventListener('click', closeSidebar);
+DOMElements.toggleSuggestionsBtn.addEventListener('click', () => DOMElements.suggestionsContainer.classList.toggle('hidden'));
+DOMElements.referenceBtn.addEventListener('click', () => showReferenceModal('Trợ lý Phụ', true));
+DOMElements.closeReferenceModalBtn.addEventListener('click', closeReferenceModal);
+DOMElements.referenceModalOverlay.addEventListener('click', closeReferenceModal);
+DOMElements.referenceSendBtn.addEventListener('click', () => sendReferenceMessage());
+DOMElements.referencePromptInput.addEventListener('keydown', e => { 
     if (e.key === 'Enter' && !e.shiftKey) { 
         e.preventDefault(); 
         sendReferenceMessage(); 
@@ -2104,7 +1938,7 @@ referencePromptInput.addEventListener('keydown', e => {
 });
 
 function updateLearningModeIndicator() {
-    if (learningModeIndicator) { 
+    if (DOMElements.learningModeIndicator) { 
         if (isLearningMode) {
             // Assume learningModeIndicator is a text element or similar
             // This part of the code in your original `index.html` file is just a placeholder and
@@ -2117,22 +1951,22 @@ function updateLearningModeIndicator() {
             //     chip.id = 'learning-mode-chip';
             //     chip.className = 'ml-2 px-2 py-1 bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-xs rounded-full';
             //     chip.textContent = 'Chế độ Học tập';
-            //     chatHeaderInfo.appendChild(chip);
+            //     DOMElements.chatHeaderInfo.appendChild(chip);
             // }
             // For the provided structure, simply ensuring the toggle reflects the state:
-             learningModeToggle.checked = true;
+             DOMElements.learningModeToggle.checked = true;
         } else {
-             learningModeToggle.checked = false;
+             DOMElements.learningModeToggle.checked = false;
         }
     }
 }
 
-learningModeToggle.addEventListener('change', async (e) => { 
+DOMElements.learningModeToggle.addEventListener('change', async (e) => { 
     isLearningMode = e.target.checked;
     showToast(`Chế độ Học tập đã được ${isLearningMode ? 'bật' : 'tắt'}.`, 'info');
     updateLearningModeIndicator();
 
-    if (welcomeScreen.classList.contains('flex')) {
+    if (DOMElements.welcomeScreen.classList.contains('flex')) {
         await showWelcomeScreenForPersona(currentPersona);
     }
 });
@@ -2146,7 +1980,7 @@ function resetActiveSpeechButton() {
 }
 
 // === CẬP NHẬT: Thêm xử lý cho nút quiz và các nút khác ===
-chatContainer.addEventListener('click', async (e) => {
+DOMElements.chatContainer.addEventListener('click', async (e) => {
     const link = e.target.closest('a');
     const button = e.target.closest('button');
     const clickableForeign = e.target.closest('.clickable-foreign'); // === THÊM MỚI: Bắt sự kiện click cho từ ngoại ngữ ===
@@ -2217,8 +2051,8 @@ chatContainer.addEventListener('click', async (e) => {
     }
 });
 
-sidebarContent.addEventListener('scroll', () => {
-    const isNearBottom = sidebarContent.scrollHeight - sidebarContent.scrollTop - sidebarContent.clientHeight < 100;
+DOMElements.sidebarContent.addEventListener('scroll', () => {
+    const isNearBottom = DOMElements.sidebarContent.scrollHeight - DOMElements.sidebarContent.scrollTop - DOMElements.sidebarContent.clientHeight < 100;
     if (isNearBottom && !isFetchingChats && !allChatsLoaded) {
         fetchRecentChats(true);
     }
@@ -2233,16 +2067,16 @@ if(SpeechRecognition) {
 
     recognition.onstart = () => { 
         isRecording = true; 
-        recordBtn.classList.add('recording'); 
-        promptInput.placeholder = 'Đang lắng nghe...'; 
+        DOMElements.recordBtn.classList.add('recording'); 
+        DOMElements.promptInput.placeholder = 'Đang lắng nghe...'; 
     };
     recognition.onend = () => { 
         isRecording = false; 
-        recordBtn.classList.remove('recording'); 
-        promptInput.placeholder = 'Nhập câu hỏi...'; 
+        DOMElements.recordBtn.classList.remove('recording'); 
+        DOMElements.promptInput.placeholder = 'Nhập câu hỏi...'; 
     };
     recognition.onresult = (event) => { 
-        promptInput.value = event.results[event.results.length - 1][0].transcript.trim(); 
+        DOMElements.promptInput.value = event.results[event.results.length - 1][0].transcript.trim(); 
         adjustInputHeight(); 
         sendMessage(); 
     };
@@ -2250,26 +2084,26 @@ if(SpeechRecognition) {
         showToast(`Lỗi ghi âm: ${event.error}`, 'error'); 
         console.error("Speech Recognition error:", event.error);
     };
-    recordBtn.addEventListener('click', () => { 
+    DOMElements.recordBtn.addEventListener('click', () => { 
         isRecording ? recognition.stop() : recognition.start(); 
     });
 } else { 
-    recordBtn.classList.add('hidden');
+    DOMElements.recordBtn.classList.add('hidden');
 }
 
 function toggleScrollToTopButton() {
-    if (!scrollToTopBtn || !chatScrollContainer) return; 
+    if (!DOMElements.scrollToTopBtn || !DOMElements.chatScrollContainer) return; 
 
-    if (chatScrollContainer.scrollTop > chatScrollContainer.clientHeight * 0.5) { 
-        scrollToTopBtn.classList.add('show');
+    if (DOMElements.chatScrollContainer.scrollTop > DOMElements.chatScrollContainer.clientHeight * 0.5) { 
+        DOMElements.scrollToTopBtn.classList.add('show');
     } else {
-        scrollToTopBtn.classList.remove('show');
+        DOMElements.scrollToTopBtn.classList.remove('show');
     }
 }
 
 function scrollToTop() {
-    if (chatScrollContainer) {
-        chatScrollContainer.scrollTo({
+    if (DOMElements.chatScrollContainer) {
+        DOMElements.chatScrollContainer.scrollTo({
             top: 0,
             behavior: "smooth"
         });
@@ -2279,29 +2113,114 @@ function scrollToTop() {
 document.addEventListener('DOMContentLoaded', () => {
     loadIcons(); 
     
+    // Initialize DOMElements after DOM is ready
+    DOMElements = {
+        authContainer: document.getElementById('auth-container'),
+        appContainer: document.getElementById('app-container'),
+        loginView: document.getElementById('login-view'),
+        registerView: document.getElementById('register-view'),
+        loginForm: document.getElementById('login-form'),
+        registerForm: document.getElementById('register-form'),
+        googleLoginBtn: document.getElementById('google-login-btn'),
+        showRegisterBtn: document.getElementById('show-register'),
+        showLoginBtn: document.getElementById('show-login'),
+        authError: document.getElementById('auth-error'),
+        personaSelectionScreen: document.getElementById('persona-selection-screen'),
+        welcomeUserName: document.getElementById('welcome-user-name'),
+        createPersonaBtn: document.getElementById('create-persona-btn'),
+        customPersonasSection: document.getElementById('custom-personas-section'),
+        customPersonaGrid: document.getElementById('custom-persona-grid'),
+        emptyCustomPersonaState: document.getElementById('empty-custom-persona-state'),
+        defaultPersonaGrid: document.getElementById('default-persona-grid'),
+        logoutBtnPersona: document.getElementById('logout-btn-persona'),
+        chatViewContainer: document.getElementById('chat-view-container'),
+        mainHeader: document.getElementById('main-header'),
+        menuBtn: document.getElementById('menu-btn'),
+        chatHeaderInfo: document.getElementById('chat-header-info'),
+        newTopicBtn: document.getElementById('new-topic-btn'),
+        summarizeBtn: document.getElementById('summarize-btn'),
+        themeToggle: document.getElementById('theme-toggle'),
+        logoutBtn: document.getElementById('logout-btn'),
+        sidebarOverlay: document.getElementById('sidebar-overlay'),
+        sidebar: document.getElementById('sidebar'),
+        closeSidebarBtn: document.getElementById('close-sidebar-btn'),
+        sidebarContent: document.getElementById('sidebar-content'),
+        newChatBtn: document.getElementById('new-chat-btn'),
+        pinnedChatsSection: document.getElementById('pinned-chats-section'),
+        pinnedChatsList: document.getElementById('pinned-chats-list'),
+        savedChatsList: document.getElementById('saved-chats-list'),
+        savedChatsSkeleton: document.getElementById('saved-chats-skeleton'),
+        mainContent: document.getElementById('main-content'),
+        welcomeScreen: document.getElementById('welcome-screen'),
+        chatContainer: document.getElementById('chat-container'),
+        notificationArea: document.getElementById('notification-area'),
+        suggestionArea: document.getElementById('suggestion-area'),
+        toggleSuggestionsBtn: document.getElementById('toggle-suggestions-btn'),
+        suggestionsContainer: document.getElementById('suggestions-container'),
+        inputAreaWrapper: document.getElementById('input-area-wrapper'),
+        inputArea: document.getElementById('input-area'),
+        referenceBtn: document.getElementById('reference-btn'),
+        promptInput: document.getElementById('prompt-input'),
+        recordBtn: document.getElementById('record-btn'),
+        sendBtn: document.getElementById('send-btn'),
+        personaModalOverlay: document.getElementById('persona-modal-overlay'),
+        personaModal: document.getElementById('persona-modal'),
+        personaModalTitle: document.getElementById('persona-modal-title'),
+        closePersonaModalBtn: document.getElementById('close-persona-modal-btn'),
+        personaForm: document.getElementById('persona-form'),
+        personaIdInput: document.getElementById('persona-id'),
+        personaNameInput: document.getElementById('persona-name'),
+        personaIconInput: document.getElementById('persona-icon'),
+        personaDescriptionInput: document.getElementById('persona-description'),
+        personaPromptInput: document.getElementById('persona-prompt'),
+        generatePromptBtn: document.getElementById('generate-prompt-btn'),
+        cancelPersonaBtn: document.getElementById('cancel-persona-btn'),
+        savePersonaBtn: document.getElementById('save-persona-btn'),
+        referenceModalOverlay: document.getElementById('reference-modal-overlay'),
+        referenceModal: document.getElementById('reference-modal'),
+        referenceHeader: document.getElementById('reference-header'),
+        referenceTitle: document.getElementById('reference-title'),
+        closeReferenceModalBtn: document.getElementById('close-reference-modal-btn'),
+        referenceContent: document.getElementById('reference-content'),
+        referenceInputArea: document.getElementById('reference-input-area'),
+        referencePromptInput: document.getElementById('reference-prompt-input'),
+        referenceSendBtn: document.getElementById('reference-send-btn'),
+        learningModeToggle: document.getElementById('learning-mode-toggle'), 
+        learningModeIndicator: document.getElementById('learning-mode-indicator'),
+        chatScrollContainer: document.getElementById("chat-container"),
+        scrollToTopBtn: document.getElementById("scrollToTopBtn"),
+        confirmationModalOverlay: document.getElementById('confirmation-modal-overlay'),
+        confirmationModal: document.getElementById('confirmation-modal'),
+        confirmationModalIcon: document.getElementById('confirmation-modal-icon'),
+        confirmationModalTitle: document.getElementById('confirmation-modal-title'),
+        confirmationModalMessage: document.getElementById('confirmation-modal-message'),
+        confirmationModalConfirmBtn: document.getElementById('confirmation-modal-confirm-btn'),
+        confirmationModalCancelBtn: document.getElementById('confirmation-modal-cancel-btn')
+    };
+    
     updateThemeIcon();
 
-    if (chatScrollContainer) {
-        chatScrollContainer.addEventListener("scroll", toggleScrollToTopButton);
+    if (DOMElements.chatScrollContainer) {
+        DOMElements.chatScrollContainer.addEventListener("scroll", toggleScrollToTopButton);
     }
-    if (scrollToTopBtn) { 
-        scrollToTopBtn.addEventListener("click", scrollToTop);
+    if (DOMElements.scrollToTopBtn) { 
+        DOMElements.scrollToTopBtn.addEventListener("click", scrollToTop);
     }
     updateLearningModeIndicator();
     
-    confirmationModalCancelBtn.addEventListener('click', () => {
+    DOMElements.confirmationModalCancelBtn.addEventListener('click', () => {
         if (confirmationResolve) confirmationResolve(false);
         hideConfirmationModal();
     });
 
-    confirmationModalOverlay.addEventListener('click', (e) => {
-        if (e.target === confirmationModalOverlay) {
+    DOMElements.confirmationModalOverlay.addEventListener('click', (e) => {
+        if (e.target === DOMElements.confirmationModalOverlay) {
             if (confirmationResolve) confirmationResolve(false);
             hideConfirmationModal();
         }
     });
 
-    confirmationModalConfirmBtn.addEventListener('click', () => {
+    DOMElements.confirmationModalConfirmBtn.addEventListener('click', () => {
         if (confirmationResolve) confirmationResolve(true);
         hideConfirmationModal();
     });
