@@ -185,23 +185,42 @@ const defaultPersonas = [
             "Làm thế nào để tối ưu một truy vấn SQL có sử dụng `JOIN` trên nhiều bảng lớn?"
         ]
     },
-    // === PERSONA ĐƯỢC NÂNG CẤP ===
+    // === PERSONA ĐƯỢC NÂNG CẤP VỚI TÍNH NĂNG TRẮC NGHIỆM ===
     { 
         id: 'language_tutor', 
         name: 'Gia sư Ngoại ngữ', 
         icon: '🌐', 
-        description: 'Dạy từ vựng, ngữ pháp các ngôn ngữ Á Đông.', 
-        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp và thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
+        description: 'Dạy từ vựng, ngữ pháp và kiểm tra kiến thức.', 
+        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp, thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
+
 1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc, sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt.
     * **Tiếng Trung:** 你好 (Nǐ hǎo) - Xin chào.
     * **Tiếng Nhật:** こんにちは (Konnichiwa) - Xin chào.
     * **Tiếng Hàn:** 안녕하세요 (Annyeonghaseyo) - Xin chào.
-2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm, và bản dịch.
-3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và kiên nhẫn.`,
+
+2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm, và bản dịch.
+
+3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và kiên nhẫn.
+
+4.  **Tương tác chủ động:** Sau khi giảng dạy một khái niệm (khoảng 3-5 từ vựng hoặc một điểm ngữ pháp), bạn PHẢI chủ động đặt câu hỏi cho người học để kiểm tra sự hiểu biết của họ. Sử dụng cú pháp đặc biệt sau để tạo câu hỏi trắc nghiệm trong một khối mã 'quiz':
+    \`\`\`quiz
+    {
+      "question": "Câu hỏi của bạn ở đây bằng tiếng Việt?",
+      "options": {
+        "A": "Lựa chọn A",
+        "B": "Lựa chọn B",
+        "C": "Lựa chọn C"
+      },
+      "answer": "A",
+      "explanation": "Giải thích chi tiết tại sao đáp án đó đúng, bằng tiếng Việt."
+    }
+    \`\`\`
+
+5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Nhật cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.`,
         samplePrompts: [
-            "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung.",
-            "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật.",
-            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì?"
+            "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung và sau đó kiểm tra tôi.",
+            "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật, rồi đố tôi một câu hỏi.",
+            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm."
         ]
     },
     { 
@@ -638,7 +657,106 @@ async function handleSavePersona(e) {
 // --- CHAT LOGIC ---
 
 /**
- * === HÀM ĐƯỢC CẬP NHẬT ===
+ * === HÀM MỚI: Dành riêng cho việc render HTML của một khối trắc nghiệm ===
+ * @param {object} data - Dữ liệu JSON của quiz đã được parse.
+ * @param {string} quizId - Một ID duy nhất cho khối quiz này.
+ * @returns {HTMLElement} - Phần tử DOM của khối quiz.
+ */
+function renderQuiz(data, quizId) {
+    let optionsHtml = '';
+    const letters = Object.keys(data.options);
+    letters.forEach(letter => {
+        optionsHtml += `
+            <button class="quiz-option-btn" data-quiz-id="${quizId}" data-option="${letter}">
+                <span class="quiz-option-letter">${letter}</span>
+                <span class="quiz-option-text">${DOMPurify.sanitize(data.options[letter])}</span>
+            </button>
+        `;
+    });
+
+    const quizWrapper = document.createElement('div');
+    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50";
+    quizWrapper.id = quizId;
+    // Lưu trữ toàn bộ dữ liệu quiz trên DOM element để dễ dàng truy xuất sau này
+    quizWrapper.dataset.quizData = JSON.stringify(data);
+
+    quizWrapper.innerHTML = `
+        <p class="font-semibold mb-3 text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(data.question)}</p>
+        <div class="space-y-2">
+            ${optionsHtml}
+        </div>
+        <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>
+    `;
+    return quizWrapper;
+}
+
+/**
+ * === HÀM MỚI: Xử lý khi người dùng chọn một đáp án trắc nghiệm ===
+ * @param {HTMLElement} button - Nút đáp án mà người dùng đã nhấn.
+ */
+function handleQuizAnswer(button) {
+    const quizId = button.dataset.quizId;
+    const selectedOption = button.dataset.option;
+    const quizContainer = document.getElementById(quizId);
+    
+    if (!quizContainer || !quizContainer.dataset.quizData) return;
+
+    const allOptions = quizContainer.querySelectorAll('.quiz-option-btn');
+    const quizData = JSON.parse(quizContainer.dataset.quizData);
+    const correctAnswer = quizData.answer;
+    const explanation = quizData.explanation;
+
+    // Vô hiệu hóa tất cả các lựa chọn và hiển thị kết quả
+    allOptions.forEach(opt => {
+        opt.disabled = true;
+        const optionLetter = opt.dataset.option;
+        if (optionLetter === correctAnswer) {
+            opt.classList.add('correct');
+        }
+        if (optionLetter === selectedOption && selectedOption !== correctAnswer) {
+            opt.classList.add('incorrect');
+        }
+    });
+
+    // Hiển thị phần giải thích
+    const explanationDiv = quizContainer.querySelector('.quiz-explanation');
+    if (explanation) {
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${explanation}`));
+        explanationDiv.classList.remove('hidden');
+        // Thêm class màu nền dựa trên kết quả
+        if (selectedOption === correctAnswer) {
+            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+        } else {
+            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
+        }
+    }
+}
+
+/**
+ * === HÀM MỚI: Tìm và thay thế các khối mã quiz bằng HTML tương tác ===
+ * Hàm này sẽ được gọi sau khi nội dung markdown đã được render.
+ * @param {HTMLElement} containerElement - Phần tử chứa nội dung tin nhắn.
+ */
+function processQuizBlocks(containerElement) {
+    // Tìm các khối mã có class 'language-quiz' do marked.js tạo ra
+    const quizCodeBlocks = containerElement.querySelectorAll('pre code.language-quiz');
+    quizCodeBlocks.forEach(codeBlock => {
+        const preElement = codeBlock.parentElement;
+        try {
+            const quizData = JSON.parse(codeBlock.textContent);
+            const quizId = `quiz-${crypto.randomUUID()}`;
+            const quizHtmlElement = renderQuiz(quizData, quizId);
+            // Thay thế thẻ <pre> bằng khối quiz tương tác
+            preElement.replaceWith(quizHtmlElement);
+        } catch (error) {
+            console.error("Lỗi phân tích JSON của quiz:", error, codeBlock.textContent);
+            preElement.innerHTML = `<div class="text-red-500">Lỗi hiển thị quiz. Định dạng JSON không hợp lệ.</div>`;
+        }
+    });
+}
+
+
+/**
  * Speaks a given text using the browser's Speech Synthesis API.
  * @param {string} text - The text to be spoken.
  * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'ko-KR').
@@ -658,7 +776,6 @@ function speakText(text, lang) {
     if (specificVoice) {
         utterance.voice = specificVoice;
     } else {
-        // Fallback for languages that might have region-specific codes like 'zh-TW'
         const baseLang = lang.split('-')[0];
         const fallbackVoice = voices.find(voice => voice.lang.startsWith(baseLang));
         if (fallbackVoice) {
@@ -679,24 +796,14 @@ function speakText(text, lang) {
 }
 
 /**
- * === HÀM ĐƯỢC SỬA LỖI VÀ NÂNG CẤP ===
  * Finds foreign characters (Chinese, Japanese, Korean) in an element's text nodes 
  * and wraps them in a clickable span that can be used for pronunciation.
- * This version fixes a bug that prevented matches from being found correctly.
  * @param {HTMLElement} container - The element whose text nodes should be processed.
  */
 function makeForeignTextClickable(container) {
-    // This regex combines the Unicode ranges for:
-    // \u3040-\u309F: Hiragana
-    // \u30A0-\u30FF: Katakana
-    // \u4E00-\u9FFF: CJK Unified Ideographs (Hanzi/Kanji)
-    // \uAC00-\uD7AF: Hangul Syllables
     const foreignRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]+/g;
-
-    // Regexes for identifying the language of a matched string
     const hiraganaKatakanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
     const hangulRegex = /[\uAC00-\uD7AF]/;
-
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
     const nodesToProcess = [];
     let currentNode;
@@ -710,51 +817,39 @@ function makeForeignTextClickable(container) {
         }
 
         const text = textNode.nodeValue;
-        
-        // Use a while loop with exec for robust iteration
-        foreignRegex.lastIndex = 0; // Reset regex state before using it.
+        foreignRegex.lastIndex = 0;
         if (!foreignRegex.test(text)) {
-            return; // Skip nodes with no foreign characters
+            return;
         }
-        foreignRegex.lastIndex = 0; // Reset again for the loop
+        foreignRegex.lastIndex = 0;
 
         const fragment = document.createDocumentFragment();
         let lastIndex = 0;
         let match;
 
         while ((match = foreignRegex.exec(text)) !== null) {
-            // Add the text before the match
             if (match.index > lastIndex) {
                 fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
             }
-
-            // Create and add the clickable span for the foreign text
             const span = document.createElement('span');
             span.className = 'clickable-foreign';
             span.textContent = match[0];
-            
-            // Determine language and set data-lang attribute
             if (hangulRegex.test(match[0])) {
                 span.dataset.lang = 'ko-KR';
             } else if (hiraganaKatakanaRegex.test(match[0])) {
                 span.dataset.lang = 'ja-JP';
             } else {
-                // Default to Chinese if only Hanzi/Kanji is present
                 span.dataset.lang = 'zh-CN';
             }
-            
             span.title = `Phát âm (${span.dataset.lang})`;
             fragment.appendChild(span);
-            
             lastIndex = foreignRegex.lastIndex;
         }
         
-        // Add any remaining text after the last match
         if (lastIndex < text.length) {
             fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
         }
         
-        // Replace the original text node with the new fragment
         if (fragment.hasChildNodes()) {
              textNode.parentNode.replaceChild(fragment, textNode);
         }
@@ -762,7 +857,6 @@ function makeForeignTextClickable(container) {
 }
 
 
-// Sửa lỗi: Cập nhật hàm preprocessText
 function preprocessText(text) {
     const learningLinkRegex = /\[([^\]]+?)\]\{"prompt":"([^"]+?)"\}/g;
     const termLinkRegex = /\[([^\]]+?)\]/g;
@@ -771,49 +865,36 @@ function preprocessText(text) {
     let lastIndex = 0;
     let match;
 
-    // 1. First pass: Find all complex learning links and separate them.
     while ((match = learningLinkRegex.exec(text)) !== null) {
-        // Push the raw text segment before this learning link.
         parts.push(text.substring(lastIndex, match.index));
         
         const title = match[1];
         let prompt;
         try {
-            // Attempt to parse the JSON part to get the prompt
             const promptData = JSON.parse(match[2]);
             prompt = promptData.prompt;
         } catch(e) {
-            // If JSON is invalid, use the raw string as a fallback
             prompt = match[2];
         }
 
         const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        
-        // *** INTEGRATE THE NEW FEATURE HERE ***
         const isCompleted = completedTopics.includes(prompt);
         const completedClass = isCompleted ? ' completed' : '';
         
-        // Push the fully formed, safe HTML for the learning link.
         parts.push(`<a href="#" class="learning-link${completedClass}" data-prompt="${sanitizedPrompt}">${title}</a>`);
-        
         lastIndex = match.index + match[0].length;
     }
 
-    // Push the final segment of raw text.
     parts.push(text.substring(lastIndex));
 
-    // 2. Second pass: Process the raw text segments for simple term links.
     const finalParts = parts.map(part => {
-        // If this part is already an HTML link we generated, leave it alone.
         if (part.startsWith('<a href="#" class="learning-link')) {
             return part;
         } else {
-            // Otherwise, it's a raw text segment, so it's safe to process for term links.
             return part.replace(termLinkRegex, `<a href="#" class="term-link" data-term="$1">$1</a>`);
         }
     });
 
-    // 3. Join everything back together.
     return finalParts.join('');
 }
 
@@ -832,7 +913,7 @@ async function startNewChat(personaId, isCustom = false) {
     
     clearSuggestions();
     currentPersona = selectedPersona;
-    completedTopics = []; // CẬP NHẬT: Reset tiến độ khi bắt đầu chat mới
+    completedTopics = [];
     
     personaSelectionScreen.classList.add('hidden');
     chatViewContainer.classList.remove('hidden');
@@ -875,7 +956,6 @@ function updateChatHeader(persona) {
     }
 }
 
-// CẬP NHẬT: Thêm messageId vào các nút hành động
 function addMessageActions(actionsContainer, rawText, messageId) {
      if (!actionsContainer || !rawText || rawText.includes('blinking-cursor')) return;
     
@@ -896,20 +976,18 @@ function addMessageActions(actionsContainer, rawText, messageId) {
     speakBtn.dataset.state = 'idle';
     actionsContainer.appendChild(speakBtn);
 
-    // --- THÊM NÚT TÁI TẠO ---
     const regenerateBtn = document.createElement('button');
     regenerateBtn.className = 'regenerate-btn p-1.5 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-full transition-colors';
     regenerateBtn.innerHTML = svgIcons.regenerate;
     regenerateBtn.title = 'Tái tạo phản hồi';
-    regenerateBtn.dataset.targetId = messageId; // Gán ID của tin nhắn vào nút
+    regenerateBtn.dataset.targetId = messageId;
     actionsContainer.appendChild(regenerateBtn);
 }
 
-// CẬP NHẬT: Gán ID cho mỗi tin nhắn khi tạo
 function addMessage(role, text, shouldScroll = true) {
-    const messageId = crypto.randomUUID(); // Tạo ID duy nhất
+    const messageId = crypto.randomUUID();
     const messageWrapper = document.createElement('div');
-    messageWrapper.dataset.messageId = messageId; // Gán ID vào DOM element
+    messageWrapper.dataset.messageId = messageId;
 
     let contentElem;
     let statusElem;
@@ -964,14 +1042,15 @@ function addMessage(role, text, shouldScroll = true) {
     contentElem.innerHTML = DOMPurify.sanitize(marked.parse(preprocessedText), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
 
     highlightAllCode(contentElem);
+    
+    // === CẬP NHẬT: Gọi hàm xử lý quiz sau khi render nội dung ===
+    processQuizBlocks(contentElem);
 
-    // === CẬP NHẬT: Áp dụng tính năng click-để-phát-âm ===
     if (currentPersona && currentPersona.id === 'language_tutor') {
         makeForeignTextClickable(contentElem);
     }
     
     if (actionsContainer) {
-        // Truyền messageId vào hàm addMessageActions
         addMessageActions(actionsContainer, text, messageId);
     }
 
@@ -983,19 +1062,11 @@ function addMessage(role, text, shouldScroll = true) {
     return { messageWrapper, contentElem, statusElem, actionsContainer, messageId };
 }
 
-// === CÁC HÀM MỚI cho Highlight.js ===
-/**
- * Thêm nút "Copy" vào một khối mã <pre>.
- * @param {HTMLElement} preElement - Phần tử <pre> chứa khối mã.
- */
 function addCopyButton(preElement) {
-    // Tránh thêm nút nếu đã có
     if (preElement.querySelector('.copy-code-btn')) return;
-
     const button = document.createElement('button');
     button.className = 'copy-code-btn';
     button.textContent = 'Copy';
-
     button.addEventListener('click', () => {
         const codeElement = preElement.querySelector('code');
         if (codeElement) {
@@ -1008,17 +1079,21 @@ function addCopyButton(preElement) {
             }, 2000);
         }
     });
-
     preElement.appendChild(button);
 }
 
-/**
- * Tìm và tô màu tất cả các khối mã trong một phần tử và thêm nút sao chép.
- * @param {HTMLElement} container - Phần tử cha để tìm kiếm các khối mã.
- */
 function highlightAllCode(container) {
     const codeBlocks = container.querySelectorAll('pre code');
     codeBlocks.forEach((block) => {
+        // Thêm class language-quiz nếu khối mã là quiz để hàm processQuizBlocks có thể tìm thấy
+        if (block.textContent.trim().startsWith('{') && block.textContent.trim().endsWith('}')) {
+             try {
+                const potentialJson = JSON.parse(block.textContent);
+                if (potentialJson.question && potentialJson.options && potentialJson.answer) {
+                   block.classList.add('language-quiz');
+                }
+             } catch(e) { /* không phải JSON hợp lệ, bỏ qua */ }
+        }
         hljs.highlightElement(block);
         addCopyButton(block.parentElement);
     });
@@ -1111,8 +1186,10 @@ async function sendMessage(promptTextOverride = null) {
                 isFirstChunk = false;
             }
             fullResponseText += chunk.text();
-            const processedChunk = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
-            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
+            
+            // Tạm thời chỉ render link, không render quiz khi đang stream để tránh lỗi JSON
+            const processedChunkForStreaming = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunkForStreaming), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
             highlightAllCode(contentElem);
             if (currentPersona && currentPersona.id === 'language_tutor') {
                 makeForeignTextClickable(contentElem);
@@ -1122,11 +1199,13 @@ async function sendMessage(promptTextOverride = null) {
         
         if (statusElem) statusElem.classList.add('hidden');
         
+        // Render cuối cùng với đầy đủ quiz
         const finalProcessedText = preprocessText(fullResponseText);
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = fullResponseText;
         
         highlightAllCode(contentElem);
+        processQuizBlocks(contentElem); // Xử lý quiz sau khi render xong
         if (currentPersona && currentPersona.id === 'language_tutor') {
             makeForeignTextClickable(contentElem);
         }
@@ -1154,10 +1233,6 @@ async function sendMessage(promptTextOverride = null) {
     }
 }
 
-/**
- * Xử lý việc tái tạo câu trả lời của AI.
- * @param {string} targetMessageId - ID của tin nhắn AI cần tái tạo.
- */
 async function handleRegenerate(targetMessageId) {
     const messageWrapper = document.querySelector(`[data-message-id="${targetMessageId}"]`);
     if (!messageWrapper) return;
@@ -1220,6 +1295,7 @@ async function handleRegenerate(targetMessageId) {
         contentElem.dataset.rawText = newFullResponseText;
         
         highlightAllCode(contentElem);
+        processQuizBlocks(contentElem); // Xử lý quiz sau khi render xong
         if (currentPersona && currentPersona.id === 'language_tutor') {
             makeForeignTextClickable(contentElem);
         }
@@ -1238,14 +1314,13 @@ async function handleRegenerate(targetMessageId) {
 }
 
 
-// === CẬP NHẬT: Thêm mảng completedTopics vào DB ===
 async function updateConversationInDb() {
     if (!currentUserId || localHistory.length <= 2) return; 
     const chatData = { 
         history: localHistory, 
         updatedAt: serverTimestamp(), 
         personaId: currentPersona?.id || 'general',
-        completedTopics: completedTopics || [] // Lưu tiến độ học tập
+        completedTopics: completedTopics || []
     };
     try {
         if (currentChatId) {
@@ -1264,7 +1339,6 @@ async function updateConversationInDb() {
     }
 }
 
-// === CẬP NHẬT: Tải tiến độ học tập từ DB ===
 async function loadChat(chatId) {
     if (speechSynthesis.speaking) speechSynthesis.cancel();
     
@@ -1280,13 +1354,13 @@ async function loadChat(chatId) {
 
         if (chatDoc.exists()) {
             const data = chatDoc.data();
-            completedTopics = data.completedTopics || []; // Tải tiến độ
+            completedTopics = data.completedTopics || [];
             
             const loadedPersonaId = data.personaId || 'general';
             
             let foundPersona = defaultPersonas.find(p => p.id === loadedPersonaId);
             if (!foundPersona) {
-                await fetchCustomPersonas(); // Fetch custom ones if not found in default
+                await fetchCustomPersonas();
                 foundPersona = customPersonas.find(p => p.id === loadedPersonaId);
                 if (!foundPersona) {
                      const personaDocRef = doc(db, 'users', currentUserId, 'customPersonas', loadedPersonaId);
@@ -1314,7 +1388,6 @@ async function loadChat(chatId) {
 
             clearSuggestions();
 
-            // Bỏ qua 2 tin nhắn hệ thống đầu tiên
             const messagesToDisplay = localHistory.slice(2);
             messagesToDisplay.forEach(msg => {
                 if (!msg.id) {
@@ -1392,11 +1465,9 @@ function displaySuggestions(suggestions) {
     }
 }
 
-// --- UPDATED: New function to handle welcome screen ---
 async function showWelcomeScreenForPersona(persona) {
     if (!persona) return; 
 
-    // Show welcome screen and hide chat container
     welcomeScreen.classList.remove('hidden');
     welcomeScreen.classList.add('flex');
     chatContainer.classList.add('hidden');
@@ -1406,18 +1477,16 @@ async function showWelcomeScreenForPersona(persona) {
     document.getElementById('welcome-persona-description').textContent = persona.description;
     
     const suggestionsContainer = document.getElementById('welcome-suggestions-container');
-    suggestionsContainer.innerHTML = ''; // Clear previous suggestions
+    suggestionsContainer.innerHTML = '';
 
     if (isLearningMode) {
-         suggestionsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Ở Chế độ Học tập, bạn sẽ nhận được các liên kết tương tác thay vì gợi ý.</p>';
+         suggestionsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Ở Chế độ Học tập, bạn sẽ nhận được các liên kết tương tác và câu hỏi trắc nghiệm thay vì gợi ý.</p>';
          return;
     }
     
-    // Logic to display suggestions: Curated first, then AI-generated as fallback
     const suggestions = persona.samplePrompts;
 
     if (suggestions && suggestions.length > 0) {
-        // If curated suggestions exist, display them immediately
         suggestions.forEach(text => {
             const card = document.createElement('button');
             card.className = 'w-full p-4 text-left border dark:border-gray-700 rounded-lg welcome-suggestion-card';
@@ -1428,7 +1497,6 @@ async function showWelcomeScreenForPersona(persona) {
             suggestionsContainer.appendChild(card);
         });
     } else {
-        // Fallback to generating suggestions if none are curated
         suggestionsContainer.innerHTML = `
             <div class="w-full p-4 border border-dashed dark:border-gray-700 rounded-lg animate-pulse h-12"></div>
             <div class="w-full p-4 border border-dashed dark:border-gray-700 rounded-lg animate-pulse h-12"></div>
@@ -1439,7 +1507,7 @@ async function showWelcomeScreenForPersona(persona) {
             const responseText = result.response.text();
             const aiSuggestions = responseText.split('\n').filter(s => s.trim() !== '');
             
-            suggestionsContainer.innerHTML = ''; // Clear skeleton
+            suggestionsContainer.innerHTML = '';
             aiSuggestions.forEach(text => {
                 const card = document.createElement('button');
                 card.className = 'w-full p-4 text-left border dark:border-gray-700 rounded-lg welcome-suggestion-card';
@@ -1462,7 +1530,6 @@ function adjustInputHeight() {
     promptInput.style.height = promptInput.scrollHeight + 'px';
 }
 
-// --- Sidebar & Chat History Functions ---
 function openSidebar() {
     sidebar.classList.remove('-translate-x-full');
     sidebarOverlay.classList.remove('hidden');
@@ -1874,16 +1941,14 @@ async function generateSystemPrompt() {
     }
 }
 
-// === CẬP NHẬT: Lưu tiến độ khi nhấp vào link ===
 async function handleLearningPromptClick(linkElement) {
     const promptForAI = linkElement.dataset.prompt;
     if (!promptForAI) return;
 
-    // Đánh dấu là đã hoàn thành và lưu
     if (!completedTopics.includes(promptForAI)) {
         completedTopics.push(promptForAI);
         linkElement.classList.add('completed');
-        await updateConversationInDb(); // Lưu ngay lập tức
+        await updateConversationInDb();
     }
 
     const titleForDisplay = linkElement.textContent;
@@ -1944,7 +2009,6 @@ learningModeToggle.addEventListener('change', async (e) => {
     showToast(`Chế độ Học tập đã được ${isLearningMode ? 'bật' : 'tắt'}.`, 'info');
     updateLearningModeIndicator();
 
-    // Refresh welcome screen suggestions when mode is toggled
     if (welcomeScreen.classList.contains('flex')) {
         await showWelcomeScreenForPersona(currentPersona);
     }
@@ -1958,15 +2022,17 @@ function resetActiveSpeechButton() {
     }
 }
 
-// === CẬP NHẬT: Thêm xử lý cho clickable-foreign và các nút khác ===
+// === CẬP NHẬT: Thêm xử lý cho nút quiz và các nút khác ===
 chatContainer.addEventListener('click', async (e) => {
     const link = e.target.closest('a');
     const button = e.target.closest('button');
     const clickableForeign = e.target.closest('.clickable-foreign');
+    const quizButton = e.target.closest('.quiz-option-btn');
+
+    e.stopPropagation();
 
     if (link) {
         e.preventDefault();
-        e.stopPropagation();
         if (link.classList.contains('learning-link')) {
             await handleLearningPromptClick(link);
         } else if (link.classList.contains('term-link')) {
@@ -1975,12 +2041,14 @@ chatContainer.addEventListener('click', async (e) => {
             const context = messageContentElement ? messageContentElement.dataset.rawText : '';
             await explainTerm(term, context);
         }
+    } else if (quizButton && !quizButton.disabled) {
+        e.preventDefault();
+        handleQuizAnswer(quizButton);
     } else if (button) {
+        e.preventDefault();
          if (button.classList.contains('copy-btn')) {
-            e.preventDefault(); e.stopPropagation();
             copyToClipboard(button.dataset.text);
          } else if (button.classList.contains('speak-btn')) {
-            e.preventDefault(); e.stopPropagation();
             if (speechSynthesis.speaking || speechSynthesis.paused) {
                 if (activeSpeech && activeSpeech.button === button) {
                     const currentState = button.dataset.state;
@@ -1999,7 +2067,7 @@ chatContainer.addEventListener('click', async (e) => {
             }
 
             const utterance = new SpeechSynthesisUtterance(button.dataset.text);
-            utterance.lang = 'vi-VN'; // Nút chính luôn đọc tiếng Việt
+            utterance.lang = 'vi-VN';
             utterance.onstart = () => {
                 resetActiveSpeechButton();
                 activeSpeech = { utterance, button: button };
@@ -2013,15 +2081,13 @@ chatContainer.addEventListener('click', async (e) => {
                 activeSpeech = null; 
             };
             speechSynthesis.speak(utterance);
-         } else if (button.classList.contains('regenerate-btn')) { // XỬ LÝ NÚT MỚI
-            e.preventDefault(); e.stopPropagation();
+         } else if (button.classList.contains('regenerate-btn')) {
             handleRegenerate(button.dataset.targetId);
          }
-    } else if (clickableForeign) { // XỬ LÝ CHO TỪ NGOẠI NGỮ
+    } else if (clickableForeign) {
         e.preventDefault();
-        e.stopPropagation();
         const textToSpeak = clickableForeign.textContent;
-        const lang = clickableForeign.dataset.lang; // Lấy mã ngôn ngữ từ thuộc tính data
+        const lang = clickableForeign.dataset.lang;
         if (lang) {
             speakText(textToSpeak, lang);
         }
@@ -2068,7 +2134,6 @@ if(SpeechRecognition) {
     recordBtn.classList.add('hidden');
 }
 
-// --- Scroll to Top Button Logic ---
 function toggleScrollToTopButton() {
     if (!scrollToTopBtn || !chatScrollContainer) return; 
 
@@ -2101,7 +2166,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateLearningModeIndicator();
     
-    // Event listeners cho modal xác nhận
     confirmationModalCancelBtn.addEventListener('click', () => {
         if (confirmationResolve) confirmationResolve(false);
         hideConfirmationModal();
