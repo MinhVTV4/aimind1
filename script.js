@@ -668,8 +668,8 @@ function speakText(text, lang) {
 
     utterance.onerror = (event) => {
         console.error("SpeechSynthesisUtterance error:", event);
-        if (event.error === 'no-speech') {
-             showToast(`Không tìm thấy giọng đọc cho ngôn ngữ ${lang}.`, 'error');
+        if (event.error === 'no-speech' || event.error === 'not-allowed') {
+             showToast(`Không tìm thấy hoặc không thể dùng giọng đọc cho ngôn ngữ ${lang}.`, 'error');
         } else {
              showToast(`Lỗi phát âm: ${event.error}`, 'error');
         }
@@ -679,9 +679,10 @@ function speakText(text, lang) {
 }
 
 /**
- * === HÀM ĐƯỢC NÂNG CẤP ===
+ * === HÀM ĐƯỢC SỬA LỖI VÀ NÂNG CẤP ===
  * Finds foreign characters (Chinese, Japanese, Korean) in an element's text nodes 
  * and wraps them in a clickable span that can be used for pronunciation.
+ * This version fixes a bug that prevented matches from being found correctly.
  * @param {HTMLElement} container - The element whose text nodes should be processed.
  */
 function makeForeignTextClickable(container) {
@@ -697,10 +698,10 @@ function makeForeignTextClickable(container) {
     const hangulRegex = /[\uAC00-\uD7AF]/;
 
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-    let node;
     const nodesToProcess = [];
-    while (node = walker.nextNode()) {
-        nodesToProcess.push(node);
+    let currentNode;
+    while (currentNode = walker.nextNode()) {
+        nodesToProcess.push(currentNode);
     }
 
     nodesToProcess.forEach(textNode => {
@@ -709,40 +710,53 @@ function makeForeignTextClickable(container) {
         }
 
         const text = textNode.nodeValue;
-        if (foreignRegex.test(text)) {
-            const fragment = document.createDocumentFragment();
-            let lastIndex = 0;
-            text.replace(foreignRegex, (match, offset) => {
-                // Add text before the match
-                if (offset > lastIndex) {
-                    fragment.appendChild(document.createTextNode(text.substring(lastIndex, offset)));
-                }
+        
+        // Use a while loop with exec for robust iteration
+        foreignRegex.lastIndex = 0; // Reset regex state before using it.
+        if (!foreignRegex.test(text)) {
+            return; // Skip nodes with no foreign characters
+        }
+        foreignRegex.lastIndex = 0; // Reset again for the loop
 
-                // Determine language and create the span
-                const span = document.createElement('span');
-                span.className = 'clickable-foreign';
-                span.textContent = match;
-                
-                if (hangulRegex.test(match)) {
-                    span.dataset.lang = 'ko-KR';
-                } else if (hiraganaKatakanaRegex.test(match)) {
-                    span.dataset.lang = 'ja-JP';
-                } else {
-                    // Default to Chinese if only Hanzi/Kanji is present
-                    span.dataset.lang = 'zh-CN';
-                }
-                
-                span.title = `Phát âm (${span.dataset.lang})`;
-                fragment.appendChild(span);
-                lastIndex = offset + match.length;
-            });
+        const fragment = document.createDocumentFragment();
+        let lastIndex = 0;
+        let match;
+
+        while ((match = foreignRegex.exec(text)) !== null) {
+            // Add the text before the match
+            if (match.index > lastIndex) {
+                fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+            }
+
+            // Create and add the clickable span for the foreign text
+            const span = document.createElement('span');
+            span.className = 'clickable-foreign';
+            span.textContent = match[0];
             
-            // Add any remaining text
-            if (lastIndex < text.length) {
-                fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+            // Determine language and set data-lang attribute
+            if (hangulRegex.test(match[0])) {
+                span.dataset.lang = 'ko-KR';
+            } else if (hiraganaKatakanaRegex.test(match[0])) {
+                span.dataset.lang = 'ja-JP';
+            } else {
+                // Default to Chinese if only Hanzi/Kanji is present
+                span.dataset.lang = 'zh-CN';
             }
             
-            textNode.parentNode.replaceChild(fragment, textNode);
+            span.title = `Phát âm (${span.dataset.lang})`;
+            fragment.appendChild(span);
+            
+            lastIndex = foreignRegex.lastIndex;
+        }
+        
+        // Add any remaining text after the last match
+        if (lastIndex < text.length) {
+            fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
+        }
+        
+        // Replace the original text node with the new fragment
+        if (fragment.hasChildNodes()) {
+             textNode.parentNode.replaceChild(fragment, textNode);
         }
     });
 }
