@@ -159,7 +159,7 @@ const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-
 const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
 
 
-// --- CẬP NHẬT: Thêm persona "Gia sư Ngoại ngữ" ---
+// --- CẬP NHẬT: Nâng cấp persona "Gia sư Ngoại ngữ" ---
 const defaultPersonas = [
     { 
         id: 'general', 
@@ -185,20 +185,23 @@ const defaultPersonas = [
             "Làm thế nào để tối ưu một truy vấn SQL có sử dụng `JOIN` trên nhiều bảng lớn?"
         ]
     },
-    // === PERSONA MỚI ===
+    // === PERSONA ĐƯỢC NÂNG CẤP ===
     { 
         id: 'language_tutor', 
         name: 'Gia sư Ngoại ngữ', 
         icon: '🌐', 
-        description: 'Dạy từ vựng, ngữ pháp, và văn hóa các ngôn ngữ.', 
-        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp và thân thiện. Khi dạy một ngôn ngữ, đặc biệt là tiếng Trung, hãy tuân thủ nghiêm ngặt các quy tắc sau:
-1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc (Hán tự), sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt. Ví dụ: 你好 (Nǐ hǎo) - Xin chào.
+        description: 'Dạy từ vựng, ngữ pháp các ngôn ngữ Á Đông.', 
+        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp và thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
+1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc, sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt.
+    * **Tiếng Trung:** 你好 (Nǐ hǎo) - Xin chào.
+    * **Tiếng Nhật:** こんにちは (Konnichiwa) - Xin chào.
+    * **Tiếng Hàn:** 안녕하세요 (Annyeonghaseyo) - Xin chào.
 2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm, và bản dịch.
 3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và kiên nhẫn.`,
         samplePrompts: [
             "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung.",
-            "Sự khác biệt giữa '是' (shì) và '在' (zài) trong tiếng Trung là gì?",
-            "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật."
+            "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật.",
+            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì?"
         ]
     },
     { 
@@ -635,85 +638,110 @@ async function handleSavePersona(e) {
 // --- CHAT LOGIC ---
 
 /**
- * === HÀM MỚI ===
+ * === HÀM ĐƯỢC CẬP NHẬT ===
  * Speaks a given text using the browser's Speech Synthesis API.
  * @param {string} text - The text to be spoken.
- * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'en-US').
+ * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'ko-KR').
  */
 function speakText(text, lang) {
     if (!('speechSynthesis' in window)) {
         showToast("Trình duyệt không hỗ trợ phát âm.", "error");
         return;
     }
-    // Cancel any previous speech to avoid overlap
     speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
 
-    // Optional: try to find a specific voice for better quality
     const voices = speechSynthesis.getVoices();
     const specificVoice = voices.find(voice => voice.lang === lang);
     if (specificVoice) {
         utterance.voice = specificVoice;
+    } else {
+        // Fallback for languages that might have region-specific codes like 'zh-TW'
+        const baseLang = lang.split('-')[0];
+        const fallbackVoice = voices.find(voice => voice.lang.startsWith(baseLang));
+        if (fallbackVoice) {
+            utterance.voice = fallbackVoice;
+        }
     }
 
     utterance.onerror = (event) => {
         console.error("SpeechSynthesisUtterance error:", event);
-        showToast(`Lỗi phát âm: ${event.error}`, 'error');
+        if (event.error === 'no-speech') {
+             showToast(`Không tìm thấy giọng đọc cho ngôn ngữ ${lang}.`, 'error');
+        } else {
+             showToast(`Lỗi phát âm: ${event.error}`, 'error');
+        }
     };
 
     speechSynthesis.speak(utterance);
 }
 
 /**
- * === HÀM MỚI ===
- * Finds Chinese characters in an element's text nodes and wraps them in a clickable span.
+ * === HÀM ĐƯỢC NÂNG CẤP ===
+ * Finds foreign characters (Chinese, Japanese, Korean) in an element's text nodes 
+ * and wraps them in a clickable span that can be used for pronunciation.
  * @param {HTMLElement} container - The element whose text nodes should be processed.
  */
 function makeForeignTextClickable(container) {
-    // Regex to find sequences of Chinese characters.
-    const chineseRegex = /[\u4E00-\u9FFF]+/g;
+    // This regex combines the Unicode ranges for:
+    // \u3040-\u309F: Hiragana
+    // \u30A0-\u30FF: Katakana
+    // \u4E00-\u9FFF: CJK Unified Ideographs (Hanzi/Kanji)
+    // \uAC00-\uD7AF: Hangul Syllables
+    const foreignRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]+/g;
 
-    // Use TreeWalker to efficiently iterate through only text nodes.
+    // Regexes for identifying the language of a matched string
+    const hiraganaKatakanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
+    const hangulRegex = /[\uAC00-\uD7AF]/;
+
     const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
-    const nodesToProcess = [];
     let node;
+    const nodesToProcess = [];
     while (node = walker.nextNode()) {
         nodesToProcess.push(node);
     }
 
     nodesToProcess.forEach(textNode => {
-        // Avoid processing text inside scripts, styles, or already processed elements.
-        if (textNode.parentElement.closest('script, style, .clickable-chinese')) {
+        if (textNode.parentElement.closest('script, style, .clickable-foreign')) {
             return;
         }
 
         const text = textNode.nodeValue;
-        if (chineseRegex.test(text)) {
+        if (foreignRegex.test(text)) {
             const fragment = document.createDocumentFragment();
             let lastIndex = 0;
-            let match;
-            chineseRegex.lastIndex = 0; // Reset regex state before loop
-
-            while ((match = chineseRegex.exec(text)) !== null) {
-                // Add the text before the match
-                if (match.index > lastIndex) {
-                    fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
+            text.replace(foreignRegex, (match, offset) => {
+                // Add text before the match
+                if (offset > lastIndex) {
+                    fragment.appendChild(document.createTextNode(text.substring(lastIndex, offset)));
                 }
-                // Create and add the clickable span for the Chinese text
+
+                // Determine language and create the span
                 const span = document.createElement('span');
-                span.className = 'clickable-chinese';
-                span.textContent = match[0];
-                span.title = 'Nhấn để nghe phát âm';
+                span.className = 'clickable-foreign';
+                span.textContent = match;
+                
+                if (hangulRegex.test(match)) {
+                    span.dataset.lang = 'ko-KR';
+                } else if (hiraganaKatakanaRegex.test(match)) {
+                    span.dataset.lang = 'ja-JP';
+                } else {
+                    // Default to Chinese if only Hanzi/Kanji is present
+                    span.dataset.lang = 'zh-CN';
+                }
+                
+                span.title = `Phát âm (${span.dataset.lang})`;
                 fragment.appendChild(span);
-                lastIndex = chineseRegex.lastIndex;
-            }
-            // Add any remaining text after the last match
+                lastIndex = offset + match.length;
+            });
+            
+            // Add any remaining text
             if (lastIndex < text.length) {
                 fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
             }
-            // Replace the original text node with the new fragment containing spans
+            
             textNode.parentNode.replaceChild(fragment, textNode);
         }
     });
@@ -1916,11 +1944,11 @@ function resetActiveSpeechButton() {
     }
 }
 
-// === CẬP NHẬT: Thêm xử lý cho clickable-chinese và các nút khác ===
+// === CẬP NHẬT: Thêm xử lý cho clickable-foreign và các nút khác ===
 chatContainer.addEventListener('click', async (e) => {
     const link = e.target.closest('a');
     const button = e.target.closest('button');
-    const clickableChinese = e.target.closest('.clickable-chinese');
+    const clickableForeign = e.target.closest('.clickable-foreign');
 
     if (link) {
         e.preventDefault();
@@ -1975,11 +2003,14 @@ chatContainer.addEventListener('click', async (e) => {
             e.preventDefault(); e.stopPropagation();
             handleRegenerate(button.dataset.targetId);
          }
-    } else if (clickableChinese) { // XỬ LÝ CHO TỪ TIẾNG TRUNG
+    } else if (clickableForeign) { // XỬ LÝ CHO TỪ NGOẠI NGỮ
         e.preventDefault();
         e.stopPropagation();
-        const textToSpeak = clickableChinese.textContent;
-        speakText(textToSpeak, 'zh-CN'); // Gọi hàm phát âm tiếng Trung
+        const textToSpeak = clickableForeign.textContent;
+        const lang = clickableForeign.dataset.lang; // Lấy mã ngôn ngữ từ thuộc tính data
+        if (lang) {
+            speakText(textToSpeak, lang);
+        }
     }
 });
 
