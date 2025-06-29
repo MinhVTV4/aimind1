@@ -262,7 +262,7 @@ const defaultPersonas = [
         samplePrompts: [
             "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung và sau đó kiểm tra tôi.",
             "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật, rồi đố tôi một câu hỏi.",
-            "Sự khác biệt giữa '은/는' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm."
+            "Sự khác biệt giữa 'én/là' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm."
         ]
     },
     { 
@@ -1019,6 +1019,15 @@ function markQuizCompleted(quizId) {
  * @returns {HTMLElement} - Phần tử DOM của khối quiz.
  */
 function renderQuiz(data, quizId) {
+    // Nếu dữ liệu quiz không hợp lệ hoặc không có type, trả về div lỗi
+    if (!data || !data.type) {
+        console.warn('Invalid or missing quiz type in data:', data);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = "text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50";
+        errorDiv.textContent = `Lỗi: Loại quiz không xác định hoặc không được hỗ trợ. Vui lòng kiểm tra định dạng JSON. Dữ liệu: ${JSON.stringify(data)}`;
+        return errorDiv;
+    }
+
     switch (data.type) {
         case 'multiple_choice':
             return renderMultipleChoiceQuiz(data, quizId);
@@ -1027,10 +1036,10 @@ function renderQuiz(data, quizId) {
         case 'short_answer':
             return renderShortAnswerQuiz(data, quizId);
         default:
-            console.warn('Unknown quiz type or missing type:', data);
+            console.warn('Unknown quiz type:', data.type);
             const errorDiv = document.createElement('div');
             errorDiv.className = "text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50";
-            errorDiv.textContent = `Lỗi: Loại quiz không xác định hoặc không được hỗ trợ: ${data.type || 'undefined'}. Vui lòng kiểm tra định dạng JSON.`;
+            errorDiv.textContent = `Lỗi: Loại quiz không xác định hoặc không được hỗ trợ: ${data.type}. Vui lòng kiểm tra định dạng JSON.`;
             return errorDiv;
     }
 }
@@ -1045,33 +1054,36 @@ function processQuizBlocks(containerElement) {
     const quizCodeBlocks = containerElement.querySelectorAll('pre code.language-quiz');
     quizCodeBlocks.forEach(codeBlock => {
         const preElement = codeBlock.parentElement;
+        let quizData = null;
         try {
-            let quizData = JSON.parse(codeBlock.textContent);
-            const quizId = `quiz-${crypto.randomUUID()}`; // Generate a unique ID for each quiz instance
+            quizData = JSON.parse(codeBlock.textContent);
             
-            // === CẬP NHẬT: Xử lý quiz cũ không có trường "type" ===
+            // === CẬP NHẬT: Xử lý quiz cũ không có trường "type" hoặc định dạng không hoàn chỉnh ===
             if (!quizData.type) {
-                // If 'type' is missing, assume it's an old-format multiple_choice quiz
+                // Nếu là quiz trắc nghiệm cũ (có question, options, answer)
                 if (quizData.question && quizData.options && quizData.answer) {
                     quizData.type = 'multiple_choice';
-                    // If old format, also check for old explanation field name
+                    // Nếu định dạng cũ, cũng kiểm tra tên trường giải thích cũ
                     if (!quizData.explanation && quizData.explanationText) {
                         quizData.explanation = quizData.explanationText;
                     }
                 } else {
-                    // If it doesn't match old multiple_choice, it's truly an unrecognized format
-                    console.warn('Unrecognized old quiz format:', quizData);
-                    preElement.innerHTML = `<div class="text-red-500">Lỗi hiển thị quiz: Định dạng quiz không hợp lệ.</div>`;
-                    return;
+                    // Nếu không khớp với định dạng trắc nghiệm cũ, coi là không nhận diện được
+                    console.warn('Unrecognized old quiz format or incomplete data, skipping:', quizData);
+                    preElement.innerHTML = `<div class="text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50">Lỗi hiển thị quiz: Định dạng JSON quiz không hợp lệ hoặc không đầy đủ.</div>`;
+                    return; // Thoát khỏi vòng lặp forEach cho khối này
                 }
             }
 
+            // Nếu quizData đã được xác định loại và hợp lệ
+            const quizId = `quiz-${crypto.randomUUID()}`; // Tạo ID duy nhất cho mỗi thể hiện quiz
             const quizHtmlElement = renderQuiz(quizData, quizId);
-            // Replace the <pre> tag with the interactive quiz block
+            // Thay thế thẻ <pre> bằng khối quiz tương tác
             preElement.replaceWith(quizHtmlElement);
         } catch (error) {
+            // Xử lý lỗi khi JSON.parse thất bại
             console.error("Lỗi phân tích JSON của quiz:", error, codeBlock.textContent);
-            preElement.innerHTML = `<div class="text-red-500">Lỗi hiển thị quiz. Định dạng JSON không hợp lệ.</div>`;
+            preElement.innerHTML = `<div class="text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50">Lỗi hiển thị quiz: Định dạng JSON không hợp lệ. Vui lòng kiểm tra cú pháp JSON.</div>`;
         }
     });
 }
@@ -1199,7 +1211,7 @@ function preprocessText(text) {
         }
 
         const sanitizedPrompt = prompt.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        const isCompleted = completedTopics.includes(prompt);
+        const isCompleted = completedTopics.includes(sanitizedPrompt); // Check against sanitized prompt
         const completedClass = isCompleted ? ' completed' : '';
         
         parts.push(`<a href="#" class="learning-link${completedClass}" data-prompt="${sanitizedPrompt}">${title}</a>`);
@@ -1760,7 +1772,7 @@ function clearSuggestions() {
 async function getFollowUpSuggestions(lastResponse) {
     try {
         const suggestionPrompt = `Dựa vào câu trả lời sau: "${lastResponse.substring(0, 500)}". Hãy đề xuất 3 câu hỏi tiếp theo ngắn gọn và thú vị mà người dùng có thể hỏi. QUAN TRỌNG: Chỉ trả về 3 câu hỏi, mỗi câu trên một dòng. Không đánh số, không dùng gạch đầu dòng, không thêm bất kỳ văn bản nào khác.`;
-        const result = await fastModel.generateContent(suggestionPrompt);
+        const result = await fastModel.generateContent(prompt);
         const responseText = result.response.text();
         const suggestions = responseText.split('\n').filter(s => s.trim() !== '');
         displaySuggestions(suggestions);
