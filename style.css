@@ -124,8 +124,8 @@ body {
     display: inline-block;
 }
 
-/* === CSS MỚI: Định dạng cho từ ngoại ngữ có thể nhấp === */
-.clickable-chinese {
+/* === CSS ĐƯỢC CẬP NHẬT: Định dạng chung cho từ ngoại ngữ === */
+.clickable-foreign {
     color: #8b5cf6; /* purple-500 */
     cursor: pointer;
     text-decoration: underline;
@@ -136,15 +136,15 @@ body {
     padding: 1px 2px;
     margin: -1px -2px;
 }
-.dark .clickable-chinese {
+.dark .clickable-foreign {
     color: #a78bfa; /* purple-400 */
 }
-.clickable-chinese:hover {
+.clickable-foreign:hover {
     background-color: #ede9fe; /* purple-50 */
     color: #7c3aed; /* purple-600 */
     text-decoration-style: solid;
 }
-.dark .clickable-chinese:hover {
+.dark .clickable-foreign:hover {
     background-color: #4c1d95; /* purple-900 */
     color: #c4b5fd; /* purple-300 */
 }
