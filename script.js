@@ -72,7 +72,7 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     * **{"prompt":"..."}**: Là một đối tượng JSON chứa một khóa "prompt". Giá trị của khóa này là một câu lệnh đầy đủ bạn tự tạo ra để yêu cầu chính bạn giải thích sâu về mục học đó. Prompt phải chi tiết và bằng tiếng Việt.
 
 **Định dạng các loại câu hỏi trắc nghiệm (LUÔN BỌC TRONG KHỐI MÃ \`\`\`quiz... \`\`\`):**
-**QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG KHỐI JSON của quiz PHẢI LÀ VĂN BẢN THUẦN TÚY. KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.)! KHÔNG DÙNG DẤU NHÁY ĐƠN '' cho chuỗi, LUÔN DÙNG DẤU NHÁY KÉP "" cho cả khóa và giá trị. Nếu cần làm nổi bật, hãy dùng dấu nháy đơn '...' bên trong chuỗi.**
+**QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG KHỐI JSON của quiz PHẢI LÀ VĂN BẢN THUẦN TÚY, không chứa BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT], hoặc các ký tự đặc biệt như $), hoặc THẺ HTML (<br>, <a>, etc.)! KHÔNG DÙNG DẤU NHÁY ĐƠN '' cho chuỗi, LUÔN DÙNG DẤU NHÁY KÉP "" cho cả khóa và giá trị. Đảm bảo tất cả các khóa và giá trị chuỗi đều được bọc trong DẤU NHÁY KÉP. Nếu có ký tự đặc biệt trong chuỗi (ví dụ: dấu nháy kép, dấu gạch chéo ngược), chúng PHẢI được ESCAPE đúng cách theo quy tắc JSON (ví dụ: \" và \\\\).**
 
 * **Câu hỏi trắc nghiệm nhiều lựa chọn (Multiple Choice):**
     \`\`\`quiz
@@ -314,6 +314,7 @@ const defaultPersonas = [
  * @param {string} options.title - Tiêu đề của modal.
  * @param {string} options.message - Thông điệp cảnh báo.
  * @param {string} [options.confirmText='Xóa'] - Chữ trên nút xác nhận.
+ * @param {string} [options.param="confirm"] - Parameter to help resolve confirm actions for callback.
  * @param {string} [options.confirmColor='red'] - Màu của nút xác nhận ('red' hoặc 'blue').
  * @returns {Promise<boolean>} - Trả về true nếu người dùng xác nhận, false nếu hủy.
  */
@@ -1028,7 +1029,7 @@ function handleFillInTheBlankSubmit(submitButton, quizId, quizData) {
         // Replace input fields with filled text
         let sentenceHtml = DOMPurify.sanitize(quizData.sentence);
         sentenceHtml = sentenceHtml.replace(/\{\{BLANK\}\}/g, (match, index) => {
-            const answer = quizData.blanks[index] || '???';
+            const answer = data.blanks[index] || '???';
             return `<span class="quiz-filled-blank correct">${DOMPurify.sanitize(answer)}</span>`;
         });
         quizContainer.querySelector('p').innerHTML = sentenceHtml;
@@ -1192,8 +1193,9 @@ function processQuizBlocks(containerElement) {
                 .replace(/“/g, '"') // Replace smart quotes with straight quotes
                 .replace(/”/g, '"')
                 .replace(/‘/g, "'") // Replace smart single quotes (we'll remove all single quotes later)
-                .replace(/’/g, "'");
-            
+                .replace(/’/g, "'")
+                .replace(/\$/g, ''); // Remove dollar signs from math notation that might break JSON
+
             // Try to fix common JSON errors like unescaped newlines within strings by replacing them
             // This is a common issue with LLM outputs for JSON
             cleanJsonText = cleanJsonText.replace(/(\"[^\"]*)\n([^\"]*\")/g, '$1\\n$2');
