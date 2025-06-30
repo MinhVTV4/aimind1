@@ -1629,15 +1629,7 @@ function handleTrueFalseAnswer(clickedButton, quizId) {
  * @param {string} quizId - Một ID duy nhất cho khối quiz này.
  * @returns {HTMLElement} - Phần tử DOM của khối quiz.
  */
-function renderQuiz(data, quizId) {
-    // Nếu dữ liệu quiz không hợp lệ hoặc không có type, trả về div lỗi
-    if (!data || !data.type) {
-        console.warn('Invalid or missing quiz type in data:', data);
-        const errorDiv = document.createElement('div');
-        errorDiv.className = "text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50";
-        errorDiv.textContent = `Lỗi: Loại quiz không xác định hoặc không được hỗ trợ. Vui lòng kiểm tra định dạng JSON. Dữ liệu: ${JSON.stringify(data)}`;
-        return errorDiv;
-    }
+
 
     switch (data.type) {
         case 'multiple_choice':
