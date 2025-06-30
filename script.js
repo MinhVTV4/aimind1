@@ -1743,7 +1743,7 @@ function highlightAllCode(container) {
                     (potentialJson.type === 'multiple_choice' && potentialJson.question && potentialJson.options && potentialJson.answer) ||
                     (potentialJson.type === 'fill_in_the_blank' && potentialJson.sentence && potentialJson.blanks) ||
                     (potentialJson.type === 'short_answer' && potentialJson.question && potentialJson.keywords && potentialJson.expected_answer_gist) ||
-                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson.cards[0].back) || // Kiểm tra cấu trúc flashcard
+                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson[0].back) || // Kiểm tra cấu trúc flashcard
                     // Check for old multiple_choice format (no type field)
                     (potentialJson.question && potentialJson.options && potentialJson.answer) 
                 ) {
@@ -2099,7 +2099,7 @@ function clearSuggestions() {
 async function getFollowUpSuggestions(lastResponse) {
     try {
         const suggestionPrompt = `Dựa vào câu trả lời sau: "${lastResponse.substring(0, 500)}". Hãy đề xuất 3 câu hỏi tiếp theo ngắn gọn và thú vị mà người dùng có thể hỏi. QUAN TRỌNG: Chỉ trả về 3 câu hỏi, mỗi câu trên một dòng. Không đánh số, không dùng gạch đầu dòng, không thêm bất kỳ văn bản nào khác.`;
-        const result = await fastModel.generateContent(suggestionPrompt);
+        const result = await fastModel.generateContent(prompt);
         // === FIX: Thêm kiểm tra an toàn cho result.response và result.response.text() ===
         if (result && result.response && typeof result.response.text === 'function') {
             const responseText = result.response.text();
@@ -2752,6 +2752,13 @@ chatContainer.addEventListener('click', async (e) => {
         }
     } else if (flashcardContainer) {
         // Handle flashcard flip
+        // Ngăn chặn sự kiện nổi bọt từ các nút bên trong flashcardContainer
+        if (e.target.closest('.flashcard-speak-btn') || e.target.closest('.flashcard-nav-btn') || e.target.closest('.flashcard-mark-completed-btn')) {
+            // Nếu click vào một trong các nút này, không lật thẻ
+            e.stopPropagation();
+            return; 
+        }
+
         const quizWrapper = flashcardContainer.closest('.flashcard-quiz-wrapper');
         // Only flip if the entire quiz set is not completed.
         if (quizWrapper && !completedQuizIds.includes(quizWrapper.id)) {
@@ -2761,6 +2768,7 @@ chatContainer.addEventListener('click', async (e) => {
             // currentCard.classList.toggle('unflipped', isFlipped); 
         }
     } else if (flashcardNavButton) {
+        e.stopPropagation(); // Ngăn chặn nổi bọt để không lật thẻ
         const quizWrapper = flashcardNavButton.closest('.flashcard-quiz-wrapper');
         if (!quizWrapper || completedQuizIds.includes(quizWrapper.id)) return; // Prevent navigation if completed
         const quizData = JSON.parse(quizWrapper.dataset.quizData);
@@ -2794,12 +2802,14 @@ chatContainer.addEventListener('click', async (e) => {
             quizWrapper.querySelector('.next-card-btn').disabled = currentCardIndex === totalCards - 1;
         }
     } else if (flashcardSpeakButton) {
+        e.stopPropagation(); // Ngăn chặn nổi bọt để không lật thẻ
         const textToSpeak = flashcardSpeakButton.dataset.text;
         const lang = flashcardSpeakButton.dataset.lang;
         if (lang) { // Check if lang is defined
             speakText(textToSpeak, lang);
         }
     } else if (flashcardMarkCompletedButton) {
+        e.stopPropagation(); // Ngăn chặn nổi bọt để không lật thẻ
         const quizWrapper = flashcardMarkCompletedButton.closest('.flashcard-quiz-wrapper');
         if (quizWrapper && !completedQuizIds.includes(quizWrapper.id)) { // Prevent marking if already completed
             markQuizCompleted(quizWrapper.id);
@@ -2907,7 +2917,7 @@ function toggleScrollToTopButton() {
     if (chatScrollContainer.scrollTop > chatScrollContainer.clientHeight * 0.5) { 
         scrollToTopBtn.classList.add('show');
     } else {
-        scrollToTopBtn.classList.remove('show');
+        scrollToTopBtn.classList.remove('show'); // Sửa lỗi ở đây
     }
 }
 
