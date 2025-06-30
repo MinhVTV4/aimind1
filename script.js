@@ -1621,12 +1621,6 @@ function handleTrueFalseAnswer(clickedButton, quizId) {
  * Marks a quiz as completed and updates the database.
  * @param {string} quizId - The ID of the quiz to mark as completed.
  */
-function markQuizCompleted(quizId) {
-    if (!completedQuizIds.includes(quizId)) {
-        completedQuizIds.push(quizId);
-        updateConversationInDb(); // Save the updated completed quiz IDs
-    }
-}
 
 
 /**
