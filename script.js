@@ -84,7 +84,7 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     * **{"prompt":"..."}**: Là một đối tượng JSON chứa một khóa "prompt". Giá trị của khóa này là một câu lệnh đầy đủ bạn tự tạo ra để yêu cầu chính bạn giải thích sâu về mục học đó. Prompt phải chi tiết và bằng tiếng Việt.
 
 **Định dạng các loại câu hỏi trắc nghiệm (LUÔN BỌC TRONG KHỐI MÃ \`\`\`quiz... \`\`\`):**
-**CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "left_items", "right_items", "correct_matches", "items", "correct_order", "statement") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
+**CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
 **TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY!**
 **LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤU NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
 
@@ -139,35 +139,6 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     }
     \`\`\`
     *Lưu ý:* "keywords" là các từ khóa quan trọng mà AI sẽ tìm kiếm trong câu trả lời của người dùng. "expected_answer_gist" là tóm tắt ý chính của câu trả lời đúng, dùng cho AI đánh giá. "explanation" là câu trả lời đầy đủ để hiển thị sau khi người dùng trả lời.
-
-* **Bài tập Nối cặp (Matching):**
-    \`\`\`quiz
-    {
-      "type": "matching",
-      "title": "Nối từ với định nghĩa",
-      "left_items": ["Apple", "Banana", "Orange"],
-      "right_items": ["A yellow fruit", "A red fruit", "An orange fruit"],
-      "correct_matches": {
-        "Apple": "A red fruit",
-        "Banana": "A yellow fruit",
-        "Orange": "An orange fruit"
-      },
-      "explanation": "Đây là bài tập nối từ tiếng Anh với định nghĩa của chúng."
-    }
-    \`\`\`
-    *Lưu ý:* "left_items" và "right_items" là các mảng chuỗi. "correct_matches" là một đối tượng ánh xạ từ mục bên trái sang mục bên phải.
-
-* **Bài tập Sắp xếp (Ordering):**
-    \`\`\`quiz
-    {
-      "type": "ordering",
-      "title": "Sắp xếp các bước làm bánh",
-      "items": ["Trộn bột", "Nướng bánh", "Đánh trứng", "Thêm đường"],
-      "correct_order": ["Đánh trứng", "Thêm đường", "Trộn bột", "Nướng bánh"],
-      "explanation": "Thứ tự đúng của các bước làm bánh."
-    }
-    \`\`\`
-    *Lưu ý:* "items" là các mục để hiển thị (sẽ được xáo trộn). "correct_order" là thứ tự đúng của các mục.
 
 **Quy tắc chung:**
 * Luôn trả lời bằng tiếng Việt.
@@ -1081,10 +1052,10 @@ function renderFlashcardQuiz(data, quizId) {
 }
 
 /**
- * Renders an interactive multiple choice quiz block.
- * @param {object} data - Parsed JSON data for the multiple choice quiz.
- * @param {string} quizId - Unique ID for this quiz block.
- * @returns {HTMLElement} - The DOM element of the quiz block.
+ * Handles the logic for a multiple choice quiz answer.
+ * @param {HTMLElement} button - The option button clicked.
+ * @param {string} quizId - The ID of the quiz.
+ * @param {object} quizData - The quiz data.
  */
 function handleMultipleChoiceAnswer(button, quizId, quizData) {
     const quizContainer = document.getElementById(quizId);
@@ -1287,365 +1258,7 @@ function renderQuiz(data, quizId) {
         case 'short_answer':
             return renderShortAnswerQuiz(data, quizId);
         case 'flashcard':
-            return renderFlashcardQuiz(data, quizId);
-        case 'matching': // NEW QUIZ TYPE
-            return renderMatchingQuiz(data, quizId);
-        case 'ordering': // NEW QUIZ TYPE
-            return renderOrderingQuiz(data, quizId);
-        case 'true_false': // NEW QUIZ TYPE
-            return renderTrueFalseQuiz(data, quizId);
-        default:
-            console.warn('Unknown quiz type:', data.type);
-            const errorDiv = document.createElement('div');
-            errorDiv.className = "text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50";
-            errorDiv.textContent = `Lỗi: Loại quiz không xác định hoặc không được hỗ trợ: ${data.type}. Vui lòng kiểm tra định dạng JSON.`;
-            return errorDiv;
-    }
-}
-
-/**
- * Renders an interactive Matching quiz block.
- * @param {object} data - Parsed JSON data for the matching quiz.
- * @param {string} quizId - Unique ID for this quiz block.
- * @returns {HTMLElement} - The DOM element of the quiz block.
- */
-function renderMatchingQuiz(data, quizId) {
-    const quizWrapper = document.createElement('div');
-    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 matching-quiz-wrapper";
-    quizWrapper.id = quizId;
-    quizWrapper.dataset.quizData = JSON.stringify(data);
-    quizWrapper.dataset.selectedLeft = ''; // Track selected item from left column
-    quizWrapper.dataset.selectedRight = ''; // Track selected item from right column
-
-    const isQuizCompleted = completedQuizIds.includes(quizId);
-
-    let leftItemsHtml = '';
-    // Shuffle right items for display
-    const shuffledRightItems = [...data.right_items].sort(() => Math.random() - 0.5);
-
-    data.left_items.forEach((item, index) => {
-        leftItemsHtml += `<button class="matching-item left-item ${isQuizCompleted ? 'completed' : ''}" data-item="${DOMPurify.sanitize(item)}" ${isQuizCompleted ? 'disabled' : ''}>${DOMPurify.sanitize(item)}</button>`;
-    });
-
-    let rightItemsHtml = '';
-    shuffledRightItems.forEach((item, index) => {
-        rightItemsHtml += `<button class="matching-item right-item ${isQuizCompleted ? 'completed' : ''}" data-item="${DOMPurify.sanitize(item)}" ${isQuizCompleted ? 'disabled' : ''}>${DOMPurify.sanitize(item)}</button>`;
-    });
-
-    quizWrapper.innerHTML = `
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">${DOMPurify.sanitize(data.title)}</h3>
-        <div class="flex flex-col sm:flex-row gap-4 justify-around">
-            <div class="flex flex-col gap-2 matching-column left-column">
-                ${leftItemsHtml}
-            </div>
-            <div class="flex flex-col gap-2 matching-column right-column">
-                ${rightItemsHtml}
-            </div>
-        </div>
-        <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>
-        <div class="mt-4 text-center">
-            ${isQuizCompleted ? 
-                `<p class="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">
-                    ${svgIcons.checkCircle} Bạn đã hoàn thành bài tập này!
-                </p>` :
-                `<button class="matching-check-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Kiểm tra
-                </button>`
-            }
-        </div>
-        ${data.explanation ? `<div class="quiz-explanation-full mt-3 text-sm p-3 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300">${DOMPurify.sanitize(marked.parse(data.explanation))}</div>` : ''}
-    `;
-
-    if (isQuizCompleted) {
-        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
-        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chính xác!** ${data.explanation}`));
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
-        explanationDiv.classList.remove('hidden');
-    }
-
-    // Add event listeners for matching logic
-    if (!isQuizCompleted) {
-        quizWrapper.querySelectorAll('.matching-item').forEach(itemBtn => {
-            itemBtn.addEventListener('click', () => handleMatchingItemClick(itemBtn, quizId));
-        });
-        quizWrapper.querySelector('.matching-check-btn').addEventListener('click', () => handleMatchingCheck(quizId));
-    }
-
-    return quizWrapper;
-}
-
-/**
- * Handles click on a matching item.
- * @param {HTMLElement} clickedButton - The button that was clicked.
- * @param {string} quizId - The ID of the quiz.
- */
-function handleMatchingItemClick(clickedButton, quizId) {
-    const quizContainer = document.getElementById(quizId);
-    if (!quizContainer || completedQuizIds.includes(quizId)) return;
-
-    const isLeftItem = clickedButton.classList.contains('left-item');
-    const currentlySelectedLeft = quizContainer.dataset.selectedLeft;
-    const currentlySelectedRight = quizContainer.dataset.selectedRight;
-
-    // Remove 'selected' class from previously selected items in the same column
-    quizContainer.querySelectorAll(`.matching-item.${isLeftItem ? 'left-item' : 'right-item'}.selected`).forEach(btn => {
-        btn.classList.remove('selected');
-    });
-
-    // Add 'selected' class to the clicked item
-    clickedButton.classList.add('selected');
-
-    if (isLeftItem) {
-        quizContainer.dataset.selectedLeft = clickedButton.dataset.item;
-    } else {
-        quizContainer.dataset.selectedRight = clickedButton.dataset.item;
-    }
-}
-
-/**
- * Handles checking the matching quiz.
- * @param {string} quizId - The ID of the quiz.
- */
-function handleMatchingCheck(quizId) {
-    const quizContainer = document.getElementById(quizId);
-    if (!quizContainer || completedQuizIds.includes(quizId)) return;
-
-    const quizData = JSON.parse(quizContainer.dataset.quizData);
-    const selectedLeft = quizContainer.dataset.selectedLeft;
-    const selectedRight = quizContainer.dataset.selectedRight;
-
-    const explanationDiv = quizContainer.querySelector('.quiz-explanation');
-    explanationDiv.classList.remove('hidden');
-
-    if (selectedLeft && selectedRight) {
-        if (quizData.correct_matches[selectedLeft] === selectedRight) {
-            explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chính xác!** ${quizData.explanation}`));
-            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
-            markQuizCompleted(quizId);
-            // Disable all buttons and mark matched items
-            quizContainer.querySelectorAll('.matching-item').forEach(btn => btn.disabled = true);
-            quizContainer.querySelector('.matching-check-btn').disabled = true;
-        } else {
-            explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chưa chính xác.** Vui lòng thử lại. ${quizData.explanation}`));
-            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
-        }
-    } else {
-        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`Vui lòng chọn một mục từ mỗi cột.`));
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200';
-    }
-    // Clear selections for next attempt
-    quizContainer.dataset.selectedLeft = '';
-    quizContainer.dataset.selectedRight = '';
-    quizContainer.querySelectorAll('.matching-item.selected').forEach(btn => btn.classList.remove('selected'));
-}
-
-
-/**
- * Renders an interactive Ordering quiz block.
- * @param {object} data - Parsed JSON data for the ordering quiz.
- * @param {string} quizId - Unique ID for this quiz block.
- * @returns {HTMLElement} - The DOM element of the quiz block.
- */
-function renderOrderingQuiz(data, quizId) {
-    const quizWrapper = document.createElement('div');
-    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 ordering-quiz-wrapper";
-    quizWrapper.id = quizId;
-    quizWrapper.dataset.quizData = JSON.stringify(data);
-
-    const isQuizCompleted = completedQuizIds.includes(quizId);
-
-    // Shuffle items for initial display if not completed
-    const shuffledItems = isQuizCompleted ? [...data.correct_order] : [...data.items].sort(() => Math.random() - 0.5);
-
-    let itemsHtml = '';
-    shuffledItems.forEach((item, index) => {
-        itemsHtml += `
-            <div class="ordering-item p-3 bg-white dark:bg-slate-700 rounded-md shadow-sm border border-gray-200 dark:border-slate-600 flex items-center gap-2">
-                <span class="ordering-handle text-gray-400 dark:text-gray-500 cursor-grab">${svgIcons.dragHandle}</span>
-                <span class="ordering-text flex-1">${DOMPurify.sanitize(item)}</span>
-            </div>
-        `;
-    });
-
-    quizWrapper.innerHTML = `
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">${DOMPurify.sanitize(data.title)}</h3>
-        <div class="ordering-list space-y-2">
-            ${itemsHtml}
-        </div>
-        <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>
-        <div class="mt-4 text-center">
-            ${isQuizCompleted ? 
-                `<p class="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">
-                    ${svgIcons.checkCircle} Bạn đã hoàn thành bài tập này!
-                </p>` :
-                `<button class="ordering-check-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Kiểm tra thứ tự
-                </button>`
-            }
-        </div>
-        ${data.explanation ? `<div class="quiz-explanation-full mt-3 text-sm p-3 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300">${DOMPurify.sanitize(marked.parse(data.explanation))}</div>` : ''}
-    `;
-
-    if (isQuizCompleted) {
-        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
-        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chính xác!** ${data.explanation}`));
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
-        explanationDiv.classList.remove('hidden');
-        // Disable drag handles
-        quizWrapper.querySelectorAll('.ordering-handle').forEach(handle => handle.classList.remove('cursor-grab'));
-    } else {
-        // Simple interactive reordering (not full drag-and-drop)
-        // For a full drag-and-drop, a library like SortableJS would be needed.
-        // For now, we'll just implement the check logic.
-        quizWrapper.querySelector('.ordering-check-btn').addEventListener('click', () => handleOrderingCheck(quizId));
-    }
-    
-    // Basic reordering logic (manual reorder for now, check button only)
-    // To implement actual drag-and-drop, you'd need a library or more complex JS.
-    // For this example, we'll assume the user mentally reorders and then clicks check.
-
-    return quizWrapper;
-}
-
-/**
- * Handles checking the Ordering quiz.
- * @param {string} quizId - The ID of the quiz.
- */
-function handleOrderingCheck(quizId) {
-    const quizContainer = document.getElementById(quizId);
-    if (!quizContainer || completedQuizIds.includes(quizId)) return;
-
-    const quizData = JSON.parse(quizContainer.dataset.quizData);
-    const currentOrderElements = quizContainer.querySelectorAll('.ordering-text');
-    const userAnswerOrder = Array.from(currentOrderElements).map(el => el.textContent.trim());
-    const correctOrder = quizData.correct_order.map(item => item.trim());
-
-    const explanationDiv = quizContainer.querySelector('.quiz-explanation');
-    explanationDiv.classList.remove('hidden');
-
-    let isCorrect = true;
-    if (userAnswerOrder.length !== correctOrder.length) {
-        isCorrect = false;
-    } else {
-        for (let i = 0; i < correctOrder.length; i++) {
-            if (userAnswerOrder[i] !== correctOrder[i]) {
-                isCorrect = false;
-                break;
-            }
-        }
-    }
-
-    if (isCorrect) {
-        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chính xác!** ${quizData.explanation}`));
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
-        markQuizCompleted(quizId);
-        quizContainer.querySelector('.ordering-check-btn').disabled = true;
-        quizContainer.querySelectorAll('.ordering-handle').forEach(handle => handle.classList.remove('cursor-grab'));
-    } else {
-        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chưa chính xác.** Thứ tự đúng là: ${correctOrder.join(' > ')}. ${quizData.explanation}`));
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
-    }
-}
-
-
-/**
- * Renders an interactive True/False quiz block.
- * @param {object} data - Parsed JSON data for the true/false quiz.
- * @param {string} quizId - Unique ID for this quiz block.
- * @returns {HTMLElement} - The DOM element of the quiz block.
- */
-function renderTrueFalseQuiz(data, quizId) {
-    const quizWrapper = document.createElement('div');
-    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 true-false-quiz-wrapper";
-    quizWrapper.id = quizId;
-    quizWrapper.dataset.quizData = JSON.stringify(data);
-
-    const isQuizCompleted = completedQuizIds.includes(quizId);
-
-    quizWrapper.innerHTML = `
-        <p class="font-semibold mb-3 text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(data.question)}</p>
-        <div class="flex gap-4 justify-center">
-            <button class="true-false-btn ${isQuizCompleted ? 'completed' : ''}" data-value="true" ${isQuizCompleted ? 'disabled' : ''}>Đúng</button>
-            <button class="true-false-btn ${isQuizCompleted ? 'completed' : ''}" data-value="false" ${isQuizCompleted ? 'disabled' : ''}>Sai</button>
-        </div>
-        <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>
-        ${data.explanation ? `<div class="quiz-explanation-full mt-3 text-sm p-3 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300">${DOMPurify.sanitize(marked.parse(data.explanation))}</div>` : ''}
-    `;
-
-    if (isQuizCompleted) {
-        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
-        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`));
-        explanationDiv.classList.remove('hidden');
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
-    } else {
-        quizWrapper.querySelectorAll('.true-false-btn').forEach(btn => {
-            btn.addEventListener('click', () => handleTrueFalseAnswer(btn, quizId));
-        });
-    }
-
-    return quizWrapper;
-}
-
-/**
- * Handles the answer for a True/False quiz.
- * @param {HTMLElement} clickedButton - The button (True/False) that was clicked.
- * @param {string} quizId - The ID of the quiz.
- */
-function handleTrueFalseAnswer(clickedButton, quizId) {
-    const quizContainer = document.getElementById(quizId);
-    if (!quizContainer || completedQuizIds.includes(quizId)) return;
-
-    const quizData = JSON.parse(quizContainer.dataset.quizData);
-    const userAnswer = clickedButton.dataset.value === 'true';
-    const correctAnswer = quizData.answer;
-    const explanation = quizData.explanation;
-
-    const allOptions = quizContainer.querySelectorAll('.true-false-btn');
-    allOptions.forEach(btn => btn.disabled = true);
-
-    const explanationDiv = quizContainer.querySelector('.quiz-explanation');
-    explanationDiv.classList.remove('hidden');
-
-    if (userAnswer === correctAnswer) {
-        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chính xác!** ${explanation}`));
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
-        markQuizCompleted(quizId);
-    } else {
-        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chưa chính xác.** ${explanation}`));
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
-    }
-}
-
-
-/**
- * Marks a quiz as completed and updates the database.
- * @param {string} quizId - The ID of the quiz to mark as completed.
- */
-
-
-/**
- * Dành riêng cho việc render HTML của một khối trắc nghiệm (đa dạng loại).
- * @param {object} data - Dữ liệu JSON của quiz đã được parse.
- * @param {string} quizId - Một ID duy nhất cho khối quiz này.
- * @returns {HTMLElement} - Phần tử DOM của khối quiz.
- */
-
-
-    switch (data.type) {
-        case 'multiple_choice':
-            return renderMultipleChoiceQuiz(data, quizId);
-        case 'fill_in_the_blank':
-            return renderFillInTheBlankQuiz(data, quizId);
-        case 'short_answer':
-            return renderShortAnswerQuiz(data, quizId);
-        case 'flashcard':
-            return renderFlashcardQuiz(data, quizId);
-        case 'matching':
-            return renderMatchingQuiz(data, quizId);
-        case 'ordering':
-            return renderOrderingQuiz(data, quizId);
-        case 'true_false':
-            return renderTrueFalseQuiz(data, quizId);
+            return renderFlashcardQuiz(data, quizId); // === THÊM: Xử lý Flashcard ===
         default:
             console.warn('Unknown quiz type:', data.type);
             const errorDiv = document.createElement('div');
@@ -2130,10 +1743,7 @@ function highlightAllCode(container) {
                     (potentialJson.type === 'multiple_choice' && potentialJson.question && potentialJson.options && potentialJson.answer) ||
                     (potentialJson.type === 'fill_in_the_blank' && potentialJson.sentence && potentialJson.blanks) ||
                     (potentialJson.type === 'short_answer' && potentialJson.question && potentialJson.keywords && potentialJson.expected_answer_gist) ||
-                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson.cards[0].back) || // Kiểm tra cấu trúc flashcard
-                    (potentialJson.type === 'matching' && potentialJson.left_items && potentialJson.right_items && potentialJson.correct_matches) || // Kiểm tra cấu trúc matching
-                    (potentialJson.type === 'ordering' && potentialJson.items && potentialJson.correct_order) || // Kiểm tra cấu trúc ordering
-                    (potentialJson.type === 'true_false' && potentialJson.question !== undefined && potentialJson.answer !== undefined) || // Kiểm tra cấu trúc true/false
+                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson[0].back) || // Kiểm tra cấu trúc flashcard
                     // Check for old multiple_choice format (no type field)
                     (potentialJson.question && potentialJson.options && potentialJson.answer) 
                 ) {
@@ -3307,7 +2917,7 @@ function toggleScrollToTopButton() {
     if (chatScrollContainer.scrollTop > chatScrollContainer.clientHeight * 0.5) { 
         scrollToTopBtn.classList.add('show');
     } else {
-        scrollToTopBtn.classList.remove('show');
+        scrollToTopBtn.classList.remove('show'); // Sửa lỗi ở đây
     }
 }
 
