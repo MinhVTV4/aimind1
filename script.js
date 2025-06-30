@@ -2907,7 +2907,7 @@ function toggleScrollToTopButton() {
     if (chatScrollContainer.scrollTop > chatScrollContainer.clientHeight * 0.5) { 
         scrollToTopBtn.classList.add('show');
     } else {
-        scrollToToppBtn.classList.remove('show');
+        scrollToTopBtn.classList.remove('show');
     }
 }
 
