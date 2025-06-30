@@ -2755,14 +2755,10 @@ chatContainer.addEventListener('click', async (e) => {
         const quizWrapper = flashcardContainer.closest('.flashcard-quiz-wrapper');
         // Only flip if the entire quiz set is not completed.
         if (quizWrapper && !completedQuizIds.includes(quizWrapper.id)) {
-            const isFlipped = quizWrapper.dataset.isFlipped === "true";
-            quizWrapper.dataset.isFlipped = String(!isFlipped);
-            const currentCardIndex = parseInt(quizWrapper.dataset.currentCardIndex);
-            const currentCard = quizWrapper.querySelector(`.flashcard-item[data-card-index="${currentCardIndex}"]`);
-            if (currentCard) {
-                currentCard.classList.toggle('flipped', !isFlipped);
-                currentCard.classList.toggle('unflipped', isFlipped); // Add unflipped class for reverse animation
-            }
+            const isFlipped = flashcardContainer.classList.contains('flipped'); // Lấy trạng thái lật từ container
+            flashcardContainer.classList.toggle('flipped', !isFlipped); // Áp dụng class 'flipped' cho container
+            // Không cần toggle 'unflipped' trên currentCard nữa
+            // currentCard.classList.toggle('unflipped', isFlipped); 
         }
     } else if (flashcardNavButton) {
         const quizWrapper = flashcardNavButton.closest('.flashcard-quiz-wrapper');
@@ -2771,10 +2767,14 @@ chatContainer.addEventListener('click', async (e) => {
         let currentCardIndex = parseInt(quizWrapper.dataset.currentCardIndex);
         const totalCards = quizData.cards.length;
 
-        quizWrapper.dataset.isFlipped = "false"; // Reset flip state for new card
-        quizWrapper.querySelectorAll('.flashcard-item').forEach(card => {
-            card.classList.remove('flipped', 'unflipped'); // Reset flip animation
-        });
+        // Reset flip state for new card by removing 'flipped' class from container
+        const container = quizWrapper.querySelector('.flashcard-container');
+        if (container) {
+            container.classList.remove('flipped');
+        }
+        // quizWrapper.querySelectorAll('.flashcard-item').forEach(card => {
+        //     card.classList.remove('flipped', 'unflipped'); // Reset flip animation on individual cards
+        // });
 
         if (flashcardNavButton.classList.contains('prev-card-btn')) {
             currentCardIndex--;
