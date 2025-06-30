@@ -61,7 +61,7 @@ const CHATS_PER_PAGE = 15; // Number of chats to load per page
 let isLearningMode = false; // State for learning mode
 let confirmationResolve = null; // To handle promise-based confirmation
 let completedTopics = []; // Lưu trữ các chủ đề đã học (learning-link)
-let completedQuizIds = []; // === BIẾN MỚI: Lưu trữ ID các quiz đã hoàn thành ===
+let completedQuizIds = []; // Lưu trữ ID các quiz đã hoàn thành
 
 // System prompt for learning mode. This is prepended to user prompts when learning mode is active.
 const LEARNING_MODE_SYSTEM_PROMPT = `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
@@ -72,7 +72,23 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     * **{"prompt":"..."}**: Là một đối tượng JSON chứa một khóa "prompt". Giá trị của khóa này là một câu lệnh đầy đủ bạn tự tạo ra để yêu cầu chính bạn giải thích sâu về mục học đó. Prompt phải chi tiết và bằng tiếng Việt.
 
 **Định dạng các loại câu hỏi trắc nghiệm (LUÔN BỌC TRONG KHỐI MÃ \`\`\`quiz... \`\`\`):**
-**QUAN TRỌNG: Các giá trị TRONG JSON (ví dụ: "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist") PHẢI LÀ CHUỖI VĂN BẢN THUẦN TÚY, KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO NHƯ [LIÊN KẾT], **IN ĐẬM**, hay *IN NGHIÊNG*! Nếu bạn cần làm nổi bật, hãy dùng dấu nháy đơn '...' hoặc bỏ qua định dạng.**
+**CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
+**TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY!**
+**LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤU NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
+
+* **Thẻ từ vựng (Flashcard) - VÍ DỤ ƯU TIÊN HÀNG ĐẦU VÀ CẦN CHÍNH XÁC TUYỆT ĐỐI:**
+    \`\`\`quiz
+    {
+      "type": "flashcard",
+      "title": "Tiêu đề của bộ Flashcard",
+      "cards": [
+        { "front": "Từ/Khái niệm (chỉ văn bản thuần túy)", "back": "Giải thích/Nghĩa (chỉ văn bản thuần túy)", "pronunciation": "phiên âm (nếu có, chỉ văn bản thuần túy)" },
+        { "front": "Từ/Khái niệm khác", "back": "Giải thích/Nghĩa khác", "pronunciation": "phiên âm khác" }
+      ],
+      "explanation": "Giải thích chung về bộ flashcard này (chỉ văn bản thuần túy)."
+    }
+    \`\`\`
+    *Lưu ý:* Mảng "cards" phải là MỘT MẢNG JSON CỦA CÁC ĐỐI TƯỢNG, KHÔNG PHẢI MỘT CHUỖI. Mỗi "card" là một đối tượng JSON hợp lệ.
 
 * **Câu hỏi trắc nghiệm nhiều lựa chọn (Multiple Choice):**
     \`\`\`quiz
@@ -267,6 +283,87 @@ const defaultPersonas = [
         ]
     },
     { 
+        id: 'english_tutor', 
+        name: 'Gia sư Tiếng Anh', 
+        icon: '🇺🇸', 
+        description: 'Dạy ngữ pháp, từ vựng, luyện nghe-nói và kiểm tra kiến thức tiếng Anh.', 
+        systemPrompt: `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
+Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nhẫn. Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
+
+1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Từ tiếng Anh, sau đó là phiên âm IPA (trong ngoặc vuông []), và cuối cùng là nghĩa tiếng Việt.
+    * **Ví dụ:** Hello [həˈloʊ] - Xin chào.
+    * **QUAN TRỌNG:** Phiên âm IPA phải là văn bản thuần túy, không có định dạng Markdown hay HTML bên trong.
+
+2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ phải có đủ 3 thành phần: Câu tiếng Anh gốc, bản dịch tiếng Việt, và nếu cần thì có thêm phần giải thích ngữ pháp ngắn gọn.
+
+3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và chuyên nghiệp.
+
+4.  **Tương tác chủ động:** Sau khi giảng dạy một khái niệm (khoảng 3-5 từ vựng hoặc một điểm ngữ pháp), bạn PHẢI chủ động đặt câu hỏi cho người học để kiểm tra sự hiểu biết của họ. Sử dụng cú pháp đặc biệt sau để tạo câu hỏi trắc nghiệm trong một khối mã 'quiz':
+
+    **CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation") PHẢI LÀ VĂN BẢN THUẦN TÚY. TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY! LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤY NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
+
+    * **Thẻ từ vựng (Flashcard) - VÍ DỤ ƯU TIÊN HÀNG ĐẦU VÀ CẦN CHÍNH XÁC TUYỆT ĐỐI:**
+        \`\`\`quiz
+        {
+          "type": "flashcard",
+          "title": "Vocabulary: Daily Greetings",
+          "cards": [
+            { "front": "Hello", "back": "Xin chào", "pronunciation": "həˈloʊ" },
+            { "front": "Good morning", "back": "Chào buổi sáng", "pronunciation": "ɡʊd ˈmɔːrnɪŋ" }
+          ],
+          "explanation": "This set helps you practice common English greetings."
+        }
+        \`\`\`
+
+    * **Câu hỏi trắc nghiệm nhiều lựa chọn (Multiple Choice):**
+        \`\`\`quiz
+        {
+          "type": "multiple_choice",
+          "question": "Which of the following is a synonym for 'happy'?",
+          "options": {
+            "A": "Sad",
+            "B": "Joyful",
+            "C": "Angry"
+          },
+          "answer": "B",
+          "explanation": "'Joyful' means feeling, expressing, or causing great pleasure and happiness."
+        }
+        \`\`\`
+
+    * **Câu hỏi Điền từ (Fill-in-the-Blank):**
+        \`\`\`quiz
+        {
+          "type": "fill_in_the_blank",
+          "sentence": "She is a very {{BLANK}} student.",
+          "blanks": ["diligent"],
+          "explanation": "'Diligent' means having or showing care and conscientiousness in one's work or duties."
+        }
+        \`\`\`
+
+    * **Câu hỏi Tự luận ngắn (Short Answer):**
+        \`\`\`quiz
+        {
+          "type": "short_answer",
+          "question": "Explain the difference between 'affect' and 'effect'.",
+          "keywords": ["verb", "noun", "influence", "result"],
+          "expected_answer_gist": "'Affect' is usually a verb meaning to influence, and 'effect' is usually a noun meaning a result.",
+          "explanation": "'Affect' (verb) means to influence or produce a change in something. For example: 'The weather affected my mood.' 'Effect' (noun) is the result of an action or cause. For example: 'The effect of the rain was slippery roads.' 'Effect' can also be a verb meaning to bring about (e.g., 'to effect change'), but this is less common."
+        }
+        \`\`\`
+
+5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Anh giao tiếp cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.
+
+**Quy tắc chung:**
+* Luôn trả lời bằng tiếng Việt, trừ các phần ví dụ tiếng Anh.
+* Khi có thể, hãy lồng ghép các loại câu hỏi quiz sau khi giảng bài.`,
+        samplePrompts: [
+            "Dạy tôi các thì cơ bản trong tiếng Anh và kiểm tra tôi bằng câu hỏi điền từ.",
+            "Tạo một bộ flashcards về các động từ bất quy tắc phổ biến.",
+            "Giải thích cách sử dụng 'much', 'many', 'a lot of' và sau đó đố tôi một câu trắc nghiệm.",
+            "Hãy cho tôi một đoạn hội thoại ngắn về việc đặt đồ ăn trong nhà hàng bằng tiếng Anh, sau đó đố tôi một câu hỏi tự luận ngắn."
+        ]
+    },
+    { 
         id: 'writer', 
         name: 'Nhà văn Sáng tạo', 
         icon: '✍️', 
@@ -300,6 +397,7 @@ const defaultPersonas = [
  * @param {string} options.title - Tiêu đề của modal.
  * @param {string} options.message - Thông điệp cảnh báo.
  * @param {string} [options.confirmText='Xóa'] - Chữ trên nút xác nhận.
+ * @param {string} [options.param="confirm"] - Parameter to help resolve confirm actions for callback.
  * @param {string} [options.confirmColor='red'] - Màu của nút xác nhận ('red' hoặc 'blue').
  * @returns {Promise<boolean>} - Trả về true nếu người dùng xác nhận, false nếu hủy.
  */
@@ -384,7 +482,8 @@ async function deleteChat(chatId) {
         } else {
             await renderAllChats();
         }
-    } catch (error) {
+    }
+    catch (error) {
         console.error("Lỗi khi xóa cuộc trò chuyện:", error);
         showToast('Lỗi khi xóa cuộc trò chuyện.', 'error');
     }
@@ -831,6 +930,117 @@ function renderShortAnswerQuiz(data, quizId) {
 }
 
 /**
+ * Renders an interactive flashcard quiz block.
+ * @param {object} data - Parsed JSON data for the flashcard quiz.
+ * @param {string} quizId - Unique ID for this quiz block.
+ * @returns {HTMLElement} - The DOM element of the quiz block.
+ */
+function renderFlashcardQuiz(data, quizId) {
+    const quizWrapper = document.createElement('div');
+    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 flashcard-quiz-wrapper";
+    quizWrapper.id = quizId;
+    quizWrapper.dataset.quizData = JSON.stringify(data);
+    
+    // Check if the flashcard set is completed
+    const isFlashcardSetCompleted = completedQuizIds.includes(quizId);
+    
+    // Determine the initial card index. If the set is completed, we don't care about a specific card.
+    // Otherwise, try to restore the last viewed card or start from 0.
+    // For simplicity, let's always start from 0 if not completed.
+    let initialCardIndex = 0; 
+    if (isFlashcardSetCompleted && data.cards.length > 0) {
+        // If completed, just show the first card or a "completed" message
+        initialCardIndex = 0; // Or we could add a "review all" mode later
+    }
+    quizWrapper.dataset.currentCardIndex = initialCardIndex;
+    quizWrapper.dataset.isFlipped = "false"; // Track if current card is flipped
+
+    let cardHtml = '';
+    data.cards.forEach((card, index) => {
+        const displayStyle = index === initialCardIndex ? '' : 'display: none;';
+        // A flashcard is 'completed' if its specific ID (quizId-index) is in completedQuizIds
+        // Or if the entire set is completed, we consider all its cards completed for display purposes
+        const cardSpecificId = `${quizId}-${index}`;
+        const isCardCompleted = isFlashcardSetCompleted || completedQuizIds.includes(cardSpecificId);
+        const cardClass = isCardCompleted ? 'flashcard-item completed' : 'flashcard-item';
+
+        cardHtml += `
+            <div class="${cardClass}" data-card-index="${index}" style="${displayStyle}">
+                <div class="flashcard-face flashcard-front">
+                    <p class="text-2xl font-bold text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(card.front)}</p>
+                    ${card.pronunciation ? `<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">(${DOMPurify.sanitize(card.pronunciation)})</p>` : ''}
+                    <button class="flashcard-speak-btn p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 mt-2" data-text="${DOMPurify.sanitize(card.front)}" data-lang="${currentPersona.id === 'english_tutor' ? 'en-US' : 'vi-VN'}">${svgIcons.speaker}</button>
+                </div>
+                <div class="flashcard-face flashcard-back">
+                    <p class="text-base text-gray-700 dark:text-gray-300">${DOMPurify.sanitize(card.back)}</p>
+                    <button class="flashcard-speak-btn p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 mt-2" data-text="${DOMPurify.sanitize(card.back)}" data-lang="vi-VN">${svgIcons.speaker}</button>
+                </div>
+            </div>
+        `;
+    });
+
+    const totalCards = data.cards.length;
+    const currentCardIndex = parseInt(quizWrapper.dataset.currentCardIndex);
+
+    quizWrapper.innerHTML = `
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">${DOMPurify.sanitize(data.title)}</h3>
+        <div class="flashcard-container relative w-full h-48 sm:h-64 md:h-80 rounded-xl shadow-lg flex items-center justify-center cursor-pointer overflow-hidden group">
+            ${cardHtml}
+            <div class="flashcard-overlay absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity flex items-center justify-center">
+                <span class="text-white text-lg opacity-0 group-hover:opacity-100 transition-opacity">Lật thẻ</span>
+            </div>
+        </div>
+        <div class="flex justify-between items-center mt-4">
+            <button class="flashcard-nav-btn prev-card-btn px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                ${svgIcons.arrowLeft} Trước
+            </button>
+            <span class="flashcard-counter text-gray-600 dark:text-gray-400 font-medium">
+                ${totalCards > 0 ? `${currentCardIndex + 1}/${totalCards}` : '0/0'}
+            </span>
+            <button class="flashcard-nav-btn next-card-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                Tiếp theo ${svgIcons.arrowRight}
+            </button>
+        </div>
+        <div class="mt-4 text-center flashcard-actions">
+             ${isFlashcardSetCompleted ? 
+                `<p class="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">
+                    ${svgIcons.checkCircle} Bạn đã hoàn thành bộ Flashcard này!
+                </p>` :
+                `<button class="flashcard-mark-completed-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    ${svgIcons.check} Đánh dấu đã học
+                </button>`
+            }
+        </div>
+        ${data.explanation ? `<div class="quiz-explanation mt-3 text-sm p-3 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300">${DOMPurify.sanitize(marked.parse(data.explanation))}</div>` : ''}
+    `;
+
+    // Initialize navigation button states
+    const prevBtn = quizWrapper.querySelector('.prev-card-btn');
+    const nextBtn = quizWrapper.querySelector('.next-card-btn');
+    const markCompletedContainer = quizWrapper.querySelector('.flashcard-actions');
+
+    if (totalCards === 0) {
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        if (markCompletedContainer) markCompletedContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Bộ Flashcard trống.</p>';
+    } else {
+        prevBtn.disabled = currentCardIndex === 0;
+        nextBtn.disabled = currentCardIndex === totalCards - 1;
+    }
+
+    // If the set is completed, disable interactions
+    if (isFlashcardSetCompleted) {
+        const flashcardContainerElement = quizWrapper.querySelector('.flashcard-container');
+        if (flashcardContainerElement) flashcardContainerElement.style.pointerEvents = 'none';
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+    }
+
+
+    return quizWrapper;
+}
+
+/**
  * Handles the logic for a multiple choice quiz answer.
  * @param {HTMLElement} button - The option button clicked.
  * @param {string} quizId - The ID of the quiz.
@@ -1036,6 +1246,8 @@ function renderQuiz(data, quizId) {
             return renderFillInTheBlankQuiz(data, quizId);
         case 'short_answer':
             return renderShortAnswerQuiz(data, quizId);
+        case 'flashcard':
+            return renderFlashcardQuiz(data, quizId); // === THÊM: Xử lý Flashcard ===
         default:
             console.warn('Unknown quiz type:', data.type);
             const errorDiv = document.createElement('div');
@@ -1046,7 +1258,7 @@ function renderQuiz(data, quizId) {
 }
 
 /**
- * === HÀM MỚI: Tìm và thay thế các khối mã quiz bằng HTML tương tác ===
+ * === HÀM ĐƯỢC CẬP NHẬT: Tìm và thay thế các khối mã quiz bằng HTML tương tác ===
  * Hàm này sẽ được gọi sau khi nội dung markdown đã được render.
  * @param {HTMLElement} containerElement - Phần tử chứa nội dung tin nhắn.
  */
@@ -1056,12 +1268,30 @@ function processQuizBlocks(containerElement) {
     quizCodeBlocks.forEach(codeBlock => {
         const preElement = codeBlock.parentElement;
         let quizData = null;
+        let originalTextContent = codeBlock.textContent;
+
         try {
-            // Loại bỏ các thẻ HTML trước khi parse JSON
-            const cleanJsonText = codeBlock.textContent.replace(/<[^>]*>/g, ''); 
+            // === Cập nhật: Tiền xử lý JSON mạnh mẽ hơn ===
+            let cleanJsonText = originalTextContent
+                .replace(/<[^>]*>/g, '') // Loại bỏ bất kỳ thẻ HTML nào mà marked.js có thể thêm vào
+                .replace(/`+/g, '') // Loại bỏ các dấu huyền (backticks)
+                .replace(/“|”/g, '"') // Thay thế smart quotes bằng straight quotes
+                .replace(/‘|’/g, "'") // Thay thế smart single quotes bằng straight single quotes
+                .replace(/'/g, '"') // Chuyển đổi tất cả dấu nháy đơn thành dấu nháy kép (một biện pháp hung hăng nhưng hiệu quả)
+                .replace(/(\r\n|\n|\r)/gm, ' ') // Thay thế ngắt dòng trong chuỗi bằng khoảng trắng (có thể cần \\n nếu muốn giữ ngắt dòng)
+                .replace(/\$/g, ''); // Loại bỏ ký hiệu đô la (nếu không phải LaTeX hợp lệ và gây lỗi JSON)
+            
+            // Xử lý các trường hợp đặc biệt nếu AI trả về JSON với các vấn đề thoát ký tự
+            // Ví dụ: {"key": "value with \"escaped\" quote"} hoặc {"key": "value with \n newline"}
+            // Đối với các trường hợp này, cần đảm bảo chúng đã được thoát đúng cách.
+            // Nếu AI vẫn tạo ra các lỗi như "\" trong chuỗi, có thể cần thêm logic phức tạp hơn.
+            
+            // Thêm một lớp làm sạch để loại bỏ khoảng trắng dư thừa hoặc ký tự điều khiển
+            cleanJsonText = cleanJsonText.trim();
+            
             quizData = JSON.parse(cleanJsonText);
             
-            // === CẬP NHẬT: Xử lý quiz cũ không có trường "type" hoặc định dạng không hoàn chỉnh ===
+            // === Cập nhật: Kiểm tra định dạng cũ hoặc không đầy đủ ===
             if (!quizData.type) {
                 // Nếu là quiz trắc nghiệm cũ (có question, options, answer)
                 if (quizData.question && (quizData.options || quizData.blanks || quizData.keywords) && quizData.answer) { 
@@ -1072,9 +1302,7 @@ function processQuizBlocks(containerElement) {
                     }
                 } else {
                     // Nếu không khớp với định dạng trắc nghiệm cũ, coi là không nhận diện được
-                    console.warn('Unrecognized old quiz format or incomplete data, skipping:', quizData);
-                    preElement.innerHTML = `<div class="text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50">Lỗi hiển thị quiz: Định dạng JSON quiz không hợp lệ hoặc không đầy đủ.</div>`;
-                    return; // Thoát khỏi vòng lặp forEach cho khối này
+                    throw new Error('Unrecognized old quiz format or incomplete data.');
                 }
             }
 
@@ -1083,10 +1311,21 @@ function processQuizBlocks(containerElement) {
             const quizHtmlElement = renderQuiz(quizData, quizId);
             // Thay thế thẻ <pre> bằng khối quiz tương tác
             preElement.replaceWith(quizHtmlElement);
+
         } catch (error) {
-            // Xử lý lỗi khi JSON.parse thất bại
-            console.error("Lỗi phân tích JSON của quiz:", error, codeBlock.textContent);
-            preElement.innerHTML = `<div class="text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50">Lỗi hiển thị quiz: Định dạng JSON không hợp lệ. Vui lòng kiểm tra cú pháp JSON.</div>`;
+            // Xử lý lỗi khi JSON.parse thất bại hoặc dữ liệu không hợp lệ
+            console.error("Lỗi phân tích JSON của quiz:", error, originalTextContent);
+            const errorDiv = document.createElement('div');
+            errorDiv.className = "text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50";
+            errorDiv.innerHTML = `
+                <p class="font-semibold mb-2">Lỗi hiển thị quiz:</p>
+                <p class="text-sm">Nội dung quiz từ AI bị lỗi định dạng JSON. Vui lòng thử <button class="text-blue-600 dark:text-blue-400 hover:underline regenerate-btn" data-target-id="${preElement.closest('[data-message-id]') ? preElement.closest('[data-message-id]').dataset.messageId : ''}">tái tạo phản hồi</button> để thử lại hoặc thông báo cho quản trị viên.</p>
+                <details class="mt-2">
+                    <summary class="text-xs cursor-pointer text-gray-700 dark:text-gray-300">Chi tiết lỗi (dành cho nhà phát triển)</summary>
+                    <pre class="whitespace-pre-wrap text-xs text-red-700 dark:text-red-300 p-2 bg-red-100 dark:bg-red-900 rounded mt-1">${DOMPurify.sanitize(error.message)}\n\nNội dung gốc:\n${DOMPurify.sanitize(originalTextContent)}</pre>
+                </details>
+            `;
+            preElement.replaceWith(errorDiv);
         }
     });
 }
@@ -1095,7 +1334,7 @@ function processQuizBlocks(containerElement) {
 /**
  * Speaks a given text using the browser's Speech Synthesis API.
  * @param {string} text - The text to be spoken.
- * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'ko-KR').
+ * @param {string} lang - The BCP 47 language code (e.g., 'zh-CN', 'ja-JP', 'ko-KR', 'en-US', 'vi-VN').
  */
 function speakText(text, lang) {
     if (!('speechSynthesis' in window)) {
@@ -1137,6 +1376,11 @@ function speakText(text, lang) {
  * @param {HTMLElement} container - The element whose text nodes should be processed.
  */
 function makeForeignTextClickable(container) {
+    // Chỉ áp dụng cho Gia sư Ngoại ngữ (ngôn ngữ Á Đông)
+    if (currentPersona && currentPersona.id !== 'language_tutor') {
+        return;
+    }
+
     const foreignRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]+/g;
     const hiraganaKatakanaRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
     const hangulRegex = /[\uAC00-\uD7AF]/;
@@ -1383,9 +1627,9 @@ function addMessage(role, text, shouldScroll = true) {
     // === CẬP NHẬT: Gọi hàm xử lý quiz sau khi render nội dung ===
     processQuizBlocks(contentElem);
 
-    if (currentPersona && currentPersona.id === 'language_tutor') {
-        makeForeignTextClickable(contentElem);
-    }
+    // makeForeignTextClickable chỉ gọi khi currentPersona là language_tutor.
+    // Logic này đã được chuyển vào hàm makeForeignTextClickable.
+    makeForeignTextClickable(contentElem);
     
     if (actionsContainer) {
         addMessageActions(actionsContainer, text, messageId);
@@ -1427,11 +1671,11 @@ function highlightAllCode(container) {
              try {
                 const potentialJson = JSON.parse(block.textContent);
                 // Check if it matches any of our known quiz structures
-                // === CẬP NHẬT: Thêm logic để nhận diện quiz cũ không có type ===
                 if (
                     (potentialJson.type === 'multiple_choice' && potentialJson.question && potentialJson.options && potentialJson.answer) ||
                     (potentialJson.type === 'fill_in_the_blank' && potentialJson.sentence && potentialJson.blanks) ||
                     (potentialJson.type === 'short_answer' && potentialJson.question && potentialJson.keywords && potentialJson.expected_answer_gist) ||
+                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson.cards[0].back) || // Kiểm tra cấu trúc flashcard
                     // Check for old multiple_choice format (no type field)
                     (potentialJson.question && potentialJson.options && potentialJson.answer) 
                 ) {
@@ -1439,6 +1683,12 @@ function highlightAllCode(container) {
                 }
              } catch(e) { /* not valid JSON, ignore */ }
         }
+        
+        // === FIX: Bỏ qua highlight cho các khối ngôn ngữ 'quiz' ===
+        if (block.classList.contains('language-quiz')) {
+            return; // Skip highlighting this block
+        }
+
         hljs.highlightElement(block);
         addCopyButton(block.parentElement);
     });
@@ -1536,9 +1786,7 @@ async function sendMessage(promptTextOverride = null) {
             const processedChunkForStreaming = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunkForStreaming), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
             highlightAllCode(contentElem);
-            if (currentPersona && currentPersona.id === 'language_tutor') {
-                makeForeignTextClickable(contentElem);
-            }
+            makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài khi stream
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
         
@@ -1551,9 +1799,7 @@ async function sendMessage(promptTextOverride = null) {
         
         highlightAllCode(contentElem);
         processQuizBlocks(contentElem); // Xử lý quiz sau khi render xong
-        if (currentPersona && currentPersona.id === 'language_tutor') {
-            makeForeignTextClickable(contentElem);
-        }
+        makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
 
         addMessageActions(actionsContainer, fullResponseText, aiMessageId);
         
@@ -1627,9 +1873,7 @@ async function handleRegenerate(targetMessageId) {
             const processedChunk = preprocessText(newFullResponseText + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
             highlightAllCode(contentElem);
-            if (currentPersona && currentPersona.id === 'language_tutor') {
-                makeForeignTextClickable(contentElem);
-            }
+            makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài khi stream
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
@@ -1641,9 +1885,7 @@ async function handleRegenerate(targetMessageId) {
         
         highlightAllCode(contentElem);
         processQuizBlocks(contentElem); // Xử lý quiz sau khi render xong
-        if (currentPersona && currentPersona.id === 'language_tutor') {
-            makeForeignTextClickable(contentElem);
-        }
+        makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
 
         localHistory[messageIndex].parts[0].text = newFullResponseText;
         addMessageActions(actionsContainer, newFullResponseText, targetMessageId);
@@ -1775,12 +2017,21 @@ function clearSuggestions() {
 async function getFollowUpSuggestions(lastResponse) {
     try {
         const suggestionPrompt = `Dựa vào câu trả lời sau: "${lastResponse.substring(0, 500)}". Hãy đề xuất 3 câu hỏi tiếp theo ngắn gọn và thú vị mà người dùng có thể hỏi. QUAN TRỌNG: Chỉ trả về 3 câu hỏi, mỗi câu trên một dòng. Không đánh số, không dùng gạch đầu dòng, không thêm bất kỳ văn bản nào khác.`;
-        const result = await fastModel.generateContent(prompt);
-        const responseText = result.response.text();
-        const suggestions = responseText.split('\n').filter(s => s.trim() !== '');
-        displaySuggestions(suggestions);
-    } catch (error) {
+        const result = await fastModel.generateContent(suggestionPrompt);
+        // === FIX: Thêm kiểm tra an toàn cho result.response và result.response.text() ===
+        if (result && result.response && typeof result.response.text === 'function') {
+            const responseText = result.response.text();
+            const suggestions = responseText.split('\n').filter(s => s.trim() !== '');
+            displaySuggestions(suggestions);
+        } else {
+            console.warn("API không trả về phản hồi hợp lệ cho gợi ý.", result);
+            // Optionally, clear suggestions or show a message if API response is not valid
+            clearSuggestions(); 
+        }
+    }
+    catch (error) {
         console.error("Error getting suggestions:", error);
+        clearSuggestions(); // Clear suggestions on error as well
     }
 }
 
@@ -2378,6 +2629,10 @@ chatContainer.addEventListener('click', async (e) => {
     // Check for quiz related clicks
     const quizOptionButton = e.target.closest('.quiz-option-btn');
     const quizSubmitButton = e.target.closest('.quiz-submit-btn');
+    const flashcardContainer = e.target.closest('.flashcard-container'); // for flipping flashcard
+    const flashcardNavButton = e.target.closest('.flashcard-nav-btn'); // for flashcard navigation
+    const flashcardSpeakButton = e.target.closest('.flashcard-speak-btn'); // for flashcard speaking
+    const flashcardMarkCompletedButton = e.target.closest('.flashcard-mark-completed-btn'); // for marking flashcard completed
 
     e.stopPropagation();
 
@@ -2412,6 +2667,67 @@ chatContainer.addEventListener('click', async (e) => {
             } else if (quizData.type === 'short_answer') {
                 await handleShortAnswerSubmit(quizSubmitButton, quizId, quizData);
             }
+        }
+    } else if (flashcardContainer) {
+        // Handle flashcard flip
+        const quizWrapper = flashcardContainer.closest('.flashcard-quiz-wrapper');
+        // Only flip if the entire quiz set is not completed.
+        if (quizWrapper && !completedQuizIds.includes(quizWrapper.id)) {
+            const isFlipped = quizWrapper.dataset.isFlipped === "true";
+            quizWrapper.dataset.isFlipped = String(!isFlipped);
+            const currentCardIndex = parseInt(quizWrapper.dataset.currentCardIndex);
+            const currentCard = quizWrapper.querySelector(`.flashcard-item[data-card-index="${currentCardIndex}"]`);
+            if (currentCard) {
+                currentCard.classList.toggle('flipped', !isFlipped);
+                currentCard.classList.toggle('unflipped', isFlipped); // Add unflipped class for reverse animation
+            }
+        }
+    } else if (flashcardNavButton) {
+        const quizWrapper = flashcardNavButton.closest('.flashcard-quiz-wrapper');
+        if (!quizWrapper || completedQuizIds.includes(quizWrapper.id)) return; // Prevent navigation if completed
+        const quizData = JSON.parse(quizWrapper.dataset.quizData);
+        let currentCardIndex = parseInt(quizWrapper.dataset.currentCardIndex);
+        const totalCards = quizData.cards.length;
+
+        quizWrapper.dataset.isFlipped = "false"; // Reset flip state for new card
+        quizWrapper.querySelectorAll('.flashcard-item').forEach(card => {
+            card.classList.remove('flipped', 'unflipped'); // Reset flip animation
+        });
+
+        if (flashcardNavButton.classList.contains('prev-card-btn')) {
+            currentCardIndex--;
+        } else if (flashcardNavButton.classList.contains('next-card-btn')) {
+            currentCardIndex++;
+        }
+
+        if (currentCardIndex >= 0 && currentCardIndex < totalCards) {
+            quizWrapper.dataset.currentCardIndex = currentCardIndex;
+            quizWrapper.querySelector('.flashcard-counter').textContent = `${currentCardIndex + 1}/${totalCards}`;
+            
+            quizWrapper.querySelectorAll('.flashcard-item').forEach((card, index) => {
+                card.style.display = index === currentCardIndex ? 'flex' : 'none';
+            });
+            // Update button disabled states
+            quizWrapper.querySelector('.prev-card-btn').disabled = currentCardIndex === 0;
+            quizWrapper.querySelector('.next-card-btn').disabled = currentCardIndex === totalCards - 1;
+        }
+    } else if (flashcardSpeakButton) {
+        const textToSpeak = flashcardSpeakButton.dataset.text;
+        const lang = flashcardSpeakButton.dataset.lang;
+        if (lang) { // Check if lang is defined
+            speakText(textToSpeak, lang);
+        }
+    } else if (flashcardMarkCompletedButton) {
+        const quizWrapper = flashcardMarkCompletedButton.closest('.flashcard-quiz-wrapper');
+        if (quizWrapper && !completedQuizIds.includes(quizWrapper.id)) { // Prevent marking if already completed
+            markQuizCompleted(quizWrapper.id);
+            flashcardMarkCompletedButton.disabled = true;
+            flashcardMarkCompletedButton.innerHTML = `${svgIcons.checkCircle} Bạn đã hoàn thành bộ Flashcard này!`;
+            flashcardMarkCompletedButton.classList.add('text-green-600', 'dark:text-green-400');
+            // Disable navigation and flip
+            const flashcardContainerElement = quizWrapper.querySelector('.flashcard-container');
+            if (flashcardContainerElement) flashcardContainerElement.style.pointerEvents = 'none';
+            quizWrapper.querySelectorAll('.flashcard-nav-btn').forEach(btn => btn.disabled = true);
         }
     } else if (button) {
         e.preventDefault();
@@ -2509,7 +2825,7 @@ function toggleScrollToTopButton() {
     if (chatScrollContainer.scrollTop > chatScrollContainer.clientHeight * 0.5) { 
         scrollToTopBtn.classList.add('show');
     } else {
-        scrollToToppBtn.classList.remove('show');
+        scrollToTopBtn.classList.remove('show');
     }
 }
 
