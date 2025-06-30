@@ -903,7 +903,7 @@ function handleFillInTheBlankSubmit(submitButton, quizId, quizData) {
         // Replace input fields with filled text
         let sentenceHtml = DOMPurify.sanitize(quizData.sentence);
         sentenceHtml = sentenceHtml.replace(/\{\{BLANK\}\}/g, (match, index) => {
-            const answer = quizData.blanks[index] || '???';
+            const answer = data.blanks[index] || '???';
             return `<span class="quiz-filled-blank correct">${DOMPurify.sanitize(answer)}</span>`;
         });
         quizContainer.querySelector('p').innerHTML = sentenceHtml;
@@ -1775,12 +1775,20 @@ function clearSuggestions() {
 async function getFollowUpSuggestions(lastResponse) {
     try {
         const suggestionPrompt = `Dựa vào câu trả lời sau: "${lastResponse.substring(0, 500)}". Hãy đề xuất 3 câu hỏi tiếp theo ngắn gọn và thú vị mà người dùng có thể hỏi. QUAN TRỌNG: Chỉ trả về 3 câu hỏi, mỗi câu trên một dòng. Không đánh số, không dùng gạch đầu dòng, không thêm bất kỳ văn bản nào khác.`;
-        const result = await fastModel.generateContent(prompt);
-        const responseText = result.response.text();
-        const suggestions = responseText.split('\n').filter(s => s.trim() !== '');
-        displaySuggestions(suggestions);
+        const result = await fastModel.generateContent(suggestionPrompt);
+        // === FIX: Thêm kiểm tra an toàn cho result.response và result.response.text() ===
+        if (result && result.response && typeof result.response.text === 'function') {
+            const responseText = result.response.text();
+            const suggestions = responseText.split('\n').filter(s => s.trim() !== '');
+            displaySuggestions(suggestions);
+        } else {
+            console.warn("API không trả về phản hồi hợp lệ cho gợi ý.", result);
+            // Optionally, clear suggestions or show a message if API response is not valid
+            clearSuggestions(); 
+        }
     } catch (error) {
         console.error("Error getting suggestions:", error);
+        clearSuggestions(); // Clear suggestions on error as well
     }
 }
 
@@ -2509,7 +2517,7 @@ function toggleScrollToTopButton() {
     if (chatScrollContainer.scrollTop > chatScrollContainer.clientHeight * 0.5) { 
         scrollToTopBtn.classList.add('show');
     } else {
-        scrollToToppBtn.classList.remove('show');
+        scrollToTopBtn.classList.remove('show');
     }
 }
 
