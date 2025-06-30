@@ -84,7 +84,7 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     * **{"prompt":"..."}**: Là một đối tượng JSON chứa một khóa "prompt". Giá trị của khóa này là một câu lệnh đầy đủ bạn tự tạo ra để yêu cầu chính bạn giải thích sâu về mục học đó. Prompt phải chi tiết và bằng tiếng Việt.
 
 **Định dạng các loại câu hỏi trắc nghiệm (LUÔN BỌC TRONG KHỐI MÃ \`\`\`quiz... \`\`\`):**
-**CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
+**CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
 **TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY!**
 **LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤU NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
 
@@ -139,6 +139,43 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     }
     \`\`\`
     *Lưu ý:* "keywords" là các từ khóa quan trọng mà AI sẽ tìm kiếm trong câu trả lời của người dùng. "expected_answer_gist" là tóm tắt ý chính của câu trả lời đúng, dùng cho AI đánh giá. "explanation" là câu trả lời đầy đủ để hiển thị sau khi người dùng trả lời.
+
+* **Kéo và Thả (Ghép nối) (Drag and Drop Matching):**
+    \`\`\`quiz
+    {
+      "type": "drag_and_drop_matching",
+      "title": "Ghép nối từ vựng với định nghĩa của chúng.",
+      "items": [
+        {"id": "item1", "text": "Hello"},
+        {"id": "item2", "text": "Goodbye"},
+        {"id": "item3", "text": "Thank you"}
+      ],
+      "targets": [
+        {"id": "target1", "text": "Lời chào khi gặp mặt.", "matchId": "item1"},
+        {"id": "target2", "text": "Lời chào khi chia tay.", "matchId": "item2"},
+        {"id": "target3", "text": "Lời cảm ơn.", "matchId": "item3"}
+      ],
+      "explanation": "Bài tập này kiểm tra khả năng ghép nối từ vựng."
+    }
+    \`\`\`
+    *Lưu ý:* "items" là các phần tử có thể kéo. "targets" là các vùng đích, mỗi vùng có một "matchId" tương ứng với "id" của phần tử đúng.
+
+* **Sắp xếp câu/đoạn văn (Sentence/Paragraph Ordering):**
+    \`\`\`quiz
+    {
+      "type": "sentence_ordering",
+      "title": "Sắp xếp các câu để tạo thành một đoạn văn mạch lạc.",
+      "sentences": [
+        {"id": "s1", "text": "Đầu tiên, bạn cần chuẩn bị nguyên liệu."},
+        {"id": "s2", "text": "Tiếp theo, trộn đều chúng trong một cái bát lớn."},
+        {"id": "s3", "text": "Cuối cùng, nướng trong 30 phút."},
+        {"id": "s4", "text": "Thưởng thức chiếc bánh thơm ngon của bạn!"}
+      ],
+      "correctOrder": ["s1", "s2", "s3", "s4"],
+      "explanation": "Bài tập này kiểm tra khả năng sắp xếp câu theo trình tự logic."
+    }
+    \`\`\`
+    *Lưu ý:* "sentences" là các câu riêng lẻ với "id" duy nhất. "correctOrder" là một mảng chứa "id" của các câu theo đúng thứ tự.
 
 **Quy tắc chung:**
 * Luôn trả lời bằng tiếng Việt.
@@ -312,7 +349,7 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
 
 4.  **Tương tác chủ động:** Sau khi giảng dạy một khái niệm (khoảng 3-5 từ vựng hoặc một điểm ngữ pháp), bạn PHẢI chủ động đặt câu hỏi cho người học để kiểm tra sự hiểu biết của họ. Sử dụng cú pháp đặc biệt sau để tạo câu hỏi trắc nghiệm trong một khối mã 'quiz':
 
-    **CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation") PHẢI LÀ VĂN BẢN THUẦN TÚY. TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY! LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤY NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
+    **CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder") PHẢI LÀ VĂN BẢN THUẦN TÚY. TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY! LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤY NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
 
     * **Thẻ từ vựng (Flashcard) - VÍ DỤ ƯU TIÊN HÀNG ĐẦU VÀ CẦN CHÍNH XÁC TUYỆT ĐỐI:**
         \`\`\`quiz
@@ -360,6 +397,40 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
           "keywords": ["verb", "noun", "influence", "result"],
           "expected_answer_gist": "'Affect' is usually a verb meaning to influence, and 'effect' is usually a noun meaning a result.",
           "explanation": "'Affect' (verb) means to influence or produce a change in something. For example: 'The weather affected my mood.' 'Effect' (noun) is the result of an action or cause. For example: 'The effect of the rain was slippery roads.' 'Effect' can also be a verb meaning to bring about (e.g., 'to effect change'), but this is less common."
+        }
+        \`\`\`
+    
+    * **Kéo và Thả (Ghép nối) (Drag and Drop Matching):**
+        \`\`\`quiz
+        {
+          "type": "drag_and_drop_matching",
+          "title": "Match the English words to their Vietnamese definitions.",
+          "items": [
+            {"id": "item-hello", "text": "Hello"},
+            {"id": "item-goodbye", "text": "Goodbye"},
+            {"id": "item-thankyou", "text": "Thank you"}
+          ],
+          "targets": [
+            {"id": "target-hello", "text": "Xin chào", "matchId": "item-hello"},
+            {"id": "target-goodbye", "text": "Tạm biệt", "matchId": "item-goodbye"},
+            {"id": "target-thankyou", "text": "Cảm ơn", "matchId": "item-thankyou"}
+          ],
+          "explanation": "This exercise tests your English vocabulary matching skills."
+        }
+        \`\`\`
+
+    * **Sắp xếp câu/đoạn văn (Sentence/Paragraph Ordering):**
+        \`\`\`quiz
+        {
+          "type": "sentence_ordering",
+          "title": "Order these sentences to form a logical paragraph.",
+          "sentences": [
+            {"id": "s-start", "text": "The sun rises in the east."},
+            {"id": "s-mid", "text": "Birds begin to sing their morning songs."},
+            {"id": "s-end", "text": "A new day has officially begun."}
+          ],
+          "correctOrder": ["s-start", "s-mid", "s-end"],
+          "explanation": "This exercise helps you understand sentence flow and coherence."
         }
         \`\`\`
 
@@ -1052,6 +1123,140 @@ function renderFlashcardQuiz(data, quizId) {
 }
 
 /**
+ * Renders an interactive Drag and Drop Matching quiz block.
+ * @param {object} data - Parsed JSON data for the drag and drop quiz.
+ * @param {string} quizId - Unique ID for this quiz block.
+ * @returns {HTMLElement} - The DOM element of the quiz block.
+ */
+function renderDragAndDropMatchingQuiz(data, quizId) {
+    const quizWrapper = document.createElement('div');
+    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 drag-drop-quiz-wrapper";
+    quizWrapper.id = quizId;
+    quizWrapper.dataset.quizData = JSON.stringify(data);
+
+    const isCompleted = completedQuizIds.includes(quizId);
+
+    let itemsHtml = '';
+    // Shuffle items to make it a real quiz
+    const shuffledItems = [...data.items].sort(() => Math.random() - 0.5);
+    shuffledItems.forEach(item => {
+        itemsHtml += `<div class="drag-item p-3 bg-blue-200 dark:bg-blue-700 text-blue-800 dark:text-blue-100 rounded-lg cursor-grab ${isCompleted ? 'disabled' : ''}" draggable="${!isCompleted}" data-item-id="${item.id}">${DOMPurify.sanitize(item.text)}</div>`;
+    });
+
+    let targetsHtml = '';
+    // Shuffle targets as well, but keep track of their original matchId for checking
+    const shuffledTargets = [...data.targets].sort(() => Math.random() - 0.5);
+    shuffledTargets.forEach(target => {
+        targetsHtml += `
+            <div class="drop-target p-3 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg flex-1 min-h-[60px] flex items-center justify-center text-gray-700 dark:text-gray-300 ${isCompleted ? 'completed' : ''}" data-target-id="${target.id}" data-correct-match-id="${target.matchId}">
+                ${DOMPurify.sanitize(target.text)}
+                <div class="dropped-item-placeholder ml-2 font-semibold text-blue-700 dark:text-blue-200"></div>
+            </div>
+        `;
+    });
+
+    quizWrapper.innerHTML = `
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">${DOMPurify.sanitize(data.title)}</h3>
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="drag-items-container flex flex-wrap gap-2 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg w-full md:w-1/2">
+                ${itemsHtml}
+            </div>
+            <div class="drop-targets-container flex flex-col gap-2 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg w-full md:w-1/2">
+                ${targetsHtml}
+            </div>
+        </div>
+        <div class="mt-4 text-center">
+            ${isCompleted ? 
+                `<p class="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">
+                    ${svgIcons.checkCircle} Bạn đã hoàn thành bài tập này!
+                </p>` :
+                `<button class="quiz-submit-btn px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Kiểm tra</button>`
+            }
+        </div>
+        <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>
+    `;
+
+    if (isCompleted) {
+        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`));
+        explanationDiv.classList.remove('hidden');
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+
+        // Re-render dropped items if completed
+        const targetsContainer = quizWrapper.querySelector('.drop-targets-container');
+        targetsContainer.innerHTML = ''; // Clear existing targets
+        data.targets.forEach(target => {
+            const matchedItem = data.items.find(item => item.id === target.matchId);
+            targetsHtml += `
+                <div class="drop-target p-3 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg flex-1 min-h-[60px] flex items-center justify-center text-gray-700 dark:text-gray-300 completed" data-target-id="${target.id}" data-correct-match-id="${target.matchId}">
+                    ${DOMPurify.sanitize(target.text)}
+                    <div class="dropped-item-placeholder ml-2 font-semibold text-green-700 dark:text-green-200">
+                        (${DOMPurify.sanitize(matchedItem.text)})
+                    </div>
+                </div>
+            `;
+        });
+        targetsContainer.innerHTML = targetsHtml; // Re-populate with completed state
+        quizWrapper.querySelector('.drag-items-container').remove(); // Remove draggable items
+    }
+
+    return quizWrapper;
+}
+
+/**
+ * Renders an interactive Sentence Ordering quiz block.
+ * @param {object} data - Parsed JSON data for the sentence ordering quiz.
+ * @param {string} quizId - Unique ID for this quiz block.
+ * @returns {HTMLElement} - The DOM element of the quiz block.
+ */
+function renderSentenceOrderingQuiz(data, quizId) {
+    const quizWrapper = document.createElement('div');
+    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 sentence-ordering-quiz-wrapper";
+    quizWrapper.id = quizId;
+    quizWrapper.dataset.quizData = JSON.stringify(data);
+
+    const isCompleted = completedQuizIds.includes(quizId);
+
+    let sentencesHtml = '';
+    // Shuffle sentences for the quiz, unless it's completed
+    const sentencesToDisplay = isCompleted ? data.sentences.filter(s => data.correctOrder.includes(s.id)).sort((a, b) => data.correctOrder.indexOf(a.id) - data.correctOrder.indexOf(b.id)) : [...data.sentences].sort(() => Math.random() - 0.5);
+
+    sentencesToDisplay.forEach(sentence => {
+        sentencesHtml += `
+            <div class="sentence-item p-3 bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 rounded-lg mb-2 cursor-grab ${isCompleted ? 'disabled' : ''}" draggable="${!isCompleted}" data-sentence-id="${sentence.id}">
+                ${DOMPurify.sanitize(sentence.text)}
+            </div>
+        `;
+    });
+
+    quizWrapper.innerHTML = `
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">${DOMPurify.sanitize(data.title)}</h3>
+        <div class="sentences-container flex flex-col gap-2 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+            ${sentencesHtml}
+        </div>
+        <div class="mt-4 text-center">
+            ${isCompleted ? 
+                `<p class="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">
+                    ${svgIcons.checkCircle} Bạn đã hoàn thành bài tập này!
+                </p>` :
+                `<button class="quiz-submit-btn px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Kiểm tra</button>`
+            }
+        </div>
+        <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>
+    `;
+
+    if (isCompleted) {
+        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`));
+        explanationDiv.classList.remove('hidden');
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+    }
+
+    return quizWrapper;
+}
+
+
+/**
  * Handles the logic for a multiple choice quiz answer.
  * @param {HTMLElement} button - The option button clicked.
  * @param {string} quizId - The ID of the quiz.
@@ -1124,7 +1329,7 @@ function handleFillInTheBlankSubmit(submitButton, quizId, quizData) {
         // Replace input fields with filled text
         let sentenceHtml = DOMPurify.sanitize(quizData.sentence);
         sentenceHtml = sentenceHtml.replace(/\{\{BLANK\}\}/g, (match, index) => {
-            const answer = data.blanks[index] || '???';
+            const answer = quizData.blanks[index] || '???'; // Use quizData.blanks directly
             return `<span class="quiz-filled-blank correct">${DOMPurify.sanitize(answer)}</span>`;
         });
         quizContainer.querySelector('p').innerHTML = sentenceHtml;
@@ -1223,6 +1428,119 @@ async function handleShortAnswerSubmit(submitButton, quizId, quizData) {
 }
 
 /**
+ * Handles the logic for a drag and drop matching quiz submission.
+ * @param {HTMLElement} submitButton - The submit button clicked.
+ * @param {string} quizId - The ID of the quiz.
+ * @param {object} quizData - The quiz data.
+ */
+function handleDragAndDropMatchingSubmit(submitButton, quizId, quizData) {
+    const quizContainer = document.getElementById(quizId);
+    if (!quizContainer || completedQuizIds.includes(quizId)) return;
+
+    const dropTargets = quizContainer.querySelectorAll('.drop-target');
+    let allCorrect = true;
+    const userMatches = {}; // { targetId: itemId }
+
+    dropTargets.forEach(target => {
+        const droppedItem = target.querySelector('.drag-item');
+        if (droppedItem) {
+            userMatches[target.dataset.targetId] = droppedItem.dataset.itemId;
+        } else {
+            userMatches[target.dataset.targetId] = null; // No item dropped
+        }
+    });
+
+    dropTargets.forEach(target => {
+        const correctMatchId = target.dataset.correctMatchId;
+        const droppedItemId = userMatches[target.dataset.targetId];
+        const droppedItemPlaceholder = target.querySelector('.dropped-item-placeholder');
+
+        if (droppedItemId === correctMatchId) {
+            target.classList.add('correct');
+            target.classList.remove('incorrect');
+            if (droppedItemPlaceholder) {
+                droppedItemPlaceholder.textContent = `(${DOMPurify.sanitize(quizData.items.find(item => item.id === droppedItemId).text)})`;
+                droppedItemPlaceholder.classList.remove('text-red-700', 'dark:text-red-200');
+                droppedItemPlaceholder.classList.add('text-green-700', 'dark:text-green-200');
+            }
+        } else {
+            allCorrect = false;
+            target.classList.add('incorrect');
+            target.classList.remove('correct');
+            if (droppedItemPlaceholder) {
+                const correctItemText = quizData.items.find(item => item.id === correctMatchId).text;
+                droppedItemPlaceholder.textContent = droppedItemId ? `(Sai: ${DOMPurify.sanitize(correctItemText)})` : `(Thiếu: ${DOMPurify.sanitize(correctItemText)})`;
+                droppedItemPlaceholder.classList.remove('text-green-700', 'dark:text-green-200');
+                droppedItemPlaceholder.classList.add('text-red-700', 'dark:text-red-200');
+            }
+        }
+    });
+
+    const explanationDiv = quizContainer.querySelector('.quiz-explanation');
+    explanationDiv.classList.remove('hidden');
+
+    if (allCorrect) {
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chính xác!** ${quizData.explanation}`));
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+        markQuizCompleted(quizId);
+        quizContainer.querySelectorAll('.drag-item').forEach(item => item.draggable = false);
+        submitButton.remove(); // Remove submit button
+    } else {
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chưa chính xác.** Vui lòng thử lại. ${quizData.explanation}`));
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
+    }
+}
+
+/**
+ * Handles the logic for a sentence ordering quiz submission.
+ * @param {HTMLElement} submitButton - The submit button clicked.
+ * @param {string} quizId - The ID of the quiz.
+ * @param {object} quizData - The quiz data.
+ */
+function handleSentenceOrderingSubmit(submitButton, quizId, quizData) {
+    const quizContainer = document.getElementById(quizId);
+    if (!quizContainer || completedQuizIds.includes(quizId)) return;
+
+    const sentenceItems = quizContainer.querySelectorAll('.sentence-item');
+    const userOrder = Array.from(sentenceItems).map(item => item.dataset.sentenceId);
+    const correctOrder = quizData.correctOrder;
+
+    let allCorrect = true;
+    for (let i = 0; i < userOrder.length; i++) {
+        if (userOrder[i] !== correctOrder[i]) {
+            allCorrect = false;
+            break;
+        }
+    }
+
+    const explanationDiv = quizContainer.querySelector('.quiz-explanation');
+    explanationDiv.classList.remove('hidden');
+
+    if (allCorrect) {
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chính xác!** ${quizData.explanation}`));
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+        markQuizCompleted(quizId);
+        quizContainer.querySelectorAll('.sentence-item').forEach(item => item.draggable = false);
+        submitButton.remove(); // Remove submit button
+    } else {
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Chưa chính xác.** Vui lòng thử lại. ${quizData.explanation}`));
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
+    }
+
+    // Highlight correct/incorrect positions
+    sentenceItems.forEach((item, index) => {
+        if (item.dataset.sentenceId === correctOrder[index]) {
+            item.classList.add('correct');
+            item.classList.remove('incorrect');
+        } else {
+            item.classList.add('incorrect');
+            item.classList.remove('correct');
+        }
+    });
+}
+
+
+/**
  * Marks a quiz as completed and updates the database.
  * @param {string} quizId - The ID of the quiz to mark as completed.
  */
@@ -1259,6 +1577,10 @@ function renderQuiz(data, quizId) {
             return renderShortAnswerQuiz(data, quizId);
         case 'flashcard':
             return renderFlashcardQuiz(data, quizId); // === THÊM: Xử lý Flashcard ===
+        case 'drag_and_drop_matching':
+            return renderDragAndDropMatchingQuiz(data, quizId); // === THÊM: Xử lý Kéo và Thả ===
+        case 'sentence_ordering':
+            return renderSentenceOrderingQuiz(data, quizId); // === THÊM: Xử lý Sắp xếp câu ===
         default:
             console.warn('Unknown quiz type:', data.type);
             const errorDiv = document.createElement('div');
@@ -1743,7 +2065,9 @@ function highlightAllCode(container) {
                     (potentialJson.type === 'multiple_choice' && potentialJson.question && potentialJson.options && potentialJson.answer) ||
                     (potentialJson.type === 'fill_in_the_blank' && potentialJson.sentence && potentialJson.blanks) ||
                     (potentialJson.type === 'short_answer' && potentialJson.question && potentialJson.keywords && potentialJson.expected_answer_gist) ||
-                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson[0].back) || // Kiểm tra cấu trúc flashcard
+                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson.cards[0].back) || // Kiểm tra cấu trúc flashcard
+                    (potentialJson.type === 'drag_and_drop_matching' && potentialJson.items && potentialJson.targets) || // Kiểm tra cấu trúc kéo thả
+                    (potentialJson.type === 'sentence_ordering' && potentialJson.sentences && potentialJson.correctOrder) || // Kiểm tra cấu trúc sắp xếp câu
                     // Check for old multiple_choice format (no type field)
                     (potentialJson.question && potentialJson.options && potentialJson.answer) 
                 ) {
@@ -2526,7 +2850,7 @@ async function sendReferenceMessage(userPromptOverride = null) {
             const saveNoteBtn = document.createElement('button');
             saveNoteBtn.className = 'flex items-center gap-2 text-xs px-3 py-1 bg-yellow-200 dark:bg-slate-600 text-yellow-800 dark:text-yellow-200 rounded-full hover:bg-yellow-300 dark:hover:bg-slate-500 transition-colors';
             saveNoteBtn.innerHTML = `${svgIcons.saveNote} <span>Lưu Ghi chú</span>`;
-            saveNoteBtn.onclick = () => saveAsNote(userPrompt, fullResponseText);
+            saveNoteBtn.onclick = () => saveAsNote(userPrompt, fullNoteText); // Pass fullNoteText
             actionsContainer.appendChild(saveNoteBtn);
         }
         
@@ -2748,6 +3072,10 @@ chatContainer.addEventListener('click', async (e) => {
                 handleFillInTheBlankSubmit(quizSubmitButton, quizId, quizData);
             } else if (quizData.type === 'short_answer') {
                 await handleShortAnswerSubmit(quizSubmitButton, quizId, quizData);
+            } else if (quizData.type === 'drag_and_drop_matching') {
+                handleDragAndDropMatchingSubmit(quizSubmitButton, quizId, quizData);
+            } else if (quizData.type === 'sentence_ordering') {
+                handleSentenceOrderingSubmit(quizSubmitButton, quizId, quizData);
             }
         }
     } else if (flashcardContainer) {
@@ -2871,6 +3199,95 @@ chatContainer.addEventListener('click', async (e) => {
     }
 });
 
+// === Kéo và Thả (Drag and Drop) Logic ===
+let draggedItem = null;
+
+chatContainer.addEventListener('dragstart', (e) => {
+    const item = e.target.closest('.drag-item');
+    if (item && !item.classList.contains('disabled')) {
+        draggedItem = item;
+        e.dataTransfer.setData('text/plain', item.dataset.itemId);
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => item.classList.add('dragging'), 0);
+    }
+});
+
+chatContainer.addEventListener('dragover', (e) => {
+    const target = e.target.closest('.drop-target');
+    const sentenceContainer = e.target.closest('.sentences-container');
+    if (target || sentenceContainer) {
+        e.preventDefault(); // Allow drop
+        e.dataTransfer.dropEffect = 'move';
+        if (target && !target.classList.contains('completed')) {
+            target.classList.add('drag-over');
+        }
+    }
+});
+
+chatContainer.addEventListener('dragleave', (e) => {
+    const target = e.target.closest('.drop-target');
+    if (target) {
+        target.classList.remove('drag-over');
+    }
+});
+
+chatContainer.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const target = e.target.closest('.drop-target');
+    const sentenceContainer = e.target.closest('.sentences-container');
+
+    if (target && !target.classList.contains('completed')) {
+        target.classList.remove('drag-over');
+        if (draggedItem) {
+            // Remove previous item from this target if any
+            const existingItem = target.querySelector('.drag-item');
+            if (existingItem) {
+                const sourceContainer = draggedItem.closest('.drag-items-container');
+                if (sourceContainer) {
+                    sourceContainer.appendChild(existingItem); // Move it back to source
+                }
+            }
+            target.appendChild(draggedItem);
+            draggedItem.classList.remove('dragging');
+            draggedItem = null;
+        }
+    } else if (sentenceContainer) {
+        // Handle drop for sentence ordering
+        if (draggedItem && draggedItem.classList.contains('sentence-item')) {
+            const afterElement = getDragAfterElement(sentenceContainer, e.clientY);
+            if (afterElement == null) {
+                sentenceContainer.appendChild(draggedItem);
+            } else {
+                sentenceContainer.insertBefore(draggedItem, afterElement);
+            }
+            draggedItem.classList.remove('dragging');
+            draggedItem = null;
+        }
+    }
+});
+
+chatContainer.addEventListener('dragend', (e) => {
+    const items = document.querySelectorAll('.drag-item, .sentence-item');
+    items.forEach(item => item.classList.remove('dragging'));
+    draggedItem = null; // Reset dragged item
+});
+
+// Helper for sentence ordering drag and drop
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.sentence-item:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+
 sidebarContent.addEventListener('scroll', () => {
     const isNearBottom = sidebarContent.scrollHeight - sidebarContent.scrollTop - sidebarContent.clientHeight < 100;
     if (isNearBottom && !isFetchingChats && !allChatsLoaded) {
@@ -2960,3 +3377,4 @@ document.addEventListener('DOMContentLoaded', () => {
         hideConfirmationModal();
     });
 });
+
