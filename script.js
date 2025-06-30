@@ -84,7 +84,7 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     * **{"prompt":"..."}**: Là một đối tượng JSON chứa một khóa "prompt". Giá trị của khóa này là một câu lệnh đầy đủ bạn tự tạo ra để yêu cầu chính bạn giải thích sâu về mục học đó. Prompt phải chi tiết và bằng tiếng Việt.
 
 **Định dạng các loại câu hỏi trắc nghiệm (LUÔN BỌC TRONG KHỐI MÃ \`\`\`quiz... \`\`\`):**
-**CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
+**CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder", "scenario", "speaker", "nextId") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
 **TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY!**
 **LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤU NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
 
@@ -176,6 +176,35 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     }
     \`\`\`
     *Lưu ý:* "sentences" là các câu riêng lẻ với "id" duy nhất. "correctOrder" là một mảng chứa "id" của các câu theo đúng thứ tự.
+
+* **Hội thoại tương tác có lựa chọn (Interactive Dialogue with Choices):**
+    \`\`\`quiz
+    {
+      "type": "dialogue_choice",
+      "title": "Đặt món ăn tại nhà hàng",
+      "scenario": "Bạn đang ở một nhà hàng sang trọng và người phục vụ đến để lấy order của bạn. Hãy chọn cách phản hồi phù hợp.",
+      "dialogue_flow": [
+        {"id": "start", "speaker": "AI", "text": "Chào buổi tối, quý khách đã sẵn sàng gọi món chưa ạ?", "choices": [
+          {"text": "Vâng, tôi muốn gọi món.", "nextId": "user_choice_1"},
+          {"text": "Cho tôi thêm vài phút để xem thực đơn.", "nextId": "user_choice_2"}
+        ]},
+        {"id": "user_choice_1", "speaker": "USER_RESPONSE_DISPLAY", "text": "Vâng, tôi muốn gọi món."},
+        {"id": "ai_response_1", "speaker": "AI", "text": "Tuyệt vời, quý khách muốn dùng món gì ạ?", "choices": [
+          {"text": "Tôi muốn một suất bít tết vừa chín tới.", "nextId": "user_choice_3"},
+          {"text": "Món đặc biệt của nhà hàng hôm nay là gì?", "nextId": "user_choice_4"}
+        ]},
+        {"id": "user_choice_2", "speaker": "USER_RESPONSE_DISPLAY", "text": "Cho tôi thêm vài phút để xem thực đơn."},
+        {"id": "ai_response_2", "speaker": "AI", "text": "Vâng, không vấn đề gì ạ. Tôi sẽ quay lại sau ít phút.", "explanation": "Đây là một phản hồi lịch sự và phù hợp khi bạn cần thêm thời gian."},
+        {"id": "user_choice_3", "speaker": "USER_RESPONSE_DISPLAY", "text": "Tôi muốn một suất bít tết vừa chín tới."},
+        {"id": "ai_response_3", "speaker": "AI", "text": "Tuyệt vời, quý khách có muốn dùng kèm với sốt nào không ạ?", "explanation": "Bạn đã gọi món thành công. Tiếp tục hội thoại để chọn sốt."},
+        {"id": "user_choice_4", "speaker": "USER_RESPONSE_DISPLAY", "text": "Món đặc biệt của nhà hàng hôm nay là gì?"},
+        {"id": "ai_response_4", "speaker": "AI", "text": "Món đặc biệt hôm nay của chúng tôi là cá hồi nướng sốt chanh dây ạ.", "explanation": "Một câu hỏi tốt để khám phá các lựa chọn khác."}
+      ],
+      "start_node_id": "start",
+      "explanation": "Bài tập này giúp bạn thực hành cách giao tiếp lịch sự và hiệu quả khi gọi món tại nhà hàng. Luôn chú ý đến ngữ cảnh và các lựa chọn phù hợp."
+    }
+    \`\`\`
+    *Lưu ý:* "dialogue_flow" là một mảng các "node" hội thoại. Mỗi node có một "id", "speaker" ("AI" hoặc "USER_RESPONSE_DISPLAY"), "text". Node của AI có thể có "choices" dẫn đến "nextId" khác. "start_node_id" chỉ định node bắt đầu.
 
 **Quy tắc chung:**
 * Luôn trả lời bằng tiếng Việt.
@@ -349,7 +378,7 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
 
 4.  **Tương tác chủ động:** Sau khi giảng dạy một khái niệm (khoảng 3-5 từ vựng hoặc một điểm ngữ pháp), bạn PHẢI chủ động đặt câu hỏi cho người học để kiểm tra sự hiểu biết của họ. Sử dụng cú pháp đặc biệt sau để tạo câu hỏi trắc nghiệm trong một khối mã 'quiz':
 
-    **CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder") PHẢI LÀ VĂN BẢN THUẦN TÚY. TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY! LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤY NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
+    **CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder", "scenario", "speaker", "nextId") PHẢI LÀ VĂN BẢN THUẦN TÚY. TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY! LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤY NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
 
     * **Thẻ từ vựng (Flashcard) - VÍ DỤ ƯU TIÊN HÀNG ĐẦU VÀ CẦN CHÍNH XÁC TUYỆT ĐỐI:**
         \`\`\`quiz
@@ -471,6 +500,90 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
         ]
     }
 ];
+
+// === CẬP NHẬT: Thêm các biến cho modal xác nhận ===
+const authContainer = document.getElementById('auth-container');
+const appContainer = document.getElementById('app-container');
+const loginView = document.getElementById('login-view');
+const registerView = document.getElementById('register-view');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const googleLoginBtn = document.getElementById('google-login-btn');
+const showRegisterBtn = document.getElementById('show-register');
+const showLoginBtn = document.getElementById('show-login');
+const authError = document.getElementById('auth-error');
+const personaSelectionScreen = document.getElementById('persona-selection-screen');
+const welcomeUserName = document.getElementById('welcome-user-name');
+const createPersonaBtn = document.getElementById('create-persona-btn');
+const customPersonasSection = document.getElementById('custom-personas-section');
+const customPersonaGrid = document.getElementById('custom-persona-grid');
+const emptyCustomPersonaState = document.getElementById('empty-custom-persona-state');
+const defaultPersonaGrid = document.getElementById('default-persona-grid');
+const logoutBtnPersona = document.getElementById('logout-btn-persona');
+const chatViewContainer = document.getElementById('chat-view-container');
+const mainHeader = document.getElementById('main-header');
+const menuBtn = document.getElementById('menu-btn');
+const chatHeaderInfo = document.getElementById('chat-header-info');
+const newTopicBtn = document.getElementById('new-topic-btn');
+const summarizeBtn = document.getElementById('summarize-btn');
+const themeToggle = document.getElementById('theme-toggle');
+const logoutBtn = document.getElementById('logout-btn');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+const sidebar = document.getElementById('sidebar');
+const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+const sidebarContent = document.getElementById('sidebar-content');
+const newChatBtn = document.getElementById('new-chat-btn');
+const pinnedChatsSection = document.getElementById('pinned-chats-section');
+const pinnedChatsList = document.getElementById('pinned-chats-list');
+const savedChatsList = document.getElementById('saved-chats-list');
+const savedChatsSkeleton = document.getElementById('saved-chats-skeleton');
+const mainContent = document.getElementById('main-content');
+const welcomeScreen = document.getElementById('welcome-screen');
+const chatContainer = document.getElementById('chat-container');
+const notificationArea = document.getElementById('notification-area');
+const suggestionArea = document.getElementById('suggestion-area');
+const toggleSuggestionsBtn = document.getElementById('toggle-suggestions-btn');
+const suggestionsContainer = document.getElementById('suggestions-container');
+const inputAreaWrapper = document.getElementById('input-area-wrapper');
+const inputArea = document.getElementById('input-area');
+const referenceBtn = document.getElementById('reference-btn');
+const promptInput = document.getElementById('prompt-input');
+const recordBtn = document.getElementById('record-btn');
+const sendBtn = document.getElementById('send-btn');
+const personaModalOverlay = document.getElementById('persona-modal-overlay');
+const personaModal = document.getElementById('persona-modal');
+const personaModalTitle = document.getElementById('persona-modal-title');
+const closePersonaModalBtn = document.getElementById('close-persona-modal-btn');
+const personaForm = document.getElementById('persona-form');
+const personaIdInput = document.getElementById('persona-id');
+const personaNameInput = document.getElementById('persona-name');
+const personaIconInput = document.getElementById('persona-icon');
+const personaDescriptionInput = document.getElementById('persona-description');
+const personaPromptInput = document.getElementById('persona-prompt');
+const generatePromptBtn = document.getElementById('generate-prompt-btn');
+const cancelPersonaBtn = document.getElementById('cancel-persona-btn'); 
+const savePersonaBtn = document.getElementById('save-persona-btn');
+const referenceModalOverlay = document.getElementById('reference-modal-overlay');
+const referenceModal = document.getElementById('reference-modal');
+const referenceHeader = document.getElementById('reference-header');
+const referenceTitle = document.getElementById('reference-title');
+const closeReferenceModalBtn = document.getElementById('close-reference-modal-btn');
+const referenceContent = document.getElementById('reference-content');
+const referenceInputArea = document.getElementById('reference-input-area');
+const referencePromptInput = document.getElementById('reference-prompt-input');
+const referenceSendBtn = document.getElementById('reference-send-btn');
+const learningModeToggle = document.getElementById('learning-mode-toggle'); 
+const learningModeIndicator = document.getElementById('learning-mode-indicator');
+const chatScrollContainer = document.getElementById("chat-container");
+const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+const confirmationModalOverlay = document.getElementById('confirmation-modal-overlay');
+const confirmationModal = document.getElementById('confirmation-modal');
+const confirmationModalIcon = document.getElementById('confirmation-modal-icon');
+const confirmationModalTitle = document.getElementById('confirmation-modal-title');
+const confirmationModalMessage = document.getElementById('confirmation-modal-message');
+const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-confirm-btn');
+const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
+
 
 // --- HÀM MỚI: Logic cho Modal Xác nhận ---
 
@@ -1255,6 +1368,112 @@ function renderSentenceOrderingQuiz(data, quizId) {
     return quizWrapper;
 }
 
+/**
+ * Renders an interactive dialogue quiz block.
+ * @param {object} data - Parsed JSON data for the dialogue quiz.
+ * @param {string} quizId - Unique ID for this quiz block.
+ * @returns {HTMLElement} - The DOM element of the quiz block.
+ */
+function renderInteractiveDialogueQuiz(data, quizId) {
+    const quizWrapper = document.createElement('div');
+    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 dialogue-quiz-wrapper";
+    quizWrapper.id = quizId;
+    quizWrapper.dataset.quizData = JSON.stringify(data);
+    
+    // Store current node ID and completed state
+    let currentDialogueNodeId = data.start_node_id;
+    if (completedQuizIds.includes(quizId)) {
+        currentDialogueNodeId = 'completed'; // Special state for completed quiz
+    } else if (quizWrapper.dataset.currentDialogueNodeId) {
+        // Restore from previous state if available (e.g., after page reload)
+        currentDialogueNodeId = quizWrapper.dataset.currentDialogueNodeId;
+    }
+    quizWrapper.dataset.currentDialogueNodeId = currentDialogueNodeId;
+
+    const dialogueContentHtml = `
+        <div class="dialogue-scenario text-sm text-gray-600 dark:text-gray-400 mb-3">${DOMPurify.sanitize(data.scenario)}</div>
+        <div class="dialogue-lines space-y-3 mb-4">
+            <!-- Dialogue lines will be appended here -->
+        </div>
+        <div class="dialogue-choices space-y-2">
+            <!-- Choices will be appended here -->
+        </div>
+        <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>
+    `;
+
+    quizWrapper.innerHTML = `
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">${DOMPurify.sanitize(data.title)}</h3>
+        ${dialogueContentHtml}
+    `;
+
+    // Function to render a specific dialogue node
+    const renderNode = (nodeId) => {
+        const dialogueLinesContainer = quizWrapper.querySelector('.dialogue-lines');
+        const dialogueChoicesContainer = quizWrapper.querySelector('.dialogue-choices');
+        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
+        
+        dialogueChoicesContainer.innerHTML = ''; // Clear previous choices
+        explanationDiv.classList.add('hidden'); // Hide explanation by default
+
+        const node = data.dialogue_flow.find(n => n.id === nodeId);
+
+        if (!node) {
+            dialogueLinesContainer.innerHTML += `<div class="text-red-500">Lỗi: Không tìm thấy node hội thoại với ID: ${nodeId}</div>`;
+            dialogueChoicesContainer.innerHTML = '';
+            return;
+        }
+
+        // Add dialogue line
+        const speakerClass = node.speaker === 'AI' ? 'text-gray-800 dark:text-gray-200' : 'text-blue-700 dark:text-blue-300 text-right';
+        const speakerName = node.speaker === 'AI' ? 'AI' : 'Bạn';
+        const dialogueLine = document.createElement('div');
+        dialogueLine.className = `dialogue-line ${speakerClass}`;
+        dialogueLine.innerHTML = `<strong>${speakerName}:</strong> ${DOMPurify.sanitize(node.text)}`;
+        dialogueLinesContainer.appendChild(dialogueLine);
+        dialogueLinesContainer.scrollTop = dialogueLinesContainer.scrollHeight; // Scroll to bottom
+
+        // Render choices if available and not completed
+        if (node.choices && node.choices.length > 0 && nodeId !== 'completed') {
+            node.choices.forEach(choice => {
+                const choiceButton = document.createElement('button');
+                choiceButton.className = `dialogue-choice-btn w-full px-4 py-2 bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100 rounded-md hover:bg-blue-200 dark:hover:bg-blue-600 transition-colors`;
+                choiceButton.textContent = DOMPurify.sanitize(choice.text);
+                choiceButton.dataset.nextId = choice.nextId;
+                choiceButton.dataset.chosenText = choice.text; // Store chosen text for display
+                dialogueChoicesContainer.appendChild(choiceButton);
+            });
+        } else if (node.explanation) {
+            // If no choices, and there's an explanation, display it
+            explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${node.explanation}`));
+            explanationDiv.classList.remove('hidden');
+            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+            markQuizCompleted(quizId); // Mark quiz completed if it reaches an end node with explanation
+        } else if (nodeId !== 'completed') {
+             // If no choices and no explanation, assume it's an end node
+            explanationDiv.innerHTML = `<p class="text-sm text-gray-600 dark:text-gray-400">Hội thoại đã kết thúc.</p>`;
+            explanationDiv.classList.remove('hidden');
+            markQuizCompleted(quizId);
+        }
+    };
+
+    // Initial render or render completed state
+    if (currentDialogueNodeId === 'completed') {
+        quizWrapper.querySelector('.dialogue-scenario').innerHTML = `<p class="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">
+            ${svgIcons.checkCircle} Bạn đã hoàn thành bài tập này!
+        </p>`;
+        quizWrapper.querySelector('.dialogue-lines').innerHTML = ''; // Clear lines
+        quizWrapper.querySelector('.dialogue-choices').innerHTML = ''; // Clear choices
+        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
+        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`));
+        explanationDiv.classList.remove('hidden');
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+    } else {
+        renderNode(currentDialogueNodeId);
+    }
+
+    return quizWrapper;
+}
+
 
 /**
  * Handles the logic for a multiple choice quiz answer.
@@ -1539,6 +1758,73 @@ function handleSentenceOrderingSubmit(submitButton, quizId, quizData) {
     });
 }
 
+/**
+ * Handles the logic for an interactive dialogue quiz choice.
+ * @param {HTMLElement} button - The choice button clicked.
+ * @param {string} quizId - The ID of the quiz.
+ * @param {object} quizData - The quiz data.
+ */
+function handleDialogueChoice(button, quizId, quizData) {
+    const quizContainer = document.getElementById(quizId);
+    if (!quizContainer || completedQuizIds.includes(quizId)) return;
+
+    const nextNodeId = button.dataset.nextId;
+    const chosenText = button.dataset.chosenText;
+
+    // Add user's chosen response to dialogue lines
+    const dialogueLinesContainer = quizContainer.querySelector('.dialogue-lines');
+    const userDialogueLine = document.createElement('div');
+    userDialogueLine.className = `dialogue-line text-blue-700 dark:text-blue-300 text-right`;
+    userDialogueLine.innerHTML = `<strong>Bạn:</strong> ${DOMPurify.sanitize(chosenText)}`;
+    dialogueLinesContainer.appendChild(userDialogueLine);
+    dialogueLinesContainer.scrollTop = dialogueLinesContainer.scrollHeight; // Scroll to bottom
+
+    // Disable all choices
+    quizContainer.querySelectorAll('.dialogue-choice-btn').forEach(btn => btn.disabled = true);
+
+    // Update current node and re-render
+    quizContainer.dataset.currentDialogueNodeId = nextNodeId;
+    const nextNode = quizData.dialogue_flow.find(n => n.id === nextNodeId);
+
+    if (nextNode) {
+        // Display AI's response for the next node
+        const aiDialogueLine = document.createElement('div');
+        aiDialogueLine.className = `dialogue-line text-gray-800 dark:text-gray-200`;
+        aiDialogueLine.innerHTML = `<strong>AI:</strong> ${DOMPurify.sanitize(nextNode.text)}`;
+        dialogueLinesContainer.appendChild(aiDialogueLine);
+        dialogueLinesContainer.scrollTop = dialogueLinesContainer.scrollHeight; // Scroll to bottom
+
+        // Clear previous choices and render new ones or end the dialogue
+        const dialogueChoicesContainer = quizContainer.querySelector('.dialogue-choices');
+        dialogueChoicesContainer.innerHTML = '';
+
+        if (nextNode.choices && nextNode.choices.length > 0) {
+            nextNode.choices.forEach(choice => {
+                const choiceButton = document.createElement('button');
+                choiceButton.className = `dialogue-choice-btn w-full px-4 py-2 bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100 rounded-md hover:bg-blue-200 dark:hover:bg-blue-600 transition-colors`;
+                choiceButton.textContent = DOMPurify.sanitize(choice.text);
+                choiceButton.dataset.nextId = choice.nextId;
+                choiceButton.dataset.chosenText = choice.text;
+                dialogueChoicesContainer.appendChild(choiceButton);
+            });
+        } else {
+            // End of dialogue branch
+            const explanationDiv = quizContainer.querySelector('.quiz-explanation');
+            explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Hội thoại kết thúc.** ${nextNode.explanation || quizData.explanation}`));
+            explanationDiv.classList.remove('hidden');
+            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+            markQuizCompleted(quizId);
+        }
+    } else {
+        // Fallback if nextNodeId is not found (shouldn't happen with correct JSON)
+        const explanationDiv = quizContainer.querySelector('.quiz-explanation');
+        explanationDiv.innerHTML = `<span class="text-red-500">Lỗi: Lỗi luồng hội thoại.</span>`;
+        explanationDiv.classList.remove('hidden');
+        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
+        markQuizCompleted(quizId); // Mark as completed to prevent further interaction
+    }
+}
+
 
 /**
  * Marks a quiz as completed and updates the database.
@@ -1581,6 +1867,8 @@ function renderQuiz(data, quizId) {
             return renderDragAndDropMatchingQuiz(data, quizId); // === THÊM: Xử lý Kéo và Thả ===
         case 'sentence_ordering':
             return renderSentenceOrderingQuiz(data, quizId); // === THÊM: Xử lý Sắp xếp câu ===
+        case 'dialogue_choice':
+            return renderInteractiveDialogueQuiz(data, quizId); // === THÊM: Xử lý Hội thoại tương tác ===
         default:
             console.warn('Unknown quiz type:', data.type);
             const errorDiv = document.createElement('div');
@@ -2068,6 +2356,7 @@ function highlightAllCode(container) {
                     (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson.cards[0].back) || // Kiểm tra cấu trúc flashcard
                     (potentialJson.type === 'drag_and_drop_matching' && potentialJson.items && potentialJson.targets) || // Kiểm tra cấu trúc kéo thả
                     (potentialJson.type === 'sentence_ordering' && potentialJson.sentences && potentialJson.correctOrder) || // Kiểm tra cấu trúc sắp xếp câu
+                    (potentialJson.type === 'dialogue_choice' && potentialJson.dialogue_flow && potentialJson.start_node_id) || // Kiểm tra cấu trúc hội thoại
                     // Check for old multiple_choice format (no type field)
                     (potentialJson.question && potentialJson.options && potentialJson.answer) 
                 ) {
@@ -2564,7 +2853,7 @@ function showHistorySkeleton() {
             <div class="w-7/12">
                 <div class="h-16 skeleton-box rounded-2xl"></div>
             </div>
-        </div>`;
+            </div>`;
     chatContainer.appendChild(notificationArea);
 }
 
@@ -3039,6 +3328,7 @@ chatContainer.addEventListener('click', async (e) => {
     const flashcardNavButton = e.target.closest('.flashcard-nav-btn'); // for flashcard navigation
     const flashcardSpeakButton = e.target.closest('.flashcard-speak-btn'); // for flashcard speaking
     const flashcardMarkCompletedButton = e.target.closest('.flashcard-mark-completed-btn'); // for marking flashcard completed
+    const dialogueChoiceButton = e.target.closest('.dialogue-choice-btn'); // for interactive dialogue
 
     e.stopPropagation();
 
@@ -3149,7 +3439,16 @@ chatContainer.addEventListener('click', async (e) => {
             if (flashcardContainerElement) flashcardContainerElement.style.pointerEvents = 'none';
             quizWrapper.querySelectorAll('.flashcard-nav-btn').forEach(btn => btn.disabled = true);
         }
-    } else if (button) {
+    } else if (dialogueChoiceButton && !dialogueChoiceButton.disabled) {
+        e.preventDefault();
+        const quizId = dialogueChoiceButton.closest('[id^="quiz-"]').id;
+        const quizContainer = document.getElementById(quizId);
+        if (quizContainer && quizContainer.dataset.quizData) {
+            const quizData = JSON.parse(quizContainer.dataset.quizData);
+            handleDialogueChoice(dialogueChoiceButton, quizId, quizData);
+        }
+    }
+    else if (button) {
         e.preventDefault();
          if (button.classList.contains('copy-btn')) {
             copyToClipboard(button.dataset.text);
@@ -3379,3 +3678,4 @@ document.addEventListener('DOMContentLoaded', () => {
         hideConfirmationModal();
     });
 });
+
