@@ -3203,10 +3203,12 @@ chatContainer.addEventListener('click', async (e) => {
 let draggedItem = null;
 
 chatContainer.addEventListener('dragstart', (e) => {
-    const item = e.target.closest('.drag-item');
+    // Cập nhật: Đảm bảo nhận diện cả drag-item và sentence-item
+    const item = e.target.closest('.drag-item') || e.target.closest('.sentence-item');
     if (item && !item.classList.contains('disabled')) {
         draggedItem = item;
-        e.dataTransfer.setData('text/plain', item.dataset.itemId);
+        // Cập nhật: Sử dụng ID phù hợp cho từng loại item
+        e.dataTransfer.setData('text/plain', item.dataset.itemId || item.dataset.sentenceId);
         e.dataTransfer.effectAllowed = 'move';
         setTimeout(() => item.classList.add('dragging'), 0);
     }
@@ -3238,7 +3240,7 @@ chatContainer.addEventListener('drop', (e) => {
 
     if (target && !target.classList.contains('completed')) {
         target.classList.remove('drag-over');
-        if (draggedItem) {
+        if (draggedItem && draggedItem.classList.contains('drag-item')) { // Chỉ cho phép drag-item vào drop-target
             // Remove previous item from this target if any
             const existingItem = target.querySelector('.drag-item');
             if (existingItem) {
@@ -3377,4 +3379,3 @@ document.addEventListener('DOMContentLoaded', () => {
         hideConfirmationModal();
     });
 });
-
