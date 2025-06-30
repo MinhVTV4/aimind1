@@ -193,7 +193,7 @@ const personaIconInput = document.getElementById('persona-icon');
 const personaDescriptionInput = document.getElementById('persona-description');
 const personaPromptInput = document.getElementById('persona-prompt');
 const generatePromptBtn = document.getElementById('generate-prompt-btn');
-const cancelPersonaBtn = document.getElementById('cancel-persona-btn');
+const cancelPersonaBtn = document = document.getElementById('cancel-persona-btn');
 const savePersonaBtn = document.getElementById('save-persona-btn');
 const referenceModalOverlay = document.getElementById('reference-modal-overlay');
 const referenceModal = document.getElementById('reference-modal');
@@ -1112,7 +1112,7 @@ function handleFillInTheBlankSubmit(submitButton, quizId, quizData) {
         // Replace input fields with filled text
         let sentenceHtml = DOMPurify.sanitize(quizData.sentence);
         sentenceHtml = sentenceHtml.replace(/\{\{BLANK\}\}/g, (match, index) => {
-            const answer = quizData.blanks[index] || '???';
+            const answer = data.blanks[index] || '???';
             return `<span class="quiz-filled-blank correct">${DOMPurify.sanitize(answer)}</span>`;
         });
         quizContainer.querySelector('p').innerHTML = sentenceHtml;
@@ -1257,71 +1257,127 @@ function renderQuiz(data, quizId) {
 }
 
 /**
- * === HÀM ĐƯỢC CẬP NHẬT: Tìm và thay thế các khối mã quiz bằng HTML tương tác ===
- * Hàm này sẽ được gọi sau khi nội dung markdown đã được render.
- * @param {HTMLElement} containerElement - Phần tử chứa nội dung tin nhắn.
+ * === HÀM MỚI: Trích xuất và thay thế các khối quiz bằng placeholder ===
+ * @param {string} rawText - Toàn bộ phản hồi thô từ AI.
+ * @returns {{processedText: string, quizzes: Array<{id: string, rawJson: string}>}} - Văn bản với placeholder và mảng các quiz thô.
  */
-function processQuizBlocks(containerElement) {
-    // Tìm các khối mã có class 'language-quiz' do marked.js tạo ra
-    const quizCodeBlocks = containerElement.querySelectorAll('pre code.language-quiz');
-    quizCodeBlocks.forEach(codeBlock => {
-        const preElement = codeBlock.parentElement;
+function extractAndReplaceQuizBlocks(rawText) {
+    const quizRegex = /```quiz\n([\s\S]*?)\n```/g;
+    const extractedQuizzes = [];
+    let processedText = rawText;
+    let match;
+
+    // Sử dụng vòng lặp while với exec để tìm tất cả các match và thay thế chúng
+    // Quan trọng: exec cập nhật lastIndex, nên cần reset nếu chuỗi thay đổi
+    const matches = Array.from(rawText.matchAll(quizRegex)); // Lấy tất cả các match trước
+    
+    matches.forEach(match => {
+        const rawJsonContent = match[1];
+        const placeholderId = `QUIZ_PLACEHOLDER_${crypto.randomUUID()}`;
+        extractedQuizzes.push({ id: placeholderId, rawJson: rawJsonContent });
+        // Thay thế chỉ match đầu tiên để tránh lỗi khi có nhiều quiz giống nhau
+        processedText = processedText.replace(match[0], `<!--${placeholderId}-->`);
+    });
+
+    return { processedText: processedText, quizzes: extractedQuizzes };
+}
+
+/**
+ * === HÀM MỚI: Chèn các quiz đã render vào DOM ===
+ * @param {HTMLElement} containerElement - Phần tử DOM chứa nội dung tin nhắn.
+ * @param {Array<object>} extractedQuizzes - Mảng các quiz đã được trích xuất.
+ */
+function insertRenderedQuizzes(containerElement, extractedQuizzes) {
+    extractedQuizzes.forEach(quiz => {
         let quizData = null;
-        let originalTextContent = codeBlock.textContent;
+        let originalJsonContent = quiz.rawJson; // Giữ lại nội dung JSON gốc để hiển thị lỗi
 
         try {
-            // === Cập nhật: Tiền xử lý JSON mạnh mẽ hơn, loại bỏ thay thế dấu nháy đơn thành kép ===
-            let cleanJsonText = originalTextContent
-                // Loại bỏ bất kỳ thẻ HTML nào mà marked.js có thể thêm vào, bao gồm cả thẻ <a>
-                .replace(/<[^>]*>/g, '') 
-                .replace(/`+/g, '') // Loại bỏ các dấu huyền (backticks)
-                .replace(/“|”/g, '"') // Thay thế smart quotes bằng straight quotes
-                // === ĐÃ XÓA: .replace(/'/g, '"') - Đây là nguyên nhân gây lỗi trước đó ===
-                .replace(/(\r\n|\n|\r)/gm, ' ') // Thay thế ngắt dòng trong chuỗi bằng khoảng trắng (có thể cần \\n nếu muốn giữ ngắt dòng)
-                .replace(/\$/g, ''); // Loại bỏ ký hiệu đô la (nếu không phải LaTeX hợp lệ và gây lỗi JSON)
+            // Áp dụng các bước làm sạch JSON cho từng khối quiz riêng biệt
+            let cleanJsonText = originalJsonContent
+                .replace(/<[^>]*>/g, '') // Loại bỏ bất kỳ thẻ HTML nào
+                .replace(/`+/g, '') // Loại bỏ các dấu huyền
+                .replace(/“|”/g, '"') // Thay thế smart quotes
+                .replace(/(\r\n|\n|\r)/gm, ' ') // Thay thế ngắt dòng trong chuỗi bằng khoảng trắng
+                .replace(/\$/g, ''); // Loại bỏ ký hiệu đô la
             
-            // Thêm một lớp làm sạch để loại bỏ khoảng trắng dư thừa hoặc ký tự điều khiển
+            // Loại bỏ các ký tự điều khiển không hợp lệ trong JSON
+            cleanJsonText = cleanJsonText.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+            
             cleanJsonText = cleanJsonText.trim();
             
             quizData = JSON.parse(cleanJsonText);
-            
-            // === Cập nhật: Kiểm tra định dạng cũ hoặc không đầy đủ ===
+
+            // Kiểm tra định dạng cũ hoặc không đầy đủ (như trong processQuizBlocks cũ)
             if (!quizData.type) {
-                // Nếu là quiz trắc nghiệm cũ (có question, options, answer)
                 if (quizData.question && (quizData.options || quizData.blanks || quizData.keywords) && quizData.answer) { 
                     quizData.type = 'multiple_choice';
-                    // Nếu định dạng cũ, cũng kiểm tra tên trường giải thích cũ
                     if (!quizData.explanation && quizData.explanationText) {
                         quizData.explanation = quizData.explanationText;
                     }
                 } else {
-                    // Nếu không khớp với định dạng trắc nghiệm cũ, coi là không nhận diện được
                     throw new Error('Unrecognized old quiz format or incomplete data.');
                 }
             }
 
-            // Nếu quizData đã được xác định loại và hợp lệ
-            const quizId = `quiz-${crypto.randomUUID()}`; // Tạo ID duy nhất cho mỗi thể hiện quiz
-            const quizHtmlElement = renderQuiz(quizData, quizId);
-            // Thay thế thẻ <pre> bằng khối quiz tương tác
-            preElement.replaceWith(quizHtmlElement);
+            const quizHtmlElement = renderQuiz(quizData, `quiz-${quiz.id}`); // Tạo ID duy nhất
+            
+            // Tìm comment node placeholder và thay thế nó
+            // Duyệt qua childNodes để tìm comment node
+            let foundPlaceholder = false;
+            for (let i = 0; i < containerElement.childNodes.length; i++) {
+                const node = containerElement.childNodes[i];
+                if (node.nodeType === Node.COMMENT_NODE && node.nodeValue.trim() === quiz.id) {
+                    node.replaceWith(quizHtmlElement);
+                    foundPlaceholder = true;
+                    break;
+                }
+            }
+            if (!foundPlaceholder) {
+                console.warn(`Placeholder ${quiz.id} không được tìm thấy trong DOM.`);
+                // Fallback: Nếu không tìm thấy placeholder, thêm vào cuối container
+                containerElement.appendChild(quizHtmlElement);
+            }
 
         } catch (error) {
-            // Xử lý lỗi khi JSON.parse thất bại hoặc dữ liệu không hợp lệ
-            console.error("Lỗi phân tích JSON của quiz:", error, originalTextContent);
+            console.error("Lỗi phân tích JSON của quiz:", error, originalJsonContent);
             const errorDiv = document.createElement('div');
             errorDiv.className = "text-red-500 my-4 p-4 border rounded-xl bg-red-50 dark:bg-red-900/50";
             errorDiv.innerHTML = `
                 <p class="font-semibold mb-2">Lỗi hiển thị quiz:</p>
-                <p class="text-sm">Nội dung quiz từ AI bị lỗi định dạng JSON. Vui lòng thử <button class="text-blue-600 dark:text-blue-400 hover:underline regenerate-btn" data-target-id="${preElement.closest('[data-message-id]') ? preElement.closest('[data-message-id]').dataset.messageId : ''}">tái tạo phản hồi</button> để thử lại hoặc thông báo cho quản trị viên.</p>
+                <p class="text-sm">Nội dung quiz từ AI bị lỗi định dạng JSON. Vui lòng thử <button class="text-blue-600 dark:text-blue-400 hover:underline regenerate-btn" data-target-id="${containerElement.closest('[data-message-id]') ? containerElement.closest('[data-message-id]').dataset.messageId : ''}">tái tạo phản hồi</button> để thử lại hoặc thông báo cho quản trị viên.</p>
                 <details class="mt-2">
                     <summary class="text-xs cursor-pointer text-gray-700 dark:text-gray-300">Chi tiết lỗi (dành cho nhà phát triển)</summary>
-                    <pre class="whitespace-pre-wrap text-xs text-red-700 dark:text-red-300 p-2 bg-red-100 dark:bg-red-900 rounded mt-1">${DOMPurify.sanitize(error.message)}\n\nNội dung gốc:\n${DOMPurify.sanitize(originalTextContent)}</pre>
+                    <pre class="whitespace-pre-wrap text-xs text-red-700 dark:text-red-300 p-2 bg-red-100 dark:bg-red-900 rounded mt-1">${DOMPurify.sanitize(error.message)}\n\nNội dung gốc:\n${DOMPurify.sanitize(originalJsonContent)}</pre>
                 </details>
             `;
-            preElement.replaceWith(errorDiv);
+            // Cố gắng tìm placeholder và thay thế, nếu không thì thêm vào cuối
+            let replacedWithError = false;
+            for (let i = 0; i < containerElement.childNodes.length; i++) {
+                const node = containerElement.childNodes[i];
+                if (node.nodeType === Node.COMMENT_NODE && node.nodeValue.trim() === quiz.id) {
+                    node.replaceWith(errorDiv);
+                    replacedWithError = true;
+                    break;
+                }
+            }
+            if (!replacedWithError) {
+                containerElement.appendChild(errorDiv);
+            }
         }
     });
+}
+
+
+// processQuizBlocks cũ sẽ không còn được gọi trực tiếp nữa.
+// Giữ lại định nghĩa để tránh lỗi nếu có nơi khác gọi tới, nhưng logic chính đã chuyển sang insertRenderedQuizzes
+// và extractAndReplaceQuizBlocks.
+function processQuizBlocks(containerElement) {
+    // Hàm này giờ đây không còn xử lý parsing JSON trực tiếp nữa.
+    // Logic đã được chuyển sang extractAndReplaceQuizBlocks và insertRenderedQuizzes.
+    // Nếu hàm này vẫn được gọi, có thể là một dấu hiệu của lỗi logic.
+    console.warn("processQuizBlocks (old logic) được gọi. Vui lòng kiểm tra luồng xử lý.");
+    // Có thể thêm logic để tìm và chèn quiz nếu cần, nhưng tốt nhất là không gọi hàm này nữa.
 }
 
 
@@ -1613,23 +1669,25 @@ function addMessage(role, text, shouldScroll = true) {
         actionsContainer = messageWrapper.querySelector('.message-actions');
     }
     
-    const preprocessedText = preprocessText(text);
+    // Bước 1: Trích xuất quiz và thay thế bằng placeholder
+    const { processedText: textWithQuizPlaceholders, quizzes: extractedQuizzes } = extractAndReplaceQuizBlocks(text);
+
+    // Bước 2: Xử lý Markdown và các liên kết trên phần còn lại
+    const preprocessedText = preprocessText(textWithQuizPlaceholders);
     contentElem.innerHTML = DOMPurify.sanitize(marked.parse(preprocessedText), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
 
     highlightAllCode(contentElem);
-    
-    // === CẬP NHẬT: Gọi hàm xử lý quiz sau khi render nội dung ===
-    processQuizBlocks(contentElem);
-
-    // makeForeignTextClickable chỉ gọi khi currentPersona là language_tutor.
-    // Logic này đã được chuyển vào hàm makeForeignTextClickable.
-    makeForeignTextClickable(contentElem);
+    makeForeignTextClickable(contentElem); 
     
     if (actionsContainer) {
         addMessageActions(actionsContainer, text, messageId);
     }
 
     chatContainer.insertBefore(messageWrapper, notificationArea);
+
+    // Bước 3: Chèn quiz tương tác vào vị trí placeholder
+    insertRenderedQuizzes(contentElem, extractedQuizzes);
+
     if (shouldScroll) {
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
@@ -1777,22 +1835,32 @@ async function sendMessage(promptTextOverride = null) {
             fullResponseText += chunk.text();
             
             // Tạm thời chỉ render link, không render quiz khi đang stream để tránh lỗi JSON
-            const processedChunkForStreaming = preprocessText(fullResponseText + '<span class="blinking-cursor"></span>');
+            // Bước 1: Trích xuất quiz và thay thế bằng placeholder
+            const { processedText: textWithQuizPlaceholders, quizzes: extractedQuizzesDuringStream } = extractAndReplaceQuizBlocks(fullResponseText);
+
+            // Bước 2: Xử lý Markdown và các liên kết trên phần còn lại
+            const processedChunkForStreaming = preprocessText(textWithQuizPlaceholders + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunkForStreaming), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
             highlightAllCode(contentElem);
             makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài khi stream
             chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Trong quá trình stream, chúng ta không chèn quiz tương tác ngay lập tức
+            // vì JSON có thể chưa hoàn chỉnh. Chúng ta sẽ làm điều đó ở cuối.
         }
         
         if (statusElem) statusElem.classList.add('hidden');
         
         // Render cuối cùng với đầy đủ quiz
-        const finalProcessedText = preprocessText(fullResponseText);
+        const { processedText: finalProcessedTextWithPlaceholders, quizzes: finalExtractedQuizzes } = extractAndReplaceQuizBlocks(fullResponseText);
+        const finalProcessedText = preprocessText(finalProcessedTextWithPlaceholders);
+
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
-        contentElem.dataset.rawText = fullResponseText;
-        
+        contentElem.dataset.rawText = fullResponseText; // Lưu rawText gốc
+
         highlightAllCode(contentElem);
-        processQuizBlocks(contentElem); // Xử lý quiz sau khi render xong
+        // Bước 3: Chèn quiz tương tác vào vị trí placeholder
+        insertRenderedQuizzes(contentElem, finalExtractedQuizzes);
         makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
 
         addMessageActions(actionsContainer, fullResponseText, aiMessageId);
@@ -1864,7 +1932,11 @@ async function handleRegenerate(targetMessageId) {
         let newFullResponseText = "";
         for await (const chunk of result.stream) {
             newFullResponseText += chunk.text();
-            const processedChunk = preprocessText(newFullResponseText + '<span class="blinking-cursor"></span>');
+            // Bước 1: Trích xuất quiz và thay thế bằng placeholder
+            const { processedText: textWithQuizPlaceholders, quizzes: extractedQuizzesDuringStream } = extractAndReplaceQuizBlocks(newFullResponseText);
+
+            // Bước 2: Xử lý Markdown và các liên kết trên phần còn lại
+            const processedChunk = preprocessText(textWithQuizPlaceholders + '<span class="blinking-cursor"></span>');
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
             highlightAllCode(contentElem);
             makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài khi stream
@@ -1873,12 +1945,16 @@ async function handleRegenerate(targetMessageId) {
 
         if(statusElem) statusElem.classList.add('hidden');
 
-        const finalProcessedText = preprocessText(newFullResponseText);
+        // Render cuối cùng với đầy đủ quiz
+        const { processedText: finalProcessedTextWithPlaceholders, quizzes: finalExtractedQuizzes } = extractAndReplaceQuizBlocks(newFullResponseText);
+        const finalProcessedText = preprocessText(finalProcessedTextWithPlaceholders);
+
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
         contentElem.dataset.rawText = newFullResponseText;
         
         highlightAllCode(contentElem);
-        processQuizBlocks(contentElem); // Xử lý quiz sau khi render xong
+        // Bước 3: Chèn quiz tương tác vào vị trí placeholder
+        insertRenderedQuizzes(contentElem, finalExtractedQuizzes);
         makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
 
         localHistory[messageIndex].parts[0].text = newFullResponseText;
