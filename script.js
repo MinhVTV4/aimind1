@@ -1427,7 +1427,6 @@ function highlightAllCode(container) {
              try {
                 const potentialJson = JSON.parse(block.textContent);
                 // Check if it matches any of our known quiz structures
-                // === CẬP NHẬT: Thêm logic để nhận diện quiz cũ không có type ===
                 if (
                     (potentialJson.type === 'multiple_choice' && potentialJson.question && potentialJson.options && potentialJson.answer) ||
                     (potentialJson.type === 'fill_in_the_blank' && potentialJson.sentence && potentialJson.blanks) ||
@@ -1439,6 +1438,12 @@ function highlightAllCode(container) {
                 }
              } catch(e) { /* not valid JSON, ignore */ }
         }
+        
+        // === FIX: Bỏ qua highlight cho các khối ngôn ngữ 'quiz' ===
+        if (block.classList.contains('language-quiz')) {
+            return; // Skip highlighting this block
+        }
+
         hljs.highlightElement(block);
         addCopyButton(block.parentElement);
     });
