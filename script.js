@@ -18,6 +18,18 @@ function loadIcons() {
     });
 }
 
+// Thêm các định nghĩa SVG bị thiếu trực tiếp vào đối tượng svgIcons
+// để đảm bảo các biểu tượng Flashcard được hiển thị chính xác.
+// Đây là biện pháp dự phòng nếu icons.js không chứa chúng.
+Object.assign(svgIcons, {
+    arrowLeft: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>`,
+    arrowRight: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>`,
+    check: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`,
+    checkCircle: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.532-1.676-1.676a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" /></svg>`,
+    speaker: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9.792 9.792 0 010 12.728l-1.674-1.672a7.29 7.29 0 000-9.384l1.674-1.673zM17.477 7.363l1.293-1.293a7.5 7.5 0 010 10.606l-1.293-1.293a5.002 5.002 0 000-7.07zM12 18.75a.75.75 0 00.75-.75V5.25a.75.75 0 00-1.5 0v12.75a.75.75 0 00.75.75z" /></svg>`,
+});
+
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { getAI, getGenerativeModel } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-ai.js";
@@ -193,7 +205,7 @@ const personaIconInput = document.getElementById('persona-icon');
 const personaDescriptionInput = document.getElementById('persona-description');
 const personaPromptInput = document.getElementById('persona-prompt');
 const generatePromptBtn = document.getElementById('generate-prompt-btn');
-const cancelPersonaBtn = document.getElementById('cancel-persona-btn');
+const cancelPersonaBtn = document.getElementById('cancel-persona-btn'); 
 const savePersonaBtn = document.getElementById('save-persona-btn');
 const referenceModalOverlay = document.getElementById('reference-modal-overlay');
 const referenceModal = document.getElementById('reference-modal');
@@ -1262,22 +1274,26 @@ function renderQuiz(data, quizId) {
  * @returns {{processedText: string, quizzes: Array<{id: string, rawJson: string}>}} - Văn bản với placeholder và mảng các quiz thô.
  */
 function extractAndReplaceQuizBlocks(rawText) {
+    // Regex để tìm các khối ```quiz...```. Sử dụng non-greedy match `*?`
     const quizRegex = /```quiz\n([\s\S]*?)\n```/g;
     const extractedQuizzes = [];
     let processedText = rawText;
     let match;
 
-    // Sử dụng vòng lặp while với exec để tìm tất cả các match và thay thế chúng
-    // Quan trọng: exec cập nhật lastIndex, nên cần reset nếu chuỗi thay đổi
-    const matches = Array.from(rawText.matchAll(quizRegex)); // Lấy tất cả các match trước
+    // Sử dụng Array.from(rawText.matchAll(quizRegex)) để lấy tất cả các trận đấu
+    // Điều này tạo một mảng các trận đấu mà không cần lo lắng về lastIndex
+    const matches = Array.from(rawText.matchAll(quizRegex));
     
-    matches.forEach(match => {
-        const rawJsonContent = match[1];
+    // Duyệt ngược để thay thế, tránh ảnh hưởng đến chỉ số của các trận đấu sau
+    for (let i = matches.length - 1; i >= 0; i--) {
+        match = matches[i];
+        const rawJsonContent = match[1]; // Nội dung JSON bên trong khối quiz
         const placeholderId = `QUIZ_PLACEHOLDER_${crypto.randomUUID()}`;
-        extractedQuizzes.push({ id: placeholderId, rawJson: rawJsonContent });
-        // Thay thế chỉ match đầu tiên để tránh lỗi khi có nhiều quiz giống nhau
-        processedText = processedText.replace(match[0], `<!--${placeholderId}-->`);
-    });
+        extractedQuizzes.unshift({ id: placeholderId, rawJson: rawJsonContent }); // Thêm vào đầu mảng để giữ đúng thứ tự
+        
+        // Thay thế khối quiz bằng placeholder trong văn bản
+        processedText = processedText.substring(0, match.index) + `<!--${placeholderId}-->` + processedText.substring(match.index + match[0].length);
+    }
 
     return { processedText: processedText, quizzes: extractedQuizzes };
 }
@@ -1862,10 +1878,6 @@ async function sendMessage(promptTextOverride = null) {
         // Bước 3: Chèn quiz tương tác vào vị trí placeholder
         insertRenderedQuizzes(contentElem, finalExtractedQuizzes);
         makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
-
-        addMessageActions(actionsContainer, fullResponseText, aiMessageId);
-        
-        setTimeout(() => messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
 
         localHistory.push({ id: aiMessageId, role: 'model', parts: [{ text: fullResponseText }] });
         await updateConversationInDb();
