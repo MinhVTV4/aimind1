@@ -1272,10 +1272,11 @@ function processQuizBlocks(containerElement) {
         try {
             // === Cập nhật: Tiền xử lý JSON mạnh mẽ hơn, loại bỏ thay thế dấu nháy đơn thành kép ===
             let cleanJsonText = originalTextContent
-                .replace(/<[^>]*>/g, '') // Loại bỏ bất kỳ thẻ HTML nào mà marked.js có thể thêm vào
+                // Loại bỏ bất kỳ thẻ HTML nào mà marked.js có thể thêm vào, bao gồm cả thẻ <a>
+                .replace(/<[^>]*>/g, '') 
                 .replace(/`+/g, '') // Loại bỏ các dấu huyền (backticks)
                 .replace(/“|”/g, '"') // Thay thế smart quotes bằng straight quotes
-                // === ĐÃ XÓA: .replace(/'/g, '"') - Đây là nguyên nhân gây lỗi ===
+                // === ĐÃ XÓA: .replace(/'/g, '"') - Đây là nguyên nhân gây lỗi trước đó ===
                 .replace(/(\r\n|\n|\r)/gm, ' ') // Thay thế ngắt dòng trong chuỗi bằng khoảng trắng (có thể cần \\n nếu muốn giữ ngắt dòng)
                 .replace(/\$/g, ''); // Loại bỏ ký hiệu đô la (nếu không phải LaTeX hợp lệ và gây lỗi JSON)
             
