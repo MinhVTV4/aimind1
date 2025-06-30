@@ -482,8 +482,7 @@ async function deleteChat(chatId) {
         } else {
             await renderAllChats();
         }
-    }
-    catch (error) {
+    } catch (error) {
         console.error("Lỗi khi xóa cuộc trò chuyện:", error);
         showToast('Lỗi khi xóa cuộc trò chuyện.', 'error');
     }
@@ -1271,20 +1270,14 @@ function processQuizBlocks(containerElement) {
         let originalTextContent = codeBlock.textContent;
 
         try {
-            // === Cập nhật: Tiền xử lý JSON mạnh mẽ hơn ===
+            // === Cập nhật: Tiền xử lý JSON mạnh mẽ hơn, loại bỏ thay thế dấu nháy đơn thành kép ===
             let cleanJsonText = originalTextContent
                 .replace(/<[^>]*>/g, '') // Loại bỏ bất kỳ thẻ HTML nào mà marked.js có thể thêm vào
                 .replace(/`+/g, '') // Loại bỏ các dấu huyền (backticks)
                 .replace(/“|”/g, '"') // Thay thế smart quotes bằng straight quotes
-                .replace(/‘|’/g, "'") // Thay thế smart single quotes bằng straight single quotes
-                .replace(/'/g, '"') // Chuyển đổi tất cả dấu nháy đơn thành dấu nháy kép (một biện pháp hung hăng nhưng hiệu quả)
+                // === ĐÃ XÓA: .replace(/'/g, '"') - Đây là nguyên nhân gây lỗi ===
                 .replace(/(\r\n|\n|\r)/gm, ' ') // Thay thế ngắt dòng trong chuỗi bằng khoảng trắng (có thể cần \\n nếu muốn giữ ngắt dòng)
                 .replace(/\$/g, ''); // Loại bỏ ký hiệu đô la (nếu không phải LaTeX hợp lệ và gây lỗi JSON)
-            
-            // Xử lý các trường hợp đặc biệt nếu AI trả về JSON với các vấn đề thoát ký tự
-            // Ví dụ: {"key": "value with \"escaped\" quote"} hoặc {"key": "value with \n newline"}
-            // Đối với các trường hợp này, cần đảm bảo chúng đã được thoát đúng cách.
-            // Nếu AI vẫn tạo ra các lỗi như "\" trong chuỗi, có thể cần thêm logic phức tạp hơn.
             
             // Thêm một lớp làm sạch để loại bỏ khoảng trắng dư thừa hoặc ký tự điều khiển
             cleanJsonText = cleanJsonText.trim();
@@ -2825,7 +2818,7 @@ function toggleScrollToTopButton() {
     if (chatScrollContainer.scrollTop > chatScrollContainer.clientHeight * 0.5) { 
         scrollToTopBtn.classList.add('show');
     } else {
-        scrollToTopBtn.classList.remove('show');
+        scrollToToppBtn.classList.remove('show');
     }
 }
 
