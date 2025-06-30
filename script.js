@@ -193,7 +193,7 @@ const personaIconInput = document.getElementById('persona-icon');
 const personaDescriptionInput = document.getElementById('persona-description');
 const personaPromptInput = document.getElementById('persona-prompt');
 const generatePromptBtn = document.getElementById('generate-prompt-btn');
-const cancelPersonaBtn = document = document.getElementById('cancel-persona-btn');
+const cancelPersonaBtn = document.getElementById('cancel-persona-btn');
 const savePersonaBtn = document.getElementById('save-persona-btn');
 const referenceModalOverlay = document.getElementById('reference-modal-overlay');
 const referenceModal = document.getElementById('reference-modal');
