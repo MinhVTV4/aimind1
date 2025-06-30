@@ -112,6 +112,20 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     \`\`\`
     *Lưu ý:* "keywords" là các từ khóa quan trọng mà AI sẽ tìm kiếm trong câu trả lời của người dùng. "expected_answer_gist" là tóm tắt ý chính của câu trả lời đúng, dùng cho AI đánh giá. "explanation" là câu trả lời đầy đủ để hiển thị sau khi người dùng trả lời.
 
+* **Thẻ từ vựng (Flashcard):**
+    \`\`\`quiz
+    {
+      "type": "flashcard",
+      "title": "Tiêu đề của bộ Flashcard",
+      "cards": [
+        { "front": "Từ/Khái niệm (chỉ văn bản thuần túy)", "back": "Giải thích/Nghĩa (chỉ văn bản thuần túy)", "pronunciation": "phiên âm (nếu có, chỉ văn bản thuần túy)" },
+        { "front": "Từ/Khái niệm khác", "back": "Giải thích/Nghĩa khác", "pronunciation": "phiên âm khác" }
+      ],
+      "explanation": "Giải thích chung về bộ flashcard này (chỉ văn bản thuần túy)."
+    }
+    \`\`\`
+    *Lưu ý:* Các giá trị "front", "back", "pronunciation" và "explanation" PHẢI LÀ CHUỖI VĂN BẢN THUẦN TÚY, không chứa bất kỳ định dạng Markdown hay HTML nào.
+
 **Quy tắc chung:**
 * Luôn trả lời bằng tiếng Việt.
 * Khi có thể, hãy lồng ghép các loại câu hỏi quiz sau khi giảng bài.`;
@@ -831,6 +845,89 @@ function renderShortAnswerQuiz(data, quizId) {
 }
 
 /**
+ * Renders an interactive flashcard quiz block.
+ * @param {object} data - Parsed JSON data for the flashcard quiz.
+ * @param {string} quizId - Unique ID for this quiz block.
+ * @returns {HTMLElement} - The DOM element of the quiz block.
+ */
+function renderFlashcardQuiz(data, quizId) {
+    const quizWrapper = document.createElement('div');
+    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 flashcard-quiz-wrapper";
+    quizWrapper.id = quizId;
+    quizWrapper.dataset.quizData = JSON.stringify(data);
+    quizWrapper.dataset.currentCardIndex = 0; // Track current card index
+    quizWrapper.dataset.isFlipped = "false"; // Track if current card is flipped
+
+    let cardHtml = '';
+    data.cards.forEach((card, index) => {
+        const displayStyle = index === 0 ? '' : 'display: none;';
+        const cardClass = completedQuizIds.includes(`${quizId}-${index}`) ? 'flashcard-item completed' : 'flashcard-item';
+
+        cardHtml += `
+            <div class="${cardClass}" data-card-index="${index}" style="${displayStyle}">
+                <div class="flashcard-front">
+                    <p class="text-2xl font-bold text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(card.front)}</p>
+                    ${card.pronunciation ? `<p class="text-sm text-gray-500 dark:text-gray-400 mt-1">(${DOMPurify.sanitize(card.pronunciation)})</p>` : ''}
+                    <button class="flashcard-speak-btn p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 mt-2" data-text="${DOMPurify.sanitize(card.front)}" data-lang="${card.pronunciation ? 'ja-JP' : 'vi-VN'}">${svgIcons.speaker}</button>
+                </div>
+                <div class="flashcard-back">
+                    <p class="text-base text-gray-700 dark:text-gray-300">${DOMPurify.sanitize(card.back)}</p>
+                    <button class="flashcard-speak-btn p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700 mt-2" data-text="${DOMPurify.sanitize(card.back)}" data-lang="vi-VN">${svgIcons.speaker}</button>
+                </div>
+            </div>
+        `;
+    });
+
+    const totalCards = data.cards.length;
+    const currentCardIndex = parseInt(quizWrapper.dataset.currentCardIndex);
+
+    quizWrapper.innerHTML = `
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">${DOMPurify.sanitize(data.title)}</h3>
+        <div class="flashcard-container relative w-full h-48 sm:h-64 md:h-80 bg-white dark:bg-slate-700 rounded-xl shadow-lg flex items-center justify-center cursor-pointer overflow-hidden group">
+            ${cardHtml}
+            <div class="flashcard-overlay absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity flex items-center justify-center">
+                <span class="text-white text-lg opacity-0 group-hover:opacity-100 transition-opacity">Lật thẻ</span>
+            </div>
+        </div>
+        <div class="flex justify-between items-center mt-4">
+            <button class="flashcard-nav-btn prev-card-btn px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                ${svgIcons.arrowLeft} Trước
+            </button>
+            <span class="flashcard-counter text-gray-600 dark:text-gray-400 font-medium">
+                ${currentCardIndex + 1}/${totalCards}
+            </span>
+            <button class="flashcard-nav-btn next-card-btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                Tiếp theo ${svgIcons.arrowRight}
+            </button>
+        </div>
+        <div class="mt-4 text-center">
+             ${completedQuizIds.includes(quizId) ? 
+                `<p class="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">
+                    ${svgIcons.checkCircle} Bạn đã hoàn thành bộ Flashcard này!
+                </p>` :
+                `<button class="flashcard-mark-completed-btn px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                    ${svgIcons.check} Đánh dấu đã học
+                </button>`
+            }
+        </div>
+        ${data.explanation ? `<div class="quiz-explanation mt-3 text-sm p-3 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300">${DOMPurify.sanitize(marked.parse(data.explanation))}</div>` : ''}
+    `;
+
+    // Initialize navigation button states
+    const prevBtn = quizWrapper.querySelector('.prev-card-btn');
+    const nextBtn = quizWrapper.querySelector('.next-card-btn');
+    const markCompletedBtn = quizWrapper.querySelector('.flashcard-mark-completed-btn');
+
+    prevBtn.disabled = currentCardIndex === 0;
+    nextBtn.disabled = currentCardIndex === totalCards - 1;
+    if (completedQuizIds.includes(quizId)) {
+        if (markCompletedBtn) markCompletedBtn.disabled = true;
+    }
+
+    return quizWrapper;
+}
+
+/**
  * Handles the logic for a multiple choice quiz answer.
  * @param {HTMLElement} button - The option button clicked.
  * @param {string} quizId - The ID of the quiz.
@@ -903,7 +1000,7 @@ function handleFillInTheBlankSubmit(submitButton, quizId, quizData) {
         // Replace input fields with filled text
         let sentenceHtml = DOMPurify.sanitize(quizData.sentence);
         sentenceHtml = sentenceHtml.replace(/\{\{BLANK\}\}/g, (match, index) => {
-            const answer = data.blanks[index] || '???';
+            const answer = quizData.blanks[index] || '???';
             return `<span class="quiz-filled-blank correct">${DOMPurify.sanitize(answer)}</span>`;
         });
         quizContainer.querySelector('p').innerHTML = sentenceHtml;
@@ -1036,6 +1133,8 @@ function renderQuiz(data, quizId) {
             return renderFillInTheBlankQuiz(data, quizId);
         case 'short_answer':
             return renderShortAnswerQuiz(data, quizId);
+        case 'flashcard':
+            return renderFlashcardQuiz(data, quizId); // === THÊM: Xử lý Flashcard ===
         default:
             console.warn('Unknown quiz type:', data.type);
             const errorDiv = document.createElement('div');
@@ -1431,6 +1530,7 @@ function highlightAllCode(container) {
                     (potentialJson.type === 'multiple_choice' && potentialJson.question && potentialJson.options && potentialJson.answer) ||
                     (potentialJson.type === 'fill_in_the_blank' && potentialJson.sentence && potentialJson.blanks) ||
                     (potentialJson.type === 'short_answer' && potentialJson.question && potentialJson.keywords && potentialJson.expected_answer_gist) ||
+                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson.cards[0].back) || // Kiểm tra cấu trúc flashcard
                     // Check for old multiple_choice format (no type field)
                     (potentialJson.question && potentialJson.options && potentialJson.answer) 
                 ) {
@@ -2391,6 +2491,10 @@ chatContainer.addEventListener('click', async (e) => {
     // Check for quiz related clicks
     const quizOptionButton = e.target.closest('.quiz-option-btn');
     const quizSubmitButton = e.target.closest('.quiz-submit-btn');
+    const flashcardContainer = e.target.closest('.flashcard-container'); // for flipping flashcard
+    const flashcardNavButton = e.target.closest('.flashcard-nav-btn'); // for flashcard navigation
+    const flashcardSpeakButton = e.target.closest('.flashcard-speak-btn'); // for flashcard speaking
+    const flashcardMarkCompletedButton = e.target.closest('.flashcard-mark-completed-btn'); // for marking flashcard completed
 
     e.stopPropagation();
 
@@ -2425,6 +2529,64 @@ chatContainer.addEventListener('click', async (e) => {
             } else if (quizData.type === 'short_answer') {
                 await handleShortAnswerSubmit(quizSubmitButton, quizId, quizData);
             }
+        }
+    } else if (flashcardContainer) {
+        // Handle flashcard flip
+        const quizWrapper = flashcardContainer.closest('.flashcard-quiz-wrapper');
+        if (quizWrapper && !completedQuizIds.includes(quizWrapper.id)) { // Prevent flip if quiz is completed
+            const isFlipped = quizWrapper.dataset.isFlipped === "true";
+            quizWrapper.dataset.isFlipped = String(!isFlipped);
+            const currentCard = quizWrapper.querySelector(`.flashcard-item[data-card-index="${quizWrapper.dataset.currentCardIndex}"]`);
+            if (currentCard) {
+                currentCard.classList.toggle('flipped', !isFlipped);
+                currentCard.classList.toggle('unflipped', isFlipped); // Add unflipped class for reverse animation
+            }
+        }
+    } else if (flashcardNavButton) {
+        const quizWrapper = flashcardNavButton.closest('.flashcard-quiz-wrapper');
+        if (!quizWrapper) return;
+        const quizData = JSON.parse(quizWrapper.dataset.quizData);
+        let currentCardIndex = parseInt(quizWrapper.dataset.currentCardIndex);
+        const totalCards = quizData.cards.length;
+
+        quizWrapper.dataset.isFlipped = "false"; // Reset flip state for new card
+        quizWrapper.querySelectorAll('.flashcard-item').forEach(card => {
+            card.classList.remove('flipped', 'unflipped'); // Reset flip animation
+        });
+
+        if (flashcardNavButton.classList.contains('prev-card-btn')) {
+            currentCardIndex--;
+        } else if (flashcardNavButton.classList.contains('next-card-btn')) {
+            currentCardIndex++;
+        }
+
+        if (currentCardIndex >= 0 && currentCardIndex < totalCards) {
+            quizWrapper.dataset.currentCardIndex = currentCardIndex;
+            quizWrapper.querySelector('.flashcard-counter').textContent = `${currentCardIndex + 1}/${totalCards}`;
+            
+            quizWrapper.querySelectorAll('.flashcard-item').forEach((card, index) => {
+                card.style.display = index === currentCardIndex ? 'flex' : 'none';
+            });
+            // Update button disabled states
+            quizWrapper.querySelector('.prev-card-btn').disabled = currentCardIndex === 0;
+            quizWrapper.querySelector('.next-card-btn').disabled = currentCardIndex === totalCards - 1;
+        }
+    } else if (flashcardSpeakButton) {
+        const textToSpeak = flashcardSpeakButton.dataset.text;
+        const lang = flashcardSpeakButton.dataset.lang;
+        if (textToSpeak && lang) {
+            speakText(textToSpeak, lang);
+        }
+    } else if (flashcardMarkCompletedButton) {
+        const quizWrapper = flashcardMarkCompletedButton.closest('.flashcard-quiz-wrapper');
+        if (quizWrapper) {
+            markQuizCompleted(quizWrapper.id);
+            flashcardMarkCompletedButton.disabled = true;
+            flashcardMarkCompletedButton.innerHTML = `${svgIcons.checkCircle} Bạn đã hoàn thành bộ Flashcard này!`;
+            flashcardMarkCompletedButton.classList.add('text-green-600', 'dark:text-green-400');
+            // Disable navigation and flip
+            quizWrapper.querySelector('.flashcard-container').style.pointerEvents = 'none';
+            quizWrapper.querySelectorAll('.flashcard-nav-btn').forEach(btn => btn.disabled = true);
         }
     } else if (button) {
         e.preventDefault();
