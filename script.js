@@ -177,305 +177,86 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     \`\`\`
     *Lưu ý:* "sentences" là các câu riêng lẻ với "id" duy nhất. "correctOrder" là một mảng chứa "id" của các câu theo đúng thứ tự.
 
-**Quy tắc chung:**
-* Luôn trả lời bằng tiếng Việt.
-* Khi có thể, hãy lồng ghép các loại câu hỏi quiz sau khi giảng bài.`;
-
-
-// === CẬP NHẬT: Thêm các biến cho modal xác nhận ===
-const authContainer = document.getElementById('auth-container');
-const appContainer = document.getElementById('app-container');
-const loginView = document.getElementById('login-view');
-const registerView = document.getElementById('register-view');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const googleLoginBtn = document.getElementById('google-login-btn');
-const showRegisterBtn = document.getElementById('show-register');
-const showLoginBtn = document.getElementById('show-login');
-const authError = document.getElementById('auth-error');
-const personaSelectionScreen = document.getElementById('persona-selection-screen');
-const welcomeUserName = document.getElementById('welcome-user-name');
-const createPersonaBtn = document.getElementById('create-persona-btn');
-const customPersonasSection = document.getElementById('custom-personas-section');
-const customPersonaGrid = document.getElementById('custom-persona-grid');
-const emptyCustomPersonaState = document.getElementById('empty-custom-persona-state');
-const defaultPersonaGrid = document.getElementById('default-persona-grid');
-const logoutBtnPersona = document.getElementById('logout-btn-persona');
-const chatViewContainer = document.getElementById('chat-view-container');
-const mainHeader = document.getElementById('main-header');
-const menuBtn = document.getElementById('menu-btn');
-const chatHeaderInfo = document.getElementById('chat-header-info');
-const newTopicBtn = document.getElementById('new-topic-btn');
-const summarizeBtn = document.getElementById('summarize-btn');
-const themeToggle = document.getElementById('theme-toggle');
-const logoutBtn = document.getElementById('logout-btn');
-const sidebarOverlay = document.getElementById('sidebar-overlay');
-const sidebar = document.getElementById('sidebar');
-const closeSidebarBtn = document.getElementById('close-sidebar-btn');
-const sidebarContent = document.getElementById('sidebar-content');
-const newChatBtn = document.getElementById('new-chat-btn');
-const pinnedChatsSection = document.getElementById('pinned-chats-section');
-const pinnedChatsList = document.getElementById('pinned-chats-list');
-const savedChatsList = document.getElementById('saved-chats-list');
-const savedChatsSkeleton = document.getElementById('saved-chats-skeleton');
-const mainContent = document.getElementById('main-content');
-const welcomeScreen = document.getElementById('welcome-screen');
-const chatContainer = document.getElementById('chat-container');
-const notificationArea = document.getElementById('notification-area');
-const suggestionArea = document.getElementById('suggestion-area');
-const toggleSuggestionsBtn = document.getElementById('toggle-suggestions-btn');
-const suggestionsContainer = document.getElementById('suggestions-container');
-const inputAreaWrapper = document.getElementById('input-area-wrapper');
-const inputArea = document.getElementById('input-area');
-const referenceBtn = document.getElementById('reference-btn');
-const promptInput = document.getElementById('prompt-input');
-const recordBtn = document.getElementById('record-btn');
-const sendBtn = document.getElementById('send-btn');
-const personaModalOverlay = document.getElementById('persona-modal-overlay');
-const personaModal = document.getElementById('persona-modal');
-const personaModalTitle = document.getElementById('persona-modal-title');
-const closePersonaModalBtn = document.getElementById('close-persona-modal-btn');
-const personaForm = document.getElementById('persona-form');
-const personaIdInput = document.getElementById('persona-id');
-const personaNameInput = document.getElementById('persona-name');
-const personaIconInput = document.getElementById('persona-icon');
-const personaDescriptionInput = document.getElementById('persona-description');
-const personaPromptInput = document.getElementById('persona-prompt');
-const generatePromptBtn = document.getElementById('generate-prompt-btn');
-const cancelPersonaBtn = document.getElementById('cancel-persona-btn'); 
-const savePersonaBtn = document.getElementById('save-persona-btn');
-const referenceModalOverlay = document.getElementById('reference-modal-overlay');
-const referenceModal = document.getElementById('reference-modal');
-const referenceHeader = document.getElementById('reference-header');
-const referenceTitle = document.getElementById('reference-title');
-const closeReferenceModalBtn = document.getElementById('close-reference-modal-btn');
-const referenceContent = document.getElementById('reference-content');
-const referenceInputArea = document.getElementById('reference-input-area');
-const referencePromptInput = document.getElementById('reference-prompt-input');
-const referenceSendBtn = document.getElementById('reference-send-btn');
-const learningModeToggle = document.getElementById('learning-mode-toggle'); 
-const learningModeIndicator = document.getElementById('learning-mode-indicator');
-const chatScrollContainer = document.getElementById("chat-container");
-const scrollToTopBtn = document.getElementById("scrollToTopBtn");
-const confirmationModalOverlay = document.getElementById('confirmation-modal-overlay');
-const confirmationModal = document.getElementById('confirmation-modal');
-const confirmationModalIcon = document.getElementById('confirmation-modal-icon');
-const confirmationModalTitle = document.getElementById('confirmation-modal-title');
-const confirmationModalMessage = document.getElementById('confirmation-modal-message');
-const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-confirm-btn');
-const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
-
-
-// --- CẬP NHẬT: Nâng cấp persona "Gia sư Ngoại ngữ" ---
-const defaultPersonas = [
-    { 
-        id: 'general', 
-        name: 'Trợ lý Toàn năng', 
-        icon: '🧠', 
-        description: 'Kiến thức tổng quát, trả lời đa dạng các chủ đề.', 
-        systemPrompt: `**Chỉ thị hệ thống:** Mục tiêu chính của bạn là đưa ra câu trả lời rõ ràng, chi tiết và có cấu trúc tốt. Luôn sử dụng Markdown để định dạng (tiêu đề, danh sách, in đậm). Hãy giải thích các khái niệm từng bước, bắt đầu bằng tóm tắt rồi đi vào chi tiết và ví dụ. **Yêu cầu bổ sung:** Trong quá trình trả lời, khi bạn đề cập đến một thuật ngữ kỹ thuật, một khái niệm quan trọng, hoặc một tên riêng (ví dụ: tên một công nghệ, một phương pháp), hãy bọc thuật ngữ đó trong cặp dấu ngoặc vuông. Ví dụ: '...sử dụng ngôn ngữ [JavaScript] để tương tác với [DOM]...'. Chỉ bọc duy nhất thuật ngữ đó.`,
-        samplePrompts: [
-            "Giải thích về Lỗ đen vũ trụ như thể tôi là một đứa trẻ 10 tuổi.",
-            "Lên một kế hoạch du lịch 3 ngày tại Đà Lạt cho một cặp đôi.",
-            "So sánh ưu và nhược điểm của việc đọc sách giấy và sách điện tử."
-        ]
-    },
-    { 
-        id: 'programmer', 
-        name: 'Chuyên gia Lập trình', 
-        icon: '👨‍💻', 
-        description: 'Chuyên gia về mã nguồn, thuật toán, gỡ lỗi code.', 
-        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một lập trình viên cao cấp với 10 năm kinh nghiệm. Luôn đưa ra câu trả lời dưới dạng mã nguồn được giải thích rõ ràng, tuân thủ các coding convention tốt nhất. Khi được yêu cầu, hãy phân tích ưu và nhược điểm của các giải pháp khác nhau. Hãy ưu tiên tính hiệu quả và khả năng bảo trì của mã nguồn. **Yêu cầu bổ sung:** Khi đề cập đến một hàm, thư viện, hoặc khái niệm lập trình, hãy bọc nó trong dấu ngoặc vuông, ví dụ: [React], [API], [useState].`,
-        samplePrompts: [
-            "Viết một hàm Python để kiểm tra một chuỗi có phải là palindrome không.",
-            "Giải thích sự khác biệt giữa \`let\`, \`const\`, và \`var\` trong JavaScript.",
-            "Làm thế nào để tối ưu một truy vấn SQL có sử dụng \`JOIN\` trên nhiều bảng lớn?"
-        ]
-    },
-    // === PERSONA GIA SƯ NGOẠI NGỮ (CÓ DIALOGUE CHOICE CHO CÁC NGÔN NGỮ Á ĐÔNG) ===
-    { 
-        id: 'language_tutor', 
-        name: 'Gia sư Ngoại ngữ', 
-        icon: '🌐', 
-        description: 'Dạy từ vựng, ngữ pháp và kiểm tra kiến thức.', 
-        systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp, thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
-
-1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Ký tự gốc, sau đó là phiên âm trong ngoặc tròn (), và cuối cùng là nghĩa tiếng Việt.
-    * **Tiếng Trung:** 你好 (Nǐ hǎo) - Xin chào.
-    * **Tiếng Nhật:** こんにちは (Konnichiwa) - Xin chào.
-    * **Tiếng Hàn:** 안녕하세요 (Annyeonghaseyo) - Xin chào.
-
-2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ cũng phải có đủ 3 thành phần: Câu gốc, phiên âm, và bản dịch.
-
-3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và kiên nhẫn.
-
-4.  **Tương tác chủ động:** Sau khi giảng dạy một khái niệm (khoảng 3-5 từ vựng hoặc một điểm ngữ pháp), bạn PHẢI chủ động đặt câu hỏi cho người học để kiểm tra sự hiểu biết của họ. Sử dụng cú pháp đặc biệt sau để tạo câu hỏi trắc nghiệm trong một khối mã 'quiz':
-
-    **CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder", "title", "scenario", "speaker", "nextId") PHẢI LÀ VĂN BẢN THUẦN TÚY. TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY! LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤY NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
-
-    * **Thẻ từ vựng (Flashcard) - VÍ DỤ ƯU TIÊN HÀNG ĐẦU VÀ CẦN CHÍNH XÁC TUYỆT ĐỐI:**
-        \`\`\`quiz
+* **Hội thoại tương tác có lựa chọn (Interactive Dialogue with Choices):**
+    \`\`\`quiz
+    {
+      "type": "dialogue_choice",
+      "title": "点餐 (Diǎncān) - Gọi món",
+      "scenario": "你正在一家高档餐厅，服务员过来为你点餐。请选择合适的回复。(Nǐ zhèngzài yījiā gāodàng cāntīng, fúwùyuán guòlái wèi nǐ diǎncān. Qǐng xuǎnzé héshì de huífù.) - Bạn đang ở một nhà hàng sang trọng, và người phục vụ đến để lấy order của bạn. Hãy chọn cách phản hồi phù hợp.",
+      "dialogue_flow": [
         {
-          "type": "flashcard",
-          "title": "Vocabulary: Daily Greetings",
-          "cards": [
-            { "front": "Hello", "back": "Xin chào", "pronunciation": "həˈloʊ" },
-            { "front": "Good morning", "back": "Chào buổi sáng", "pronunciation": "ɡʊd ˈmɔːrnɪŋ" }
-          ],
-          "explanation": "This set helps you practice common English greetings."
-        }
-        \`\`\`
-
-    * **Câu hỏi trắc nghiệm nhiều lựa chọn (Multiple Choice):**
-        \`\`\`quiz
+          "id": "start",
+          "speaker": "AI",
+          "text": "晚上好，您准备好点餐了吗？ (Wǎnshàng hǎo, nín zhǔnbèi hǎo diǎncān le ma?) - Chào buổi tối, quý khách đã sẵn sàng gọi món chưa ạ?",
+          "choices": [
+            {"text": "是的，我想点餐。(Shì de, wǒ xiǎng diǎncān.) - Vâng, tôi muốn gọi món.", "nextId": "user_choice_1"},
+            {"text": "请再给我几分钟看菜单。(Qǐng zài gěi wǒ jǐ fēnzhōng kàn càidān.) - Cho tôi thêm vài phút để xem thực đơn.", "nextId": "user_choice_2"},
+            {"text": "不，我在等我的朋友。(Bù, wǒ zài děng wǒ de péngyǒu.) - Không, tôi đang đợi bạn.", "nextId": "user_choice_3"}
+          ]
+        },
         {
-          "type": "multiple_choice",
-          "question": "Câu hỏi của bạn ở đây bằng tiếng Việt?",
-          "options": {
-            "A": "Lựa chọn A",
-            "B": "Lựa chọn B",
-            "C": "Lựa chọn C"
-          },
-          "answer": "B",
-          "explanation": "'Joyful' means feeling, expressing, or causing great pleasure and happiness."
-        }
-        \`\`\`
-
-    * **Câu hỏi Điền từ (Fill-in-the-Blank):**
-        \`\`\`quiz
+          "id": "user_choice_1",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "是的，我想点餐。(Shì de, wǒ xiǎng diǎncān.) - Vâng, tôi muốn gọi món."
+        },
         {
-          "type": "fill_in_the_blank",
-          "sentence": "She is a very {{BLANK}} student.",
-          "blanks": ["diligent"],
-          "explanation": "'Diligent' means having or showing care and conscientiousness in one's work or duties."
-        }
-        \`\`\`
-
-    * **Câu hỏi Tự luận ngắn (Short Answer):**
-        \`\`\`quiz
+          "id": "ai_response_1",
+          "speaker": "AI",
+          "text": "好的，您想吃什么？(Hǎo de, nín xiǎng chī shénme?) - Tuyệt vời, quý khách muốn dùng món gì ạ?",
+          "choices": [
+            {"text": "我想要一份五分熟的牛排。(Wǒ xiǎng yào yī fèn wǔ fēn shú de niúpái.) - Tôi muốn một suất bít tết vừa chín tới.", "nextId": "user_choice_4"},
+            {"text": "今天的特色菜是什么？(Jīntiān de tèsè cài shì shénme?) - Món đặc biệt của nhà hàng hôm nay là gì?", "nextId": "user_choice_5"}
+          ]
+        },
         {
-          "type": "short_answer",
-          "question": "Explain the difference between 'affect' and 'effect'.",
-          "keywords": ["verb", "noun", "influence", "result"],
-          "expected_answer_gist": "'Affect' is usually a verb meaning to influence, and 'effect' is usually a noun meaning a result.",
-          "explanation": "'Affect' (verb) means to influence or produce a change in something. For example: 'The weather affected my mood.' 'Effect' (noun) is the result of an action or cause. For example: 'The effect of the rain was slippery roads.' 'Effect' can also be a verb meaning to bring about (e.g., 'to effect change'), but this is less common."
-        }
-        \`\`\`
-    
-    * **Kéo và Thả (Ghép nối) (Drag and Drop Matching):**
-        \`\`\`quiz
+          "id": "user_choice_2",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "请再给我几分钟看菜单。(Qǐng zài gěi wǒ jǐ fēnzhōng kàn càidān.) - Cho tôi thêm vài phút để xem thực đơn."
+        },
         {
-          "type": "drag_and_drop_matching",
-          "title": "Match the English words to their Vietnamese definitions.",
-          "items": [
-            {"id": "item-hello", "text": "Hello"},
-            {"id": "item-goodbye", "text": "Goodbye"},
-            {"id": "item-thankyou", "text": "Thank you"}
-          ],
-          "targets": [
-            {"id": "target-hello", "text": "Xin chào", "matchId": "item-hello"},
-            {"id": "target-goodbye", "text": "Tạm biệt", "matchId": "item-goodbye"},
-            {"id": "target-thankyou", "text": "Cảm ơn", "matchId": "item-thankyou"}
-          ],
-          "explanation": "This exercise tests your English vocabulary matching skills."
-        }
-        \`\`\`
-
-    * **Sắp xếp câu/đoạn văn (Sentence/Paragraph Ordering):**
-        \`\`\`quiz
+          "id": "ai_response_2",
+          "speaker": "AI",
+          "text": "好的，没问题。我稍后回来。(Hǎo de, méi wèntí. Wǒ shāohòu huílái.) - Vâng, không vấn đề gì ạ. Tôi sẽ quay lại sau ít phút.",
+          "explanation": "这是您需要更多时间时的礼貌和恰当的回复。(Zhè shì nín xūyào gèng duō shíjiān shí de lǐmào hé qiàdàng de huífù.) - Đây là một phản hồi lịch sự và phù hợp khi bạn cần thêm thời gian."
+        },
         {
-          "type": "sentence_ordering",
-          "title": "Order these sentences to form a logical paragraph.",
-          "sentences": [
-            {"id": "s-start", "text": "The sun rises in the east."},
-            {"id": "s-mid", "text": "Birds begin to sing their morning songs."},
-            {"id": "s-end", "text": "A new day has officially begun."}
-          ],
-          "correctOrder": ["s-start", "s-mid", "s-end"],
-          "explanation": "This exercise helps you understand sentence flow and coherence."
-        }
-        \`\`\`
-
-    * **Hội thoại tương tác có lựa chọn (Interactive Dialogue with Choices):**
-        \`\`\`quiz
+          "id": "user_choice_3",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "不，我在等我的朋友。(Bù, wǒ zài děng wǒ de péngyǒu.) - Không, tôi đang đợi bạn."
+        },
         {
-          "type": "dialogue_choice",
-          "title": "点餐 (Diǎncān) - Gọi món",
-          "scenario": "你正在一家高档餐厅，服务员过来为你点餐。请选择合适的回复。(Nǐ zhèngzài yījiā gāodàng cāntīng, fúwùyuán guòlái wèi nǐ diǎncān. Qǐng xuǎnzé héshì de huífù.) - Bạn đang ở một nhà hàng sang trọng, và người phục vụ đến để lấy order của bạn. Hãy chọn cách phản hồi phù hợp.",
-          "dialogue_flow": [
-            {
-              "id": "start",
-              "speaker": "AI",
-              "text": "晚上好，您准备好点餐了吗？ (Wǎnshàng hǎo, nín zhǔnbèi hǎo diǎncān le ma?) - Chào buổi tối, quý khách đã sẵn sàng gọi món chưa ạ?",
-              "choices": [
-                {"text": "是的，我想点餐。(Shì de, wǒ xiǎng diǎncān.) - Vâng, tôi muốn gọi món.", "nextId": "user_choice_1"},
-                {"text": "请再给我几分钟看菜单。(Qǐng zài gěi wǒ jǐ fēnzhōng kàn càidān.) - Cho tôi thêm vài phút để xem thực đơn.", "nextId": "user_choice_2"},
-                {"text": "不，我在等我的朋友。(Bù, wǒ zài děng wǒ de péngyǒu.) - Không, tôi đang đợi bạn.", "nextId": "user_choice_3"}
-              ]
-            },
-            {
-              "id": "user_choice_1",
-              "speaker": "USER_RESPONSE_DISPLAY",
-              "text": "是的，我想点餐。(Shì de, wǒ xiǎng diǎncān.) - Vâng, tôi muốn gọi món."
-            },
-            {
-              "id": "ai_response_1",
-              "speaker": "AI",
-              "text": "好的，您想吃什么？(Hǎo de, nín xiǎng chī shénme?) - Tuyệt vời, quý khách muốn dùng món gì ạ?",
-              "choices": [
-                {"text": "我想要一份五分熟的牛排。(Wǒ xiǎng yào yī fèn wǔ fēn shú de niúpái.) - Tôi muốn một suất bít tết vừa chín tới.", "nextId": "user_choice_4"},
-                {"text": "今天的特色菜是什么？(Jīntiān de tèsè cài shì shénme?) - Món đặc biệt của nhà hàng hôm nay là gì?", "nextId": "user_choice_5"}
-              ]
-            },
-            {
-              "id": "user_choice_2",
-              "speaker": "USER_RESPONSE_DISPLAY",
-              "text": "请再给我几分钟看菜单。(Qǐng zài gěi wǒ jǐ fēnzhōng kàn càidān.) - Cho tôi thêm vài phút để xem thực đơn."
-            },
-            {
-              "id": "ai_response_2",
-              "speaker": "AI",
-              "text": "好的，没问题。我稍后回来。(Hǎo de, méi wèntí. Wǒ shāohòu huílái.) - Vâng, không vấn đề gì ạ. Tôi sẽ quay lại sau ít phút.",
-              "explanation": "这是您需要更多时间时的礼貌和恰当的回复。(Zhè shì nín xūyào gèng duō shíjiān shí de lǐmào hé qiàdàng de huífù.) - Đây là một phản hồi lịch sự và phù hợp khi bạn cần thêm thời gian."
-            },
-            {
-              "id": "user_choice_3",
-              "speaker": "USER_RESPONSE_DISPLAY",
-              "text": "不，我在等我的朋友。(Bù, wǒ zài děng wǒ de péngyǒu.) - Không, tôi đang đợi bạn."
-            },
-            {
-              "id": "ai_response_3",
-              "speaker": "AI",
-              "text": "好的，您朋友到了请招呼我一声。(Hǎo de, nín péngyǒu dàole qǐng zhāohū wǒ yī shēng.) - Dạ vâng, khi nào bạn của quý khách đến, hãy vẫy tay gọi tôi nhé.",
-              "explanation": "这个回复也可以，但可能有点直接。选择“请再给我几分钟”会更自然。(Zhège huífù yě kěyǐ, dàn kěnéng yǒudiǎn zhíjiē. Xuǎnzé “qǐng zài gěi wǒ jǐ fēnzhōng” huì gèng zìrán.) - Phản hồi này cũng ổn, nhưng có thể hơi trực tiếp. Lựa chọn 'Cho tôi thêm vài phút' sẽ tự nhiên hơn."
-            },
-            {
-              "id": "user_choice_4",
-              "speaker": "USER_RESPONSE_DISPLAY",
-              "text": "我想要一份五分熟的牛排。(Wǒ xiǎng yào yī fèn wǔ fēn shú de niúpái.) - Tôi muốn một suất bít tết vừa chín tới."
-            },
-            {
-              "id": "ai_response_4",
-              "speaker": "AI",
-              "text": "好的，您需要搭配什么酱汁吗？(Hǎo de, nín xūyào dàpèi shénme jiàngzhī ma?) - Tuyệt vời, quý khách có muốn dùng kèm với sốt nào không ạ?",
-              "explanation": "您已成功点餐。继续对话以选择酱汁。(Nín yǐ chénggōng diǎncān. Jìxù duìhuà yǐ xuǎnzé jiàngzhī.) - Bạn đã gọi món thành công. Tiếp tục hội thoại để chọn sốt."
-            },
-            {
-              "id": "user_choice_5",
-              "speaker": "USER_RESPONSE_DISPLAY",
-              "text": "今天的特色菜是什么？(Jīntiān de tèsè cài shì shénme?) - Món đặc biệt của nhà hàng hôm nay là gì?"
-            },
-            {
-              "id": "ai_response_5",
-              "speaker": "AI",
-              "text": "我们今天的特色菜是香煎三文鱼配百香果酱。(Wǒmen jīntiān de tèsè cài shì xiāng jiān sānwènyú pèi bǎixiāngguǒ jiàng.) - Món đặc biệt hôm nay của chúng tôi là cá hồi nướng sốt chanh dây ạ.",
-              "explanation": "一个很好的问题，可以探索其他选择。(Yīgè hěn hǎo de wèntí, kěyǐ tànsuǒ qítā xuǎnzé.) - Một câu hỏi tốt để khám phá các lựa chọn khác."
-            }
-          ],
-          "start_node_id": "start",
-          "explanation": "这个练习可以帮助您在餐厅点餐时练习礼貌和有效的沟通。请始终注意上下文和适当的选择。(Zhège liànxí kěyǐ bāngzhù nín zài cāntīng diǎncān shí liànxí lǐmào hé yǒuxiào de gōutōng. Qǐng shǐzhōng zhùyì shàngxiàwén hé shìdàng de xuǎnzé.) - Bài tập này giúp bạn thực hành cách giao tiếp lịch sự và hiệu quả khi gọi món tại nhà hàng. Luôn chú ý đến ngữ cảnh và các lựa chọn phù hợp."
+          "id": "ai_response_3",
+          "speaker": "AI",
+          "text": "好的，您朋友到了请招呼我一声。(Hǎo de, nín péngyǒu dàole qǐng zhāohū wǒ yī shēng.) - Dạ vâng, khi nào bạn của quý khách đến, hãy vẫy tay gọi tôi nhé.",
+          "explanation": "这个回复也可以，但可能有点直接。选择“请再给我几分钟”会更自然。(Zhège huífù yě kěyǐ, dàn kěnéng yǒudiǎn zhíjiē. Xuǎnzé “qǐng zài gěi wǒ jǐ fēnzhōng” huì gèng zìrán.) - Phản hồi này cũng ổn, nhưng có thể hơi trực tiếp. Lựa chọn 'Cho tôi thêm vài phút' sẽ tự nhiên hơn."
+        },
+        {
+          "id": "user_choice_4",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "我想要一份五分熟的牛排。(Wǒ xiǎng yào yī fèn wǔ fēn shú de niúpái.) - Tôi muốn một suất bít tết vừa chín tới."
+        },
+        {
+          "id": "ai_response_4",
+          "speaker": "AI",
+          "text": "好的，您需要搭配什么酱汁吗？(Hǎo de, nín xūyào dàpèi shénme jiàngzhī ma?) - Tuyệt vời, quý khách có muốn dùng kèm với sốt nào không ạ?",
+          "explanation": "您已成功点餐。继续对话以选择酱汁。(Nín yǐ chénggōng diǎncān. Jìxù duìhuà yǐ xuǎnzé jiàngzhī.) - Bạn đã gọi món thành công. Tiếp tục hội thoại để chọn sốt."
+        },
+        {
+          "id": "user_choice_5",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "今天的特色菜是什么？(Jīntiān de tèsè cài shì shénme?) - Món đặc biệt của nhà hàng hôm nay là gì?"
+        },
+        {
+          "id": "ai_response_5",
+          "speaker": "AI",
+          "text": "我们今天的特色菜是香煎三文鱼配百香果酱。(Wǒmen jīntiān de tèsè cài shì xiāng jiān sānwènyú pèi bǎixiāngguǒ jiàng.) - Món đặc biệt hôm nay của chúng tôi là cá hồi nướng sốt chanh dây ạ.",
+          "explanation": "一个很好的问题，可以探索其他选择。(Yīgè hěn hǎo de wèntí, kěyǐ tànsuǒ qítā xuǎnzé.) - Một câu hỏi tốt để khám phá các lựa chọn khác."
         }
-        \`\`\`
+      ],
+      "start_node_id": "start",
+      "explanation": "这个练习可以帮助您在餐厅点餐时练习礼貌和有效的沟通。请始终注意上下文和适当的选择。(Zhège liànxí kěyǐ bāngzhù nín zài cāntīng diǎncān shí liànxí lǐmào hé yǒuxiào de gōutōng. Qǐng shǐzhōng zhùyì shàngxiàwén hé shìdàng de xuǎnzé.) - Bài tập này giúp bạn thực hành cách giao tiếp lịch sự và hiệu quả khi gọi món tại nhà hàng. Luôn chú ý đến ngữ cảnh và các lựa chọn phù hợp."
+    }
+    \`\`\`
 
 5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Anh giao tiếp cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.`,
         samplePrompts: [
@@ -1083,7 +864,7 @@ async function handleSavePersona(e) {
 
     const personaData = {
         name: personaNameInput.value.trim(),
-        icon: personaIconInput.value.trim() || '�',
+        icon: personaIconInput.value.trim() || '',
         description: personaDescriptionInput.value.trim(),
         systemPrompt: personaPromptInput.value.trim(),
         ownerId: currentUserId
@@ -2561,6 +2342,14 @@ async function sendMessage(promptTextOverride = null) {
         insertRenderedQuizzes(contentElem, finalExtractedQuizzes);
         makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
 
+        // === BẮT ĐẦU THAY ĐỔI ĐỂ CẢI THIỆN CUỘN TRANG ===
+        // Đảm bảo tất cả các thao tác render DOM đã hoàn tất trước khi cuộn
+        // Tăng nhẹ độ trễ để đảm bảo trình duyệt có đủ thời gian tính toán bố cục
+        setTimeout(() => {
+             messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 200); // Tăng độ trễ lên 200ms
+        // === KẾT THÚC THAY ĐỔI ĐỂ CẢI THIỆN CUỘN TRANG ===
+
         localHistory.push({ id: aiMessageId, role: 'model', parts: [{ text: fullResponseText }] });
         await updateConversationInDb();
         
@@ -2650,6 +2439,12 @@ async function handleRegenerate(targetMessageId) {
         // Bước 3: Chèn quiz tương tác vào vị trí placeholder
         insertRenderedQuizzes(contentElem, finalExtractedQuizzes);
         makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
+
+        // === BẮT ĐẦU THAY ĐỔI ĐỂ CẢI THIỆN CUỘN TRANG TRONG REGENERATE ===
+        setTimeout(() => {
+             messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 200); // Tăng độ trễ lên 200ms
+        // === KẾT THÚC THAY ĐỔI ĐỂ CẢI THIỆN CUỘN TRANG TRONG REGENERATE ===
 
         localHistory[messageIndex].parts[0].text = newFullResponseText;
         addMessageActions(actionsContainer, newFullResponseText, targetMessageId);
@@ -2781,7 +2576,7 @@ function clearSuggestions() {
 async function getFollowUpSuggestions(lastResponse) {
     try {
         const suggestionPrompt = `Dựa vào câu trả lời sau: "${lastResponse.substring(0, 500)}". Hãy đề xuất 3 câu hỏi tiếp theo ngắn gọn và thú vị mà người dùng có thể hỏi. QUAN TRỌNG: Chỉ trả về 3 câu hỏi, mỗi câu trên một dòng. Không đánh số, không dùng gạch đầu dòng, không thêm bất kỳ văn bản nào khác.`;
-        const result = await fastModel.generateContent(prompt);
+        const result = await fastModel.generateContent(suggestionPrompt);
         // === FIX: Thêm kiểm tra an toàn cho result.response và result.response.text() ===
         if (result && result.response && typeof result.response.text === 'function') {
             const responseText = result.response.text();
@@ -3214,7 +3009,7 @@ async function sendReferenceMessage(userPromptOverride = null) {
         
         setTimeout(() => {
              messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 500);
+        }, 100);
 
     } catch (error) {
         contentElem.innerHTML = `**Lỗi:** ${error.message}`;
