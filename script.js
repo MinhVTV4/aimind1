@@ -3214,7 +3214,7 @@ async function sendReferenceMessage(userPromptOverride = null) {
         
         setTimeout(() => {
              messageWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
+        }, 500);
 
     } catch (error) {
         contentElem.innerHTML = `**Lỗi:** ${error.message}`;
