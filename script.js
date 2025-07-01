@@ -292,7 +292,7 @@ const defaultPersonas = [
             "Làm thế nào để tối ưu một truy vấn SQL có sử dụng \`JOIN\` trên nhiều bảng lớn?"
         ]
     },
-    // === PERSONA GIA SƯ NGOẠI NGỮ (KHÔNG CÓ DIALOGUE CHOICE) ===
+    // === PERSONA GIA SƯ NGOẠI NGỮ (CÓ DIALOGUE CHOICE CHO CÁC NGÔN NGỮ Á ĐÔNG) ===
     { 
         id: 'language_tutor', 
         name: 'Gia sư Ngoại ngữ', 
@@ -396,11 +396,93 @@ const defaultPersonas = [
         }
         \`\`\`
 
+    * **Hội thoại tương tác có lựa chọn (Interactive Dialogue with Choices):**
+        \`\`\`quiz
+        {
+          "type": "dialogue_choice",
+          "title": "点餐 (Diǎncān) - Gọi món",
+          "scenario": "你正在一家高档餐厅，服务员过来为你点餐。请选择合适的回复。(Nǐ zhèngzài yījiā gāodàng cāntīng, fúwùyuán guòlái wèi nǐ diǎncān. Qǐng xuǎnzé héshì de huífù.) - Bạn đang ở một nhà hàng sang trọng, và người phục vụ đến để lấy order của bạn. Hãy chọn cách phản hồi phù hợp.",
+          "dialogue_flow": [
+            {
+              "id": "start",
+              "speaker": "AI",
+              "text": "晚上好，您准备好点餐了吗？ (Wǎnshàng hǎo, nín zhǔnbèi hǎo diǎncān le ma?) - Chào buổi tối, quý khách đã sẵn sàng gọi món chưa ạ?",
+              "choices": [
+                {"text": "是的，我想点餐。(Shì de, wǒ xiǎng diǎncān.) - Vâng, tôi muốn gọi món.", "nextId": "user_choice_1"},
+                {"text": "请再给我几分钟看菜单。(Qǐng zài gěi wǒ jǐ fēnzhōng kàn càidān.) - Cho tôi thêm vài phút để xem thực đơn.", "nextId": "user_choice_2"},
+                {"text": "不，我在等我的朋友。(Bù, wǒ zài děng wǒ de péngyǒu.) - Không, tôi đang đợi bạn.", "nextId": "user_choice_3"}
+              ]
+            },
+            {
+              "id": "user_choice_1",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "是的，我想点餐。(Shì de, wǒ xiǎng diǎncān.) - Vâng, tôi muốn gọi món."
+            },
+            {
+              "id": "ai_response_1",
+              "speaker": "AI",
+              "text": "好的，您想吃什么？(Hǎo de, nín xiǎng chī shénme?) - Tuyệt vời, quý khách muốn dùng món gì ạ?",
+              "choices": [
+                {"text": "我想要一份五分熟的牛排。(Wǒ xiǎng yào yī fèn wǔ fēn shú de niúpái.) - Tôi muốn một suất bít tết vừa chín tới.", "nextId": "user_choice_4"},
+                {"text": "今天的特色菜是什么？(Jīntiān de tèsè cài shì shénme?) - Món đặc biệt của nhà hàng hôm nay là gì?", "nextId": "user_choice_5"}
+              ]
+            },
+            {
+              "id": "user_choice_2",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "请再给我几分钟看菜单。(Qǐng zài gěi wǒ jǐ fēnzhōng kàn càidān.) - Cho tôi thêm vài phút để xem thực đơn."
+            },
+            {
+              "id": "ai_response_2",
+              "speaker": "AI",
+              "text": "好的，没问题。我稍后回来。(Hǎo de, méi wèntí. Wǒ shāohòu huílái.) - Vâng, không vấn đề gì ạ. Tôi sẽ quay lại sau ít phút.",
+              "explanation": "这是您需要更多时间时的礼貌和恰当的回复。(Zhè shì nín xūyào gèng duō shíjiān shí de lǐmào hé qiàdàng de huífù.) - Đây là một phản hồi lịch sự và phù hợp khi bạn cần thêm thời gian."
+            },
+            {
+              "id": "user_choice_3",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "不，我在等我的朋友。(Bù, wǒ zài děng wǒ de péngyǒu.) - Không, tôi đang đợi bạn."
+            },
+            {
+              "id": "ai_response_3",
+              "speaker": "AI",
+              "text": "好的，您朋友到了请招呼我一声。(Hǎo de, nín péngyǒu dàole qǐng zhāohū wǒ yī shēng.) - Dạ vâng, khi nào bạn của quý khách đến, hãy vẫy tay gọi tôi nhé.",
+              "explanation": "这个回复也可以，但可能有点直接。选择“请再给我几分钟”会更自然。(Zhège huífù yě kěyǐ, dàn kěnéng yǒudiǎn zhíjiē. Xuǎnzé “qǐng zài gěi wǒ jǐ fēnzhōng” huì gèng zìrán.) - Phản hồi này cũng ổn, nhưng có thể hơi trực tiếp. Lựa chọn 'Cho tôi thêm vài phút' sẽ tự nhiên hơn."
+            },
+            {
+              "id": "user_choice_4",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "我想要一份五分熟的牛排。(Wǒ xiǎng yào yī fèn wǔ fēn shú de niúpái.) - Tôi muốn một suất bít tết vừa chín tới."
+            },
+            {
+              "id": "ai_response_4",
+              "speaker": "AI",
+              "text": "好的，您需要搭配什么酱汁吗？(Hǎo de, nín xūyào dàpèi shénme jiàngzhī ma?) - Tuyệt vời, quý khách có muốn dùng kèm với sốt nào không ạ?",
+              "explanation": "您已成功点餐。继续对话以选择酱汁。(Nín yǐ chénggōng diǎncān. Jìxù duìhuà yǐ xuǎnzé jiàngzhī.) - Bạn đã gọi món thành công. Tiếp tục hội thoại để chọn sốt."
+            },
+            {
+              "id": "user_choice_5",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "今天的特色菜是什么？(Jīntiān de tèsè cài shì shénme?) - Món đặc biệt của nhà hàng hôm nay là gì?"
+            },
+            {
+              "id": "ai_response_5",
+              "speaker": "AI",
+              "text": "我们今天的特色菜是香煎三文鱼配百香果酱。(Wǒmen jīntiān de tèsè cài shì xiāng jiān sānwènyú pèi bǎixiāngguǒ jiàng.) - Món đặc biệt hôm nay của chúng tôi là cá hồi nướng sốt chanh dây ạ.",
+              "explanation": "一个很好的问题，可以探索其他选择。(Yīgè hěn hǎo de wèntí, kěyǐ tànsuǒ qítā xuǎnzé.) - Một câu hỏi tốt để khám phá các lựa chọn khác."
+            }
+          ],
+          "start_node_id": "start",
+          "explanation": "这个练习可以帮助您在餐厅点餐时练习礼貌和有效的沟通。请始终注意上下文和适当的选择。(Zhège liànxí kěyǐ bāngzhù nín zài cāntīng diǎncān shí liànxí lǐmào hé yǒuxiào de gōutōng. Qǐng shǐzhōng zhùyì shàngxiàwén hé shìdàng de xuǎnzé.) - Bài tập này giúp bạn thực hành cách giao tiếp lịch sự và hiệu quả khi gọi món tại nhà hàng. Luôn chú ý đến ngữ cảnh và các lựa chọn phù hợp."
+        }
+        \`\`\`
+
 5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Anh giao tiếp cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.`,
         samplePrompts: [
             "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung và sau đó kiểm tra tôi.",
             "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật, rồi đố tôi một câu hỏi.",
-            "Sự khác biệt giữa 'én/là' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm."
+            "Sự khác biệt giữa 'én/là' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm.",
+            "Tạo một bài tập hội thoại tương tác về việc hỏi đường ở một thành phố mới bằng tiếng Trung." // Ví dụ mới
         ]
     },
     // === PERSONA GIA SƯ TIẾNG ANH (CÓ DIALOGUE CHOICE) ===
@@ -1004,7 +1086,7 @@ async function handleSavePersona(e) {
 
     const personaData = {
         name: personaNameInput.value.trim(),
-        icon: personaIconInput.value.trim() || '🤖',
+        icon: personaIconInput.value.trim() || '�',
         description: personaDescriptionInput.value.trim(),
         systemPrompt: personaPromptInput.value.trim(),
         ownerId: currentUserId
@@ -3501,7 +3583,7 @@ chatContainer.addEventListener('click', async (e) => {
                 
                 dialogueChoices.innerHTML = ''; // Clear choices as it's a user display
                 
-                // Find the next AI response in the flow immediately after this USER_RESPONSE_DISPLAY
+                 // Find the next AI response in the flow immediately after this USER_RESPONSE_DISPLAY
                 const currentIndex = quizData.dialogue_flow.findIndex(n => n.id === nodeIdToRender);
                 if (currentIndex !== -1 && currentIndex + 1 < quizData.dialogue_flow.length) {
                     const nextFlowItem = quizData.dialogue_flow[currentIndex + 1];
