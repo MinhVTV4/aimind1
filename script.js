@@ -481,7 +481,6 @@ const defaultPersonas = [
         samplePrompts: [
             "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung và sau đó kiểm tra tôi.",
             "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật, rồi đố tôi một câu hỏi.",
-            "Sự khác biệt giữa 'én/là' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm.",
             "Tạo một bài tập hội thoại tương tác về việc hỏi đường ở một thành phố mới bằng tiếng Trung." // Ví dụ mới
         ]
     },
@@ -678,8 +677,6 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
         samplePrompts: [
             "Dạy tôi các thì cơ bản trong tiếng Anh và kiểm tra tôi bằng câu hỏi điền từ.",
             "Tạo một bộ flashcards về các động từ bất quy tắc phổ biến.",
-            "Giải thích cách sử dụng 'much', 'many', 'a lot of' và sau đó đố tôi một câu trắc nghiệm.",
-            "Hãy cho tôi một đoạn hội thoại ngắn về việc đặt đồ ăn trong nhà hàng bằng tiếng Anh, sau đó đố tôi một câu hỏi tự luận ngắn.",
             "Tạo một bài tập hội thoại tương tác về việc hỏi đường ở một thành phố mới." // Ví dụ mới
         ]
     },
