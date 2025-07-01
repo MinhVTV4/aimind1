@@ -84,7 +84,7 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     * **{"prompt":"..."}**: Là một đối tượng JSON chứa một khóa "prompt". Giá trị của khóa này là một câu lệnh đầy đủ bạn tự tạo ra để yêu cầu chính bạn giải thích sâu về mục học đó. Prompt phải chi tiết và bằng tiếng Việt.
 
 **Định dạng các loại câu hỏi trắc nghiệm (LUÔN BỌC TRONG KHỐI MÃ \`\`\`quiz... \`\`\`):**
-**CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder", "scenario", "speaker", "nextId") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
+**CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder", "title", "scenario", "speaker", "nextId") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
 **TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY!**
 **LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤU NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
 
@@ -181,30 +181,82 @@ Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi ngư�
     \`\`\`quiz
     {
       "type": "dialogue_choice",
-      "title": "Đặt món ăn tại nhà hàng",
-      "scenario": "Bạn đang ở một nhà hàng sang trọng và người phục vụ đến để lấy order của bạn. Hãy chọn cách phản hồi phù hợp.",
+      "title": "Ordering Food at a Restaurant",
+      "scenario": "You are at a fancy restaurant, and the waiter comes to take your order. Choose the appropriate response.",
       "dialogue_flow": [
-        {"id": "start", "speaker": "AI", "text": "Chào buổi tối, quý khách đã sẵn sàng gọi món chưa ạ?", "choices": [
-          {"text": "Vâng, tôi muốn gọi món.", "nextId": "user_choice_1"},
-          {"text": "Cho tôi thêm vài phút để xem thực đơn.", "nextId": "user_choice_2"}
-        ]},
-        {"id": "user_choice_1", "speaker": "USER_RESPONSE_DISPLAY", "text": "Vâng, tôi muốn gọi món."},
-        {"id": "ai_response_1", "speaker": "AI", "text": "Tuyệt vời, quý khách muốn dùng món gì ạ?", "choices": [
-          {"text": "Tôi muốn một suất bít tết vừa chín tới.", "nextId": "user_choice_3"},
-          {"text": "Món đặc biệt của nhà hàng hôm nay là gì?", "nextId": "user_choice_4"}
-        ]},
-        {"id": "user_choice_2", "speaker": "USER_RESPONSE_DISPLAY", "text": "Cho tôi thêm vài phút để xem thực đơn."},
-        {"id": "ai_response_2", "speaker": "AI", "text": "Vâng, không vấn đề gì ạ. Tôi sẽ quay lại sau ít phút.", "explanation": "Đây là một phản hồi lịch sự và phù hợp khi bạn cần thêm thời gian."},
-        {"id": "user_choice_3", "speaker": "USER_RESPONSE_DISPLAY", "text": "Tôi muốn một suất bít tết vừa chín tới."},
-        {"id": "ai_response_3", "speaker": "AI", "text": "Tuyệt vời, quý khách có muốn dùng kèm với sốt nào không ạ?", "explanation": "Bạn đã gọi món thành công. Tiếp tục hội thoại để chọn sốt."},
-        {"id": "user_choice_4", "speaker": "USER_RESPONSE_DISPLAY", "text": "Món đặc biệt của nhà hàng hôm nay là gì?"},
-        {"id": "ai_response_4", "speaker": "AI", "text": "Món đặc biệt hôm nay của chúng tôi là cá hồi nướng sốt chanh dây ạ.", "explanation": "Một câu hỏi tốt để khám phá các lựa chọn khác."}
+        {
+          "id": "start",
+          "speaker": "AI",
+          "text": "Good evening, are you ready to order?",
+          "choices": [
+            {"text": "Yes, I'd like to order.", "nextId": "user_choice_1"},
+            {"text": "Could I have a few more minutes to look at the menu?", "nextId": "user_choice_2"},
+            {"text": "No, I'm waiting for my friend.", "nextId": "user_choice_3"}
+          ]
+        },
+        {
+          "id": "user_choice_1",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "Yes, I'd like to order."
+        },
+        {
+          "id": "ai_response_1",
+          "speaker": "AI",
+          "text": "Excellent, what would you like to have?",
+          "choices": [
+            {"text": "I'd like a medium-rare steak.", "nextId": "user_choice_4"},
+            {"text": "What's the special of the day?", "nextId": "user_choice_5"}
+          ]
+        },
+        {
+          "id": "user_choice_2",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "Could I have a few more minutes to look at the menu?"
+        },
+        {
+          "id": "ai_response_2",
+          "speaker": "AI",
+          "text": "Certainly, take your time. I'll be back in a few minutes.",
+          "explanation": "This is a polite and appropriate response when you need more time."
+        },
+        {
+          "id": "user_choice_3",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "No, I'm waiting for my friend."
+        },
+        {
+          "id": "ai_response_3",
+          "speaker": "AI",
+          "text": "Alright, please wave me over when your friend arrives.",
+          "explanation": "This response is also acceptable, but 'Could I have a few more minutes' might sound more natural."
+        },
+        {
+          "id": "user_choice_4",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "I'd like a medium-rare steak."
+        },
+        {
+          "id": "ai_response_4",
+          "speaker": "AI",
+          "text": "Excellent, would you like any sauce with that?",
+          "explanation": "You successfully ordered your dish. Continue the conversation to choose a sauce."
+        },
+        {
+          "id": "user_choice_5",
+          "speaker": "USER_RESPONSE_DISPLAY",
+          "text": "What's the special of the day?"
+        },
+        {
+          "id": "ai_response_5",
+          "speaker": "AI",
+          "text": "Our special today is grilled salmon with passion fruit sauce.",
+          "explanation": "A good question to explore other options."
+        }
       ],
       "start_node_id": "start",
-      "explanation": "Bài tập này giúp bạn thực hành cách giao tiếp lịch sự và hiệu quả khi gọi món tại nhà hàng. Luôn chú ý đến ngữ cảnh và các lựa chọn phù hợp."
+      "explanation": "This exercise helps you practice polite and effective communication when ordering food at a restaurant. Always pay attention to the context and appropriate choices."
     }
     \`\`\`
-    *Lưu ý:* "dialogue_flow" là một mảng các "node" hội thoại. Mỗi node có một "id", "speaker" ("AI" hoặc "USER_RESPONSE_DISPLAY"), "text". Node của AI có thể có "choices" dẫn đến "nextId" khác. "start_node_id" chỉ định node bắt đầu.
 
 **Quy tắc chung:**
 * Luôn trả lời bằng tiếng Việt.
@@ -339,46 +391,8 @@ const defaultPersonas = [
 3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và kiên nhẫn.
 
 4.  **Tương tác chủ động:** Sau khi giảng dạy một khái niệm (khoảng 3-5 từ vựng hoặc một điểm ngữ pháp), bạn PHẢI chủ động đặt câu hỏi cho người học để kiểm tra sự hiểu biết của họ. Sử dụng cú pháp đặc biệt sau để tạo câu hỏi trắc nghiệm trong một khối mã 'quiz':
-    \`\`\`quiz
-    {
-      "type": "multiple_choice",
-      "question": "Câu hỏi của bạn ở đây bằng tiếng Việt?",
-      "options": {
-        "A": "Lựa chọn A",
-        "B": "Lựa chọn B",
-        "C": "Lựa chọn C"
-      },
-      "answer": "A",
-      "explanation": "Giải thích chi tiết tại sao đáp án đó đúng, bằng tiếng Việt."
-    }
-    \`\`\`
 
-5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Nhật cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.`,
-        samplePrompts: [
-            "Dạy tôi 5 câu chào hỏi thông dụng trong tiếng Trung và sau đó kiểm tra tôi.",
-            "Tạo một đoạn hội thoại ngắn về chủ đề đi mua sắm bằng tiếng Nhật, rồi đố tôi một câu hỏi.",
-            "Sự khác biệt giữa 'én/là' và '이/가' trong tiếng Hàn là gì? Cho ví dụ và một câu hỏi trắc nghiệm."
-        ]
-    },
-    { 
-        id: 'english_tutor', 
-        name: 'Gia sư Tiếng Anh', 
-        icon: '🇺🇸', 
-        description: 'Dạy ngữ pháp, từ vựng, luyện nghe-nói và kiểm tra kiến thức tiếng Anh.', 
-        systemPrompt: `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
-Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nhẫn. Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
-
-1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Từ tiếng Anh, sau đó là phiên âm IPA (trong ngoặc vuông []), và cuối cùng là nghĩa tiếng Việt.
-    * **Ví dụ:** Hello [həˈloʊ] - Xin chào.
-    * **QUAN TRỌNG:** Phiên âm IPA phải là văn bản thuần túy, không có định dạng Markdown hay HTML bên trong.
-
-2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ phải có đủ 3 thành phần: Câu tiếng Anh gốc, bản dịch tiếng Việt, và nếu cần thì có thêm phần giải thích ngữ pháp ngắn gọn.
-
-3.  **Rõ ràng và có cấu trúc:** Sử dụng Markdown (tiêu đề, danh sách) để tổ chức bài học một cách logic và dễ theo dõi. Giọng văn của bạn phải khích lệ và chuyên nghiệp.
-
-4.  **Tương tác chủ động:** Sau khi giảng dạy một khái niệm (khoảng 3-5 từ vựng hoặc một điểm ngữ pháp), bạn PHẢI chủ động đặt câu hỏi cho người học để kiểm tra sự hiểu biết của họ. Sử dụng cú pháp đặc biệt sau để tạo câu hỏi trắc nghiệm trong một khối mã 'quiz':
-
-    **CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder", "scenario", "speaker", "nextId") PHẢI LÀ VĂN BẢN THUẦN TÚY. TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY! LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤY NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
+    **CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder", "title", "scenario", "speaker", "nextId") PHẢI LÀ VĂN BẢN THUẦN TÚY. TUYỆT ĐỐI KHÔNG ĐƯỢC CHỨA BẤT KỲ ĐỊNH DẠNG MARKDOWN NÀO (NHƯ **IN ĐẬM**, *IN NGHIÊNG*, [LIÊN KẾT]), hoặc THẺ HTML (<br>, <a>, etc.), hoặc các ký tự đặc biệt không phải JSON như $ (khi không phải là nội dung LaTeX) TRONG CÁC CHUỖI NÀY! LUÔN DÙNG DẤU NHÁY KÉP \`"\` cho tất cả các khóa và giá trị chuỗi trong JSON. KHÔNG DÙNG DẤY NHÁY ĐƠN \`'\`. Đảm bảo các mảng JSON được định dạng đúng là \`[]\`, không phải chuỗi.**
 
     * **Thẻ từ vựng (Flashcard) - VÍ DỤ ƯU TIÊN HÀNG ĐẦU VÀ CẦN CHÍNH XÁC TUYỆT ĐỐI:**
         \`\`\`quiz
@@ -463,6 +477,87 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
         }
         \`\`\`
 
+    * **Hội thoại tương tác có lựa chọn (Interactive Dialogue with Choices):**
+        \`\`\`quiz
+        {
+          "type": "dialogue_choice",
+          "title": "Ordering Food at a Restaurant",
+          "scenario": "You are at a fancy restaurant, and the waiter comes to take your order. Choose the appropriate response.",
+          "dialogue_flow": [
+            {
+              "id": "start",
+              "speaker": "AI",
+              "text": "Good evening, are you ready to order?",
+              "choices": [
+                {"text": "Yes, I'd like to order.", "nextId": "user_choice_1"},
+                {"text": "Could I have a few more minutes to look at the menu?", "nextId": "user_choice_2"},
+                {"text": "No, I'm waiting for my friend.", "nextId": "user_choice_3"}
+              ]
+            },
+            {
+              "id": "user_choice_1",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "Yes, I'd like to order."
+            },
+            {
+              "id": "ai_response_1",
+              "speaker": "AI",
+              "text": "Excellent, what would you like to have?",
+              "choices": [
+                {"text": "I'd like a medium-rare steak.", "nextId": "user_choice_4"},
+                {"text": "What's the special of the day?", "nextId": "user_choice_5"}
+              ]
+            },
+            {
+              "id": "user_choice_2",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "Could I have a few more minutes to look at the menu?"
+            },
+            {
+              "id": "ai_response_2",
+              "speaker": "AI",
+              "text": "Certainly, take your time. I'll be back in a few minutes.",
+              "explanation": "This is a polite and appropriate response when you need more time."
+            },
+            {
+              "id": "user_choice_3",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "No, I'm waiting for my friend."
+            },
+            {
+              "id": "ai_response_3",
+              "speaker": "AI",
+              "text": "Alright, please wave me over when your friend arrives.",
+              "explanation": "This response is also acceptable, but 'Could I have a few more minutes' might sound more natural."
+            },
+            {
+              "id": "user_choice_4",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "I'd like a medium-rare steak."
+            },
+            {
+              "id": "ai_response_4",
+              "speaker": "AI",
+              "text": "Excellent, would you like any sauce with that?",
+              "explanation": "You successfully ordered your dish. Continue the conversation to choose a sauce."
+            },
+            {
+              "id": "user_choice_5",
+              "speaker": "USER_RESPONSE_DISPLAY",
+              "text": "What's the special of the day?"
+            },
+            {
+              "id": "ai_response_5",
+              "speaker": "AI",
+              "text": "Our special today is grilled salmon with passion fruit sauce.",
+              "explanation": "A good question to explore other options."
+            }
+          ],
+          "start_node_id": "start",
+          "explanation": "This exercise helps you practice polite and effective communication when ordering food at a restaurant. Always pay attention to the context and appropriate choices."
+        }
+        \`\`\`
+
 5.  **Tạo lộ trình học:** Khi người dùng yêu cầu một lộ trình học (ví dụ: "dạy tôi tiếng Anh giao tiếp cơ bản"), hãy sử dụng cú pháp [Chủ đề]{"prompt":"..."} để tạo các bài học tương tác.
 
 **Quy tắc chung:**
@@ -472,7 +567,8 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
             "Dạy tôi các thì cơ bản trong tiếng Anh và kiểm tra tôi bằng câu hỏi điền từ.",
             "Tạo một bộ flashcards về các động từ bất quy tắc phổ biến.",
             "Giải thích cách sử dụng 'much', 'many', 'a lot of' và sau đó đố tôi một câu trắc nghiệm.",
-            "Hãy cho tôi một đoạn hội thoại ngắn về việc đặt đồ ăn trong nhà hàng bằng tiếng Anh, sau đó đố tôi một câu hỏi tự luận ngắn."
+            "Hãy cho tôi một đoạn hội thoại ngắn về việc đặt đồ ăn trong nhà hàng bằng tiếng Anh, sau đó đố tôi một câu hỏi tự luận ngắn.",
+            "Tạo một bài tập hội thoại tương tác về việc hỏi đường ở một thành phố mới." // Ví dụ mới
         ]
     },
     { 
@@ -500,9 +596,6 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
         ]
     }
 ];
-
-
-
 
 // --- HÀM MỚI: Logic cho Modal Xác nhận ---
 
@@ -1287,107 +1380,122 @@ function renderSentenceOrderingQuiz(data, quizId) {
     return quizWrapper;
 }
 
+
 /**
- * Renders an interactive dialogue quiz block.
- * @param {object} data - Parsed JSON data for the dialogue quiz.
+ * Renders an interactive dialogue with choices quiz block.
+ * @param {object} data - Parsed JSON data for the dialogue choice quiz.
  * @param {string} quizId - Unique ID for this quiz block.
  * @returns {HTMLElement} - The DOM element of the quiz block.
  */
 function renderInteractiveDialogueQuiz(data, quizId) {
     const quizWrapper = document.createElement('div');
-    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 dialogue-quiz-wrapper";
+    quizWrapper.className = "my-4 p-4 border dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 dialogue-choice-quiz-wrapper";
     quizWrapper.id = quizId;
     quizWrapper.dataset.quizData = JSON.stringify(data);
     
-    // Store current node ID and completed state
-    let currentDialogueNodeId = data.start_node_id;
-    if (completedQuizIds.includes(quizId)) {
-        currentDialogueNodeId = 'completed'; // Special state for completed quiz
-    } else if (quizWrapper.dataset.currentDialogueNodeId) {
-        // Restore from previous state if available (e.g., after page reload)
-        currentDialogueNodeId = quizWrapper.dataset.currentDialogueNodeId;
-    }
-    quizWrapper.dataset.currentDialogueNodeId = currentDialogueNodeId;
+    // Check if the entire dialogue is completed
+    const isCompleted = completedQuizIds.includes(quizId);
 
-    const dialogueContentHtml = `
-        <div class="dialogue-scenario text-sm text-gray-600 dark:text-gray-400 mb-3">${DOMPurify.sanitize(data.scenario)}</div>
-        <div class="dialogue-lines space-y-3 mb-4">
-            <!-- Dialogue lines will be appended here -->
-        </div>
-        <div class="dialogue-choices space-y-2">
-            <!-- Choices will be appended here -->
-        </div>
-        <div class="quiz-explanation mt-3 hidden text-sm p-3 rounded-lg"></div>
-    `;
+    let currentNodeId = data.start_node_id;
+    // If completed, we should just show the full dialogue without interaction
+    if (isCompleted) {
+        quizWrapper.dataset.currentNodeId = 'completed'; // Mark as completed
+    } else {
+        quizWrapper.dataset.currentNodeId = currentNodeId; // Store current node ID
+    }
 
     quizWrapper.innerHTML = `
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">${DOMPurify.sanitize(data.title)}</h3>
-        ${dialogueContentHtml}
+        ${data.scenario ? `<p class="text-sm text-gray-600 dark:text-gray-400 mb-3">${DOMPurify.sanitize(data.scenario)}</p>` : ''}
+        <div class="dialogue-transcript space-y-3 overflow-y-auto max-h-96 p-2 rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700"></div>
+        <div class="dialogue-choices mt-4 space-y-2"></div>
+        ${data.explanation ? `<div class="quiz-explanation mt-3 text-sm p-3 rounded-lg bg-slate-100 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300">${DOMPurify.sanitize(marked.parse(data.explanation))}</div>` : ''}
     `;
 
-    // Function to render a specific dialogue node
+    const dialogueTranscript = quizWrapper.querySelector('.dialogue-transcript');
+    const dialogueChoices = quizWrapper.querySelector('.dialogue-choices');
+
+    // Function to render a specific node
     const renderNode = (nodeId) => {
-        const dialogueLinesContainer = quizWrapper.querySelector('.dialogue-lines');
-        const dialogueChoicesContainer = quizWrapper.querySelector('.dialogue-choices');
-        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
-        
-        dialogueChoicesContainer.innerHTML = ''; // Clear previous choices
-        explanationDiv.classList.add('hidden'); // Hide explanation by default
-
         const node = data.dialogue_flow.find(n => n.id === nodeId);
-
         if (!node) {
-            dialogueLinesContainer.innerHTML += `<div class="text-red-500">Lỗi: Không tìm thấy node hội thoại với ID: ${nodeId}</div>`;
-            dialogueChoicesContainer.innerHTML = '';
+            console.error(`Dialogue node with ID ${nodeId} not found.`);
+            dialogueTranscript.innerHTML += `<p class="text-red-500">Error: Dialogue path ended unexpectedly.</p>`;
+            dialogueChoices.innerHTML = ''; // No more choices
+            markQuizCompleted(quizId); // Mark as completed on error
             return;
         }
 
-        // Add dialogue line
-        const speakerClass = node.speaker === 'AI' ? 'text-gray-800 dark:text-gray-200' : 'text-blue-700 dark:text-blue-300 text-right';
-        const speakerName = node.speaker === 'AI' ? 'AI' : 'Bạn';
-        const dialogueLine = document.createElement('div');
-        dialogueLine.className = `dialogue-line ${speakerClass}`;
-        dialogueLine.innerHTML = `<strong>${speakerName}:</strong> ${DOMPurify.sanitize(node.text)}`;
-        dialogueLinesContainer.appendChild(dialogueLine);
-        dialogueLinesContainer.scrollTop = dialogueLinesContainer.scrollHeight; // Scroll to bottom
+        if (node.speaker === "AI") {
+            const aiMessage = document.createElement('div');
+            aiMessage.className = 'flex items-start space-x-2';
+            aiMessage.innerHTML = `
+                <div class="w-7 h-7 rounded-full flex-shrink-0 bg-gradient-to-tr from-purple-400 to-indigo-500 flex items-center justify-center">${svgIcons.aiAvatar}</div>
+                <div class="message-content ai-dialogue-text px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(marked.parse(node.text))}</div>
+            `;
+            dialogueTranscript.appendChild(aiMessage);
+            
+            // Add explanation if present
+            if (node.explanation) {
+                const explanationDiv = document.createElement('div');
+                explanationDiv.className = 'text-xs italic text-gray-500 dark:text-gray-400 ml-9 mt-1';
+                explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`*Giải thích: ${node.explanation}*`));
+                dialogueTranscript.appendChild(explanationDiv);
+            }
 
-        // Render choices if available and not completed
-        if (node.choices && node.choices.length > 0 && nodeId !== 'completed') {
-            node.choices.forEach(choice => {
-                const choiceButton = document.createElement('button');
-                choiceButton.className = `dialogue-choice-btn w-full px-4 py-2 bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100 rounded-md hover:bg-blue-200 dark:hover:bg-blue-600 transition-colors`;
-                choiceButton.textContent = DOMPurify.sanitize(choice.text);
-                choiceButton.dataset.nextId = choice.nextId;
-                choiceButton.dataset.chosenText = choice.text; // Store chosen text for display
-                dialogueChoicesContainer.appendChild(choiceButton);
-            });
-        } else if (node.explanation) {
-            // If no choices, and there's an explanation, display it
-            explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${node.explanation}`));
-            explanationDiv.classList.remove('hidden');
-            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
-            markQuizCompleted(quizId); // Mark quiz completed if it reaches an end node with explanation
-        } else if (nodeId !== 'completed') {
-             // If no choices and no explanation, assume it's an end node
-            explanationDiv.innerHTML = `<p class="text-sm text-gray-600 dark:text-gray-400">Hội thoại đã kết thúc.</p>`;
-            explanationDiv.classList.remove('hidden');
-            markQuizCompleted(quizId);
+            dialogueChoices.innerHTML = ''; // Clear previous choices
+            if (node.choices && node.choices.length > 0 && !isCompleted) {
+                node.choices.forEach(choice => {
+                    const choiceBtn = document.createElement('button');
+                    choiceBtn.className = 'dialogue-choice-btn w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors';
+                    choiceBtn.textContent = DOMPurify.sanitize(choice.text);
+                    choiceBtn.dataset.nextId = choice.nextId;
+                    choiceBtn.dataset.userText = choice.text; // Store user text for display
+                    dialogueChoices.appendChild(choiceBtn);
+                });
+            } else if (!isCompleted) {
+                // If AI has no more choices, the dialogue branch ends
+                dialogueChoices.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Hội thoại đã kết thúc tại đây.</p>';
+                markQuizCompleted(quizId); // Mark the entire dialogue as completed
+            }
+        } else if (node.speaker === "USER_RESPONSE_DISPLAY") {
+            const userMessage = document.createElement('div');
+            userMessage.className = 'flex justify-end';
+            userMessage.innerHTML = `
+                <div class="message-content user-dialogue-text px-3 py-2 rounded-lg bg-blue-500 dark:bg-blue-700 text-white">${DOMPurify.sanitize(marked.parse(node.text))}</div>
+            `;
+            dialogueTranscript.appendChild(userMessage);
+
+            dialogueChoices.innerHTML = ''; // User choice, so no choices from AI yet.
+            
+            // Find the next AI response in the flow that follows this user response.
+            // This assumes the next node in dialogue_flow array is the AI response after USER_RESPONSE_DISPLAY
+            const currentIndex = data.dialogue_flow.findIndex(n => n.id === nodeId);
+            if (currentIndex !== -1 && currentIndex + 1 < data.dialogue_flow.length) {
+                const nextFlowItem = data.dialogue_flow[currentIndex + 1];
+                if (nextFlowItem.speaker === "AI") { // Ensure it's an AI response
+                    quizWrapper.dataset.currentNodeId = nextFlowItem.id;
+                    renderNode(nextFlowItem.id); // Recursively call to render next AI node
+                } else {
+                     // If the next item is not AI, it means this user response also ends the branch
+                     dialogueChoices.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Hội thoại đã kết thúc tại đây.</p>';
+                     markQuizCompleted(quizId);
+                }
+            } else {
+                dialogueChoices.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Hội thoại đã kết thúc tại đây.</p>';
+                markQuizCompleted(quizId);
+            }
         }
+        dialogueTranscript.scrollTop = dialogueTranscript.scrollHeight; // Scroll to bottom
     };
 
-    // Initial render or render completed state
-    if (currentDialogueNodeId === 'completed') {
-        quizWrapper.querySelector('.dialogue-scenario').innerHTML = `<p class="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">
-            ${svgIcons.checkCircle} Bạn đã hoàn thành bài tập này!
-        </p>`;
-        quizWrapper.querySelector('.dialogue-lines').innerHTML = ''; // Clear lines
-        quizWrapper.querySelector('.dialogue-choices').innerHTML = ''; // Clear choices
-        const explanationDiv = quizWrapper.querySelector('.quiz-explanation');
-        explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`));
-        explanationDiv.classList.remove('hidden');
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
+    // Initial render based on current state
+    if (isCompleted) {
+        // If completed, just display the full linear path for review or indicate completion
+        dialogueTranscript.innerHTML = `<p class="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center justify-center gap-2">${svgIcons.checkCircle} Bạn đã hoàn thành bài tập hội thoại này!</p>`;
+        dialogueChoices.innerHTML = ''; // No choices for completed dialogue
     } else {
-        renderNode(currentDialogueNodeId);
+        renderNode(currentNodeId); // Start the dialogue
     }
 
     return quizWrapper;
@@ -1677,73 +1785,6 @@ function handleSentenceOrderingSubmit(submitButton, quizId, quizData) {
     });
 }
 
-/**
- * Handles the logic for an interactive dialogue quiz choice.
- * @param {HTMLElement} button - The choice button clicked.
- * @param {string} quizId - The ID of the quiz.
- * @param {object} quizData - The quiz data.
- */
-function handleDialogueChoice(button, quizId, quizData) {
-    const quizContainer = document.getElementById(quizId);
-    if (!quizContainer || completedQuizIds.includes(quizId)) return;
-
-    const nextNodeId = button.dataset.nextId;
-    const chosenText = button.dataset.chosenText;
-
-    // Add user's chosen response to dialogue lines
-    const dialogueLinesContainer = quizContainer.querySelector('.dialogue-lines');
-    const userDialogueLine = document.createElement('div');
-    userDialogueLine.className = `dialogue-line text-blue-700 dark:text-blue-300 text-right`;
-    userDialogueLine.innerHTML = `<strong>Bạn:</strong> ${DOMPurify.sanitize(chosenText)}`;
-    dialogueLinesContainer.appendChild(userDialogueLine);
-    dialogueLinesContainer.scrollTop = dialogueLinesContainer.scrollHeight; // Scroll to bottom
-
-    // Disable all choices
-    quizContainer.querySelectorAll('.dialogue-choice-btn').forEach(btn => btn.disabled = true);
-
-    // Update current node and re-render
-    quizContainer.dataset.currentDialogueNodeId = nextNodeId;
-    const nextNode = quizData.dialogue_flow.find(n => n.id === nextNodeId);
-
-    if (nextNode) {
-        // Display AI's response for the next node
-        const aiDialogueLine = document.createElement('div');
-        aiDialogueLine.className = `dialogue-line text-gray-800 dark:text-gray-200`;
-        aiDialogueLine.innerHTML = `<strong>AI:</strong> ${DOMPurify.sanitize(nextNode.text)}`;
-        dialogueLinesContainer.appendChild(aiDialogueLine);
-        dialogueLinesContainer.scrollTop = dialogueLinesContainer.scrollHeight; // Scroll to bottom
-
-        // Clear previous choices and render new ones or end the dialogue
-        const dialogueChoicesContainer = quizContainer.querySelector('.dialogue-choices');
-        dialogueChoicesContainer.innerHTML = '';
-
-        if (nextNode.choices && nextNode.choices.length > 0) {
-            nextNode.choices.forEach(choice => {
-                const choiceButton = document.createElement('button');
-                choiceButton.className = `dialogue-choice-btn w-full px-4 py-2 bg-blue-100 dark:bg-blue-700 text-blue-800 dark:text-blue-100 rounded-md hover:bg-blue-200 dark:hover:bg-blue-600 transition-colors`;
-                choiceButton.textContent = DOMPurify.sanitize(choice.text);
-                choiceButton.dataset.nextId = choice.nextId;
-                choiceButton.dataset.chosenText = choice.text;
-                dialogueChoicesContainer.appendChild(choiceButton);
-            });
-        } else {
-            // End of dialogue branch
-            const explanationDiv = quizContainer.querySelector('.quiz-explanation');
-            explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`**Hội thoại kết thúc.** ${nextNode.explanation || quizData.explanation}`));
-            explanationDiv.classList.remove('hidden');
-            explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200';
-            markQuizCompleted(quizId);
-        }
-    } else {
-        // Fallback if nextNodeId is not found (shouldn't happen with correct JSON)
-        const explanationDiv = quizContainer.querySelector('.quiz-explanation');
-        explanationDiv.innerHTML = `<span class="text-red-500">Lỗi: Lỗi luồng hội thoại.</span>`;
-        explanationDiv.classList.remove('hidden');
-        explanationDiv.className = 'quiz-explanation mt-3 text-sm p-3 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200';
-        markQuizCompleted(quizId); // Mark as completed to prevent further interaction
-    }
-}
-
 
 /**
  * Marks a quiz as completed and updates the database.
@@ -1786,8 +1827,8 @@ function renderQuiz(data, quizId) {
             return renderDragAndDropMatchingQuiz(data, quizId); // === THÊM: Xử lý Kéo và Thả ===
         case 'sentence_ordering':
             return renderSentenceOrderingQuiz(data, quizId); // === THÊM: Xử lý Sắp xếp câu ===
-        case 'dialogue_choice':
-            return renderInteractiveDialogueQuiz(data, quizId); // === THÊM: Xử lý Hội thoại tương tác ===
+        case 'dialogue_choice': // THÊM DÒNG NÀY
+            return renderInteractiveDialogueQuiz(data, quizId); // THÊM DÒNG NÀY
         default:
             console.warn('Unknown quiz type:', data.type);
             const errorDiv = document.createElement('div');
@@ -2272,19 +2313,19 @@ function highlightAllCode(container) {
                     (potentialJson.type === 'multiple_choice' && potentialJson.question && potentialJson.options && potentialJson.answer) ||
                     (potentialJson.type === 'fill_in_the_blank' && potentialJson.sentence && potentialJson.blanks) ||
                     (potentialJson.type === 'short_answer' && potentialJson.question && potentialJson.keywords && potentialJson.expected_answer_gist) ||
-                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson.cards[0].back) || // Kiểm tra cấu trúc flashcard
-                    (potentialJson.type === 'drag_and_drop_matching' && potentialJson.items && potentialJson.targets) || // Kiểm tra cấu trúc kéo thả
-                    (potentialJson.type === 'sentence_ordering' && potentialJson.sentences && potentialJson.correctOrder) || // Kiểm tra cấu trúc sắp xếp câu
-                    (potentialJson.type === 'dialogue_choice' && potentialJson.dialogue_flow && potentialJson.start_node_id) || // Kiểm tra cấu trúc hội thoại
+                    (potentialJson.type === 'flashcard' && potentialJson.cards && potentialJson.cards.length > 0 && potentialJson.cards[0].front && potentialJson.cards[0].back) ||
+                    (potentialJson.type === 'drag_and_drop_matching' && potentialJson.items && potentialJson.targets) ||
+                    (potentialJson.type === 'sentence_ordering' && potentialJson.sentences && potentialJson.correctOrder) ||
+                    (potentialJson.type === 'dialogue_choice' && potentialJson.dialogue_flow && potentialJson.start_node_id) || // THÊM ĐIỀU KIỆN NÀY
                     // Check for old multiple_choice format (no type field)
                     (potentialJson.question && potentialJson.options && potentialJson.answer) 
                 ) {
-                   block.classList.add('language-quiz');
+                   block.classList.add('language-quiz'); // Sẽ không highlight block này
                 }
              } catch(e) { /* not valid JSON, ignore */ }
         }
         
-        // === FIX: Bỏ qua highlight cho các khối ngôn ngữ 'quiz' ===
+        // FIX: Bỏ qua highlight cho các khối ngôn ngữ 'quiz'
         if (block.classList.contains('language-quiz')) {
             return; // Skip highlighting this block
         }
@@ -2772,7 +2813,7 @@ function showHistorySkeleton() {
             <div class="w-7/12">
                 <div class="h-16 skeleton-box rounded-2xl"></div>
             </div>
-            </div>`;
+        </div>`;
     chatContainer.appendChild(notificationArea);
 }
 
@@ -3058,7 +3099,7 @@ async function sendReferenceMessage(userPromptOverride = null) {
             const saveNoteBtn = document.createElement('button');
             saveNoteBtn.className = 'flex items-center gap-2 text-xs px-3 py-1 bg-yellow-200 dark:bg-slate-600 text-yellow-800 dark:text-yellow-200 rounded-full hover:bg-yellow-300 dark:hover:bg-slate-500 transition-colors';
             saveNoteBtn.innerHTML = `${svgIcons.saveNote} <span>Lưu Ghi chú</span>`;
-            saveNoteBtn.onclick = () => saveAsNote(userPrompt, fullNoteText); // Pass fullNoteText
+            saveNoteBtn.onclick = () => saveAsNote(userPrompt, fullResponseText); // Pass fullResponseText
             actionsContainer.appendChild(saveNoteBtn);
         }
         
@@ -3247,8 +3288,8 @@ chatContainer.addEventListener('click', async (e) => {
     const flashcardNavButton = e.target.closest('.flashcard-nav-btn'); // for flashcard navigation
     const flashcardSpeakButton = e.target.closest('.flashcard-speak-btn'); // for flashcard speaking
     const flashcardMarkCompletedButton = e.target.closest('.flashcard-mark-completed-btn'); // for marking flashcard completed
-    const dialogueChoiceButton = e.target.closest('.dialogue-choice-btn'); // for interactive dialogue
-
+    const dialogueChoiceButton = e.target.closest('.dialogue-choice-btn'); // THÊM DÒNG NÀY
+    
     e.stopPropagation();
 
     if (link) {
@@ -3301,8 +3342,6 @@ chatContainer.addEventListener('click', async (e) => {
         if (quizWrapper && !completedQuizIds.includes(quizWrapper.id)) {
             const isFlipped = flashcardContainer.classList.contains('flipped'); // Lấy trạng thái lật từ container
             flashcardContainer.classList.toggle('flipped', !isFlipped); // Áp dụng class 'flipped' cho container
-            // Không cần toggle 'unflipped' trên currentCard nữa
-            // currentCard.classList.toggle('unflipped', isFlipped); 
         }
     } else if (flashcardNavButton) {
         e.stopPropagation(); // Ngăn chặn nổi bọt để không lật thẻ
@@ -3317,9 +3356,6 @@ chatContainer.addEventListener('click', async (e) => {
         if (container) {
             container.classList.remove('flipped');
         }
-        // quizWrapper.querySelectorAll('.flashcard-item').forEach(card => {
-        //     card.classList.remove('flipped', 'unflipped'); // Reset flip animation on individual cards
-        // });
 
         if (flashcardNavButton.classList.contains('prev-card-btn')) {
             currentCardIndex--;
@@ -3358,16 +3394,106 @@ chatContainer.addEventListener('click', async (e) => {
             if (flashcardContainerElement) flashcardContainerElement.style.pointerEvents = 'none';
             quizWrapper.querySelectorAll('.flashcard-nav-btn').forEach(btn => btn.disabled = true);
         }
-    } else if (dialogueChoiceButton && !dialogueChoiceButton.disabled) {
+    } else if (dialogueChoiceButton) { // THÊM KHỐI NÀY
         e.preventDefault();
-        const quizId = dialogueChoiceButton.closest('[id^="quiz-"]').id;
-        const quizContainer = document.getElementById(quizId);
-        if (quizContainer && quizContainer.dataset.quizData) {
-            const quizData = JSON.parse(quizContainer.dataset.quizData);
-            handleDialogueChoice(dialogueChoiceButton, quizId, quizData);
-        }
-    }
-    else if (button) {
+        const quizWrapper = dialogueChoiceButton.closest('.dialogue-choice-quiz-wrapper');
+        if (!quizWrapper || completedQuizIds.includes(quizWrapper.id)) return; // Prevent interaction if completed
+
+        const quizData = JSON.parse(quizWrapper.dataset.quizData);
+        const nextNodeId = dialogueChoiceButton.dataset.nextId;
+        const userText = dialogueChoiceButton.dataset.userText; // Get user's selected text
+
+        const dialogueTranscript = quizWrapper.querySelector('.dialogue-transcript');
+        const dialogueChoices = quizWrapper.querySelector('.dialogue-choices');
+
+        // Append user's choice to the transcript
+        const userMessage = document.createElement('div');
+        userMessage.className = 'flex justify-end';
+        userMessage.innerHTML = `
+            <div class="message-content user-dialogue-text px-3 py-2 rounded-lg bg-blue-500 dark:bg-blue-700 text-white">${DOMPurify.sanitize(userText)}</div>
+        `;
+        dialogueTranscript.appendChild(userMessage);
+        dialogueTranscript.scrollTop = dialogueTranscript.scrollHeight; // Scroll to bottom after adding user message
+        
+        // Disable choices
+        dialogueChoices.innerHTML = ''; 
+
+        // Find the corresponding "USER_RESPONSE_DISPLAY" node in the flow or the next AI node directly
+        const renderNode = (nodeIdToRender) => {
+            const node = quizData.dialogue_flow.find(n => n.id === nodeIdToRender);
+            if (!node) {
+                console.error(`Dialogue node with ID ${nodeIdToRender} not found.`);
+                dialogueTranscript.innerHTML += `<p class="text-red-500">Error: Dialogue path ended unexpectedly.</p>`;
+                dialogueChoices.innerHTML = '';
+                markQuizCompleted(quizWrapper.id); // Mark as completed on error
+                return;
+            }
+
+            if (node.speaker === "AI") {
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'flex items-start space-x-2';
+                aiMessage.innerHTML = `
+                    <div class="w-7 h-7 rounded-full flex-shrink-0 bg-gradient-to-tr from-purple-400 to-indigo-500 flex items-center justify-center">${svgIcons.aiAvatar}</div>
+                    <div class="message-content ai-dialogue-text px-3 py-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(marked.parse(node.text))}</div>
+                `;
+                dialogueTranscript.appendChild(aiMessage);
+
+                if (node.explanation) {
+                    const explanationDiv = document.createElement('div');
+                    explanationDiv.className = 'text-xs italic text-gray-500 dark:text-gray-400 ml-9 mt-1';
+                    explanationDiv.innerHTML = DOMPurify.sanitize(marked.parse(`*Giải thích: ${node.explanation}*`));
+                    dialogueTranscript.appendChild(explanationDiv);
+                }
+
+                dialogueChoices.innerHTML = '';
+                if (node.choices && node.choices.length > 0) {
+                    node.choices.forEach(choice => {
+                        const choiceBtn = document.createElement('button');
+                        choiceBtn.className = 'dialogue-choice-btn w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors';
+                        choiceBtn.textContent = DOMPurify.sanitize(choice.text);
+                        choiceBtn.dataset.nextId = choice.nextId;
+                        choiceBtn.dataset.userText = choice.text;
+                        dialogueChoices.appendChild(choiceBtn);
+                    });
+                } else {
+                    // End of this dialogue branch
+                    dialogueChoices.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Hội thoại đã kết thúc tại đây.</p>';
+                    markQuizCompleted(quizWrapper.id); // Mark the dialogue as completed
+                }
+            } else if (node.speaker === "USER_RESPONSE_DISPLAY") {
+                // If the next node is a USER_RESPONSE_DISPLAY, render it and then immediately find the next AI response
+                const userMessageForDisplay = document.createElement('div');
+                userMessageForDisplay.className = 'flex justify-end';
+                userMessageForDisplay.innerHTML = `
+                    <div class="message-content user-dialogue-text px-3 py-2 rounded-lg bg-blue-500 dark:bg-blue-700 text-white">${DOMPurify.sanitize(marked.parse(node.text))}</div>
+                `;
+                dialogueTranscript.appendChild(userMessageForDisplay);
+                
+                dialogueChoices.innerHTML = ''; // Clear choices as it's a user display
+                
+                // Find the next AI response in the flow immediately after this USER_RESPONSE_DISPLAY
+                const currentIndex = quizData.dialogue_flow.findIndex(n => n.id === nodeIdToRender);
+                if (currentIndex !== -1 && currentIndex + 1 < quizData.dialogue_flow.length) {
+                    const nextFlowItem = quizData.dialogue_flow[currentIndex + 1];
+                    if (nextFlowItem.speaker === "AI") {
+                        quizWrapper.dataset.currentNodeId = nextFlowItem.id;
+                        renderNode(nextFlowItem.id); // Recursively call to render next AI node
+                    } else {
+                        // Unexpected sequence: USER_RESPONSE_DISPLAY followed by another non-AI node
+                        dialogueChoices.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Hội thoại đã kết thúc tại đây (lỗi luồng).</p>';
+                        markQuizCompleted(quizWrapper.id);
+                    }
+                } else {
+                    dialogueChoices.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">Hội thoại đã kết thúc tại đây.</p>';
+                    markQuizCompleted(quizWrapper.id);
+                }
+            }
+            dialogueTranscript.scrollTop = dialogueTranscript.scrollHeight; // Scroll to bottom
+        };
+
+        renderNode(nextNodeId); // Start rendering from the chosen next node
+
+    } else if (button) {
         e.preventDefault();
          if (button.classList.contains('copy-btn')) {
             copyToClipboard(button.dataset.text);
@@ -3390,7 +3516,10 @@ chatContainer.addEventListener('click', async (e) => {
             }
 
             const utterance = new SpeechSynthesisUtterance(button.dataset.text);
-            utterance.lang = 'vi-VN';
+            utterance.lang = 'vi-VN'; // Default to Vietnamese for general chat
+            // For language-specific pronunciation, we might need a more sophisticated check
+            // based on persona or detected language. For now, keep it simple.
+            
             utterance.onstart = () => {
                 resetActiveSpeechButton();
                 activeSpeech = { utterance, button: button };
