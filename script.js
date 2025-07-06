@@ -493,9 +493,9 @@ const defaultPersonas = [
         systemPrompt: `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
 Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nhẫn. Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
 
-1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: Từ tiếng Anh, sau đó là phiên âm IPA (trong ngoặc vuông []), và cuối cùng là nghĩa tiếng Việt.
-    * **Ví dụ:** Hello [həˈloʊ] - Xin chào.
-    * **QUAN TRỌNG:** Phiên âm IPA phải là văn bản thuần túy, không có định dạng Markdown hay HTML bên trong.
+1.  **Định dạng từ vựng:** Khi giới thiệu một từ mới, luôn trình bày theo cấu trúc: <span class="english-word-to-speak">Từ tiếng Anh</span> [phiên âm IPA] - Nghĩa tiếng Việt.
+    * **Ví dụ:** <span class="english-word-to-speak">Hello</span> [həˈloʊ] - Xin chào.
+    * **QUAN TRỌNG:** Phiên âm IPA phải là văn bản thuần túy, không có định dạng Markdown hay HTML bên trong. Thẻ \`<span class="english-word-to-speak">\` chỉ bọc từ/cụm từ tiếng Anh, không bọc phiên âm hay nghĩa tiếng Việt.
 
 2.  **Câu ví dụ:** Luôn cung cấp ít nhất một câu ví dụ thực tế cho mỗi từ vựng hoặc điểm ngữ pháp. Câu ví dụ phải có đủ 3 thành phần: Câu tiếng Anh gốc, bản dịch tiếng Việt, và nếu cần thì có thêm phần giải thích ngữ pháp ngắn gọn.
 
@@ -695,7 +695,7 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
     { 
         id: 'marketing', 
         name: 'Chuyên gia Marketing', 
-        icon: '📈', 
+        icon: '�', 
         description: 'Tư vấn chiến lược, phân tích thị trường, quảng cáo.', 
         systemPrompt: `**Chỉ thị hệ thống:** Bạn là một giám đốc marketing dày dặn kinh nghiệm. Hãy cung cấp các phân tích thị trường sắc bén, đề xuất các chiến lược marketing marketing sáng tạo, và giúp viết các nội dung quảng cáo (copywriting) hấp dẫn, tập trung vào lợi ích của khách hàng và lời kêu gọi hành động (CTA) rõ ràng.`,
         samplePrompts: [
@@ -1083,7 +1083,7 @@ async function handleSavePersona(e) {
 
     const personaData = {
         name: personaNameInput.value.trim(),
-        icon: personaIconInput.value.trim() || '�',
+        icon: personaIconInput.value.trim() || '',
         description: personaDescriptionInput.value.trim(),
         systemPrompt: personaPromptInput.value.trim(),
         ownerId: currentUserId
@@ -1181,8 +1181,8 @@ function renderFillInTheBlankQuiz(data, quizId) {
             return `<span class="quiz-filled-blank completed-blank">${DOMPurify.sanitize(answer)}</span>`;
         });
         inputFields = `<div class="quiz-explanation mt-3 text-sm p-3 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">
-                           ${DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`))}
-                       </div>`;
+                           ${DOMPurify.sanitize(marked.parse(`**Giải thích:** ${data.explanation}`))
+                       }</div>`;
     } else {
         // Otherwise, show input fields for blanks
         inputFields = '<div class="quiz-blank-inputs space-y-2 mt-3">';
@@ -2181,6 +2181,30 @@ function makeForeignTextClickable(container) {
     });
 }
 
+/**
+ * Finds English words/phrases marked by the AI with specific span tags
+ * and makes them clickable for pronunciation.
+ * @param {HTMLElement} container - The element whose content should be processed.
+ */
+function makeEnglishWordsSpeakable(container) {
+    // Only apply for the English Tutor persona
+    if (currentPersona && currentPersona.id !== 'english_tutor') {
+        return;
+    }
+
+    container.querySelectorAll('span.english-word-to-speak').forEach(span => {
+        if (!span.dataset.listenerAdded) { // Prevent adding multiple listeners
+            span.classList.add('clickable-foreign'); // Reuse existing styling for clickable text
+            span.title = 'Phát âm tiếng Anh';
+            span.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent event bubbling
+                speakText(span.textContent, 'en-US');
+            });
+            span.dataset.listenerAdded = 'true'; // Mark as processed
+        }
+    });
+}
+
 
 function preprocessText(text) {
     const learningLinkRegex = /\[([^\]]+?)\]\{"prompt":"([^"]+?)"\}/g;
@@ -2369,10 +2393,13 @@ function addMessage(role, text, shouldScroll = true) {
 
     // Bước 2: Xử lý Markdown và các liên kết trên phần còn lại
     const preprocessedText = preprocessText(textWithQuizPlaceholders);
-    contentElem.innerHTML = DOMPurify.sanitize(marked.parse(preprocessedText), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
+    // Allow 'span' tags and 'class' attribute for custom styling/behavior
+    contentElem.innerHTML = DOMPurify.sanitize(marked.parse(preprocessedText), { ADD_ATTR: ['target', 'data-term', 'data-prompt', 'data-lang', 'data-listener-added'], ADD_TAGS: ['span'] });
 
     highlightAllCode(contentElem);
     makeForeignTextClickable(contentElem); 
+    // Gọi hàm mới cho tiếng Anh
+    makeEnglishWordsSpeakable(contentElem);
     
     if (actionsContainer) {
         addMessageActions(actionsContainer, text, messageId);
@@ -2538,9 +2565,11 @@ async function sendMessage(promptTextOverride = null) {
 
             // Bước 2: Xử lý Markdown và các liên kết trên phần còn lại
             const processedChunkForStreaming = preprocessText(textWithQuizPlaceholders + '<span class="blinking-cursor"></span>');
-            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunkForStreaming), { ADD_ATTR: ['target', 'data-term', 'data-prompt'] });
+            // Allow 'span' tags and 'class' attribute for custom styling/behavior
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunkForStreaming), { ADD_ATTR: ['target', 'data-term', 'data-prompt', 'data-lang', 'data-listener-added'], ADD_TAGS: ['span'] });
             highlightAllCode(contentElem);
             makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài khi stream
+            makeEnglishWordsSpeakable(contentElem); // Gọi lại để xử lý văn bản tiếng Anh khi stream
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             // Trong quá trình stream, chúng ta không chèn quiz tương tác ngay lập tức
@@ -2553,13 +2582,15 @@ async function sendMessage(promptTextOverride = null) {
         const { processedText: finalProcessedTextWithPlaceholders, quizzes: finalExtractedQuizzes } = extractAndReplaceQuizBlocks(fullResponseText);
         const finalProcessedText = preprocessText(finalProcessedTextWithPlaceholders);
 
-        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+        // Allow 'span' tags and 'class' attribute for custom styling/behavior
+        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt', 'data-lang', 'data-listener-added'], ADD_TAGS: ['span']});
         contentElem.dataset.rawText = fullResponseText; // Lưu rawText gốc
 
         highlightAllCode(contentElem);
         // Bước 3: Chèn quiz tương tác vào vị trí placeholder
         insertRenderedQuizzes(contentElem, finalExtractedQuizzes);
         makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
+        makeEnglishWordsSpeakable(contentElem); // Gọi lại để xử lý văn bản tiếng Anh sau khi stream kết thúc
 
         localHistory.push({ id: aiMessageId, role: 'model', parts: [{ text: fullResponseText }] });
         await updateConversationInDb();
@@ -2631,9 +2662,11 @@ async function handleRegenerate(targetMessageId) {
 
             // Bước 2: Xử lý Markdown và các liên kết trên phần còn lại
             const processedChunk = preprocessText(textWithQuizPlaceholders + '<span class="blinking-cursor"></span>');
-            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+            // Allow 'span' tags and 'class' attribute for custom styling/behavior
+            contentElem.innerHTML = DOMPurify.sanitize(marked.parse(processedChunk), {ADD_ATTR: ['target', 'data-term', 'data-prompt', 'data-lang', 'data-listener-added'], ADD_TAGS: ['span']});
             highlightAllCode(contentElem);
             makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài khi stream
+            makeEnglishWordsSpeakable(contentElem); // Gọi lại để xử lý văn bản tiếng Anh khi stream
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
@@ -2643,13 +2676,15 @@ async function handleRegenerate(targetMessageId) {
         const { processedText: finalProcessedTextWithPlaceholders, quizzes: finalExtractedQuizzes } = extractAndReplaceQuizBlocks(newFullResponseText);
         const finalProcessedText = preprocessText(finalProcessedTextWithPlaceholders);
 
-        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt']});
+        // Allow 'span' tags and 'class' attribute for custom styling/behavior
+        contentElem.innerHTML = DOMPurify.sanitize(marked.parse(finalProcessedText), {ADD_ATTR: ['target', 'data-term', 'data-prompt', 'data-lang', 'data-listener-added'], ADD_TAGS: ['span']});
         contentElem.dataset.rawText = newFullResponseText;
         
         highlightAllCode(contentElem);
         // Bước 3: Chèn quiz tương tác vào vị trí placeholder
         insertRenderedQuizzes(contentElem, finalExtractedQuizzes);
         makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
+        makeEnglishWordsSpeakable(contentElem); // Gọi lại để xử lý văn bản tiếng Anh sau khi stream kết thúc
 
         localHistory[messageIndex].parts[0].text = newFullResponseText;
         addMessageActions(actionsContainer, newFullResponseText, targetMessageId);
@@ -3388,7 +3423,7 @@ function resetActiveSpeechButton() {
 chatContainer.addEventListener('click', async (e) => {
     const link = e.target.closest('a');
     const button = e.target.closest('button');
-    const clickableForeign = e.target.closest('.clickable-foreign');
+    const clickableForeign = e.target.closest('.clickable-foreign'); // For Asian languages
     
     // Check for quiz related clicks
     const quizOptionButton = e.target.closest('.quiz-option-btn');
@@ -3645,10 +3680,10 @@ chatContainer.addEventListener('click', async (e) => {
          } else if (button.classList.contains('regenerate-btn')) {
             handleRegenerate(button.dataset.targetId);
          }
-    } else if (clickableForeign) {
+    } else if (clickableForeign) { // This handles both Asian and now English words
         e.preventDefault();
         const textToSpeak = clickableForeign.textContent;
-        const lang = clickableForeign.dataset.lang;
+        const lang = clickableForeign.dataset.lang; // Will be 'zh-CN', 'ja-JP', 'ko-KR', or 'en-US'
         if (lang) {
             speakText(textToSpeak, lang);
         }
