@@ -695,7 +695,7 @@ Bạn là một gia sư tiếng Anh chuyên nghiệp, thân thiện và kiên nh
     { 
         id: 'marketing', 
         name: 'Chuyên gia Marketing', 
-        icon: '�', 
+        icon: '📈', 
         description: 'Tư vấn chiến lược, phân tích thị trường, quảng cáo.', 
         systemPrompt: `**Chỉ thị hệ thống:** Bạn là một giám đốc marketing dày dặn kinh nghiệm. Hãy cung cấp các phân tích thị trường sắc bén, đề xuất các chiến lược marketing marketing sáng tạo, và giúp viết các nội dung quảng cáo (copywriting) hấp dẫn, tập trung vào lợi ích của khách hàng và lời kêu gọi hành động (CTA) rõ ràng.`,
         samplePrompts: [
