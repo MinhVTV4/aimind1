@@ -75,13 +75,17 @@ let confirmationResolve = null; // To handle promise-based confirmation
 let completedTopics = []; // Lưu trữ các chủ đề đã học (learning-link)
 let completedQuizIds = []; // Lưu trữ ID các quiz đã hoàn thành
 
-// System prompt for learning mode. This is prepended to user prompts when learning mode is active.
+// === CẬP NHẬT: Thêm chỉ thị cho KaTeX vào System Prompt ===
 const LEARNING_MODE_SYSTEM_PROMPT = `**CHỈ THỊ HỆ THỐNG - CHẾ ĐỘ HỌC TẬP ĐANG BẬT**
 Bạn là một người hướng dẫn học tập chuyên nghiệp. Khi người dùng yêu cầu một lộ trình học, hãy tuân thủ các quy tắc sau:
 1.  **Tạo Lộ trình:** Trả lời bằng một danh sách có cấu trúc (dùng Markdown với gạch đầu dòng).
 2.  **Tạo Liên kết Tương tác:** Đối với MỖI MỤC trong lộ trình, bạn PHẢI định dạng nó theo cú pháp đặc biệt sau: \`[Tên mục học]{"prompt":"Yêu cầu chi tiết để giải thích về mục học này"}\`
     * **[Tên mục học]**: Là tiêu đề của bài học. QUAN TRỌNG: Bên trong "Tên mục học", bạn không được sử dụng thêm dấu ngoặc vuông \`[]\` để nhấn mạnh bất kỳ thuật ngữ nào nào khác. Hãy viết tên mục một cách tự nhiên.
     * **{"prompt":"..."}**: Là một đối tượng JSON chứa một khóa "prompt". Giá trị của khóa này là một câu lệnh đầy đủ bạn tự tạo ra để yêu cầu chính bạn giải thích sâu về mục học đó. Prompt phải chi tiết và bằng tiếng Việt.
+3.  **Công thức Toán học (QUAN TRỌNG):** Luôn sử dụng cú pháp LaTeX để viết công thức toán.
+    * Dùng \`$...$\` cho công thức inline (ví dụ: $x^2 + y^2 = z^2$).
+    * Dùng \`$$...$$\` cho công thức display (ví dụ: $$e^{i\pi} + 1 = 0$$).
+    * **TUYỆT ĐỐI KHÔNG** thoát các dấu gạch chéo ngược \`\\\` bên trong các biểu thức LaTeX (ví dụ: viết là \`\\frac{a}{b}\` chứ không phải \`\\\\frac{a}{b}\`).
 
 **Định dạng các loại câu hỏi trắc nghiệm (LUÔN BỌC TRONG KHỐI MÃ \`\`\`quiz... \`\`\`):**
 **CỰC KỲ QUAN TRỌNG: Tất cả các giá trị chuỗi (strings) BÊN TRONG BẤT KỲ KHỐI JSON nào của quiz (bao gồm "question", "options", "blanks", "keywords", "explanation", "expected_answer_gist", "front", "back", "pronunciation", "text", "matchId", "correctOrder", "title", "scenario", "speaker", "nextId") PHẢI LÀ VĂN BẢN THUẦN TÚY.**
@@ -296,7 +300,7 @@ const defaultPersonas = [
     { 
         id: 'language_tutor', 
         name: 'Gia sư Ngoại ngữ', 
-        icon: '🌐', 
+        icon: '�', 
         description: 'Dạy từ vựng, ngữ pháp và kiểm tra kiến thức.', 
         systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp, thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
 
@@ -1879,6 +1883,35 @@ function processQuizBlocks(containerElement) {
     // Có thể thêm logic để tìm và chèn quiz nếu cần, nhưng tốt nhất là không gọi hàm này nữa.
 }
 
+// === HÀM MỚI: Tích hợp KaTeX ===
+/**
+ * Finds and renders mathematical formulas (LaTeX) in a given DOM element using KaTeX.
+ * This function relies on the KaTeX auto-render extension being loaded on the page.
+ * @param {HTMLElement} element The container element to search for math formulas.
+ */
+function renderMathFormulas(element) {
+    // Check if the KaTeX auto-render function is available
+    if (typeof renderMathInElement === 'function') {
+        try {
+            // Use the auto-render function to find and render math
+            renderMathInElement(element, {
+                // A list of delimiters to look for
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},  // For display mode math
+                    {left: '$', right: '$', display: false},   // For inline mode math
+                    {left: '\\(', right: '\\)', display: false}, // Alternative for inline
+                    {left: '\\[', right: '\\]', display: true}  // Alternative for display
+                ],
+                // Don't throw an error on malformed LaTeX.
+                // It will simply display the raw text instead.
+                throwOnError: false
+            });
+        } catch (error) {
+            console.error("KaTeX rendering error:", error);
+        }
+    }
+}
+
 
 /**
  * Speaks a given text using the browser's Speech Synthesis API.
@@ -2219,6 +2252,9 @@ function addMessage(role, text, shouldScroll = true) {
     // Bước 3: Chèn quiz tương tác vào vị trí placeholder
     insertRenderedQuizzes(contentElem, extractedQuizzes);
 
+    // === CẬP NHẬT: Gọi hàm render KaTeX ===
+    renderMathFormulas(contentElem);
+
     if (shouldScroll) {
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
@@ -2379,6 +2415,7 @@ async function sendMessage(promptTextOverride = null) {
             highlightAllCode(contentElem);
             makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài khi stream
             makeEnglishWordsSpeakable(contentElem); // Gọi lại để xử lý văn bản tiếng Anh khi stream
+            renderMathFormulas(contentElem); // === CẬP NHẬT: Render toán học trong khi stream ===
             chatContainer.scrollTop = chatContainer.scrollHeight;
 
             // Trong quá trình stream, chúng ta không chèn quiz tương tác ngay lập tức
@@ -2400,6 +2437,7 @@ async function sendMessage(promptTextOverride = null) {
         insertRenderedQuizzes(contentElem, finalExtractedQuizzes);
         makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
         makeEnglishWordsSpeakable(contentElem); // Gọi lại để xử lý văn bản tiếng Anh sau khi stream kết thúc
+        renderMathFormulas(contentElem); // === CẬP NHẬT: Render toán học lần cuối để đảm bảo ===
 
         localHistory.push({ id: aiMessageId, role: 'model', parts: [{ text: fullResponseText }] });
         await updateConversationInDb();
@@ -2476,6 +2514,7 @@ async function handleRegenerate(targetMessageId) {
             highlightAllCode(contentElem);
             makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài khi stream
             makeEnglishWordsSpeakable(contentElem); // Gọi lại để xử lý văn bản tiếng Anh khi stream
+            renderMathFormulas(contentElem); // === CẬP NHẬT: Render toán học trong khi stream ===
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
@@ -2494,6 +2533,7 @@ async function handleRegenerate(targetMessageId) {
         insertRenderedQuizzes(contentElem, finalExtractedQuizzes);
         makeForeignTextClickable(contentElem); // Gọi lại để xử lý văn bản tiếng nước ngoài sau khi stream kết thúc
         makeEnglishWordsSpeakable(contentElem); // Gọi lại để xử lý văn bản tiếng Anh sau khi stream kết thúc
+        renderMathFormulas(contentElem); // === CẬP NHẬT: Render toán học lần cuối để đảm bảo ===
 
         localHistory[messageIndex].parts[0].text = newFullResponseText;
         addMessageActions(actionsContainer, newFullResponseText, targetMessageId);
@@ -3021,6 +3061,7 @@ function addMessageToReference(role, text) {
     }
    
     contentElem.innerHTML = DOMPurify.sanitize(marked.parse(text));
+    renderMathFormulas(contentElem); // === CẬP NHẬT: Render toán học cho trợ lý phụ ===
     referenceContent.appendChild(messageWrapper);
     messageWrapper.scrollIntoView({ behavior: "smooth", block: "end" });
     return { messageWrapper, contentElem, statusElem };
@@ -3043,9 +3084,11 @@ async function sendReferenceMessage(userPromptOverride = null) {
         for await (const chunk of result.stream) {
             fullResponseText += chunk.text();
             contentElem.innerHTML = DOMPurify.sanitize(marked.parse(fullResponseText)) + '<span class="blinking-cursor"></span>';
+            renderMathFormulas(contentElem); // === CẬP NHẬT: Render toán học trong khi stream ===
             referenceContent.scrollTop = referenceContent.scrollHeight;
         }
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(fullResponseText));
+        renderMathFormulas(contentElem); // === CẬP NHẬT: Render toán học lần cuối ===
 
         const actionsContainer = messageWrapper.querySelector('.message-actions');
         if (actionsContainer && fullResponseText.trim()) {
@@ -3100,6 +3143,7 @@ async function explainTerm(term, context, isDeepDive = false) {
         const responseText = result.response.text();
         if(statusElem) statusElem.classList.add('hidden');
         contentElem.innerHTML = DOMPurify.sanitize(marked.parse(responseText));
+        renderMathFormulas(contentElem); // === CẬP NHẬT: Render toán học cho giải thích thuật ngữ ===
 
         if (!isDeepDive) {
             const actionsContainer = messageWrapper.querySelector('.message-actions');
