@@ -8,9 +8,18 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
     
-    <!-- === THÊM MỚI: Tải thư viện Highlight.js === -->
+    <!-- Thư viện Highlight.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- === TÍCH HỢP KATEX === -->
+    <!-- 1. CSS của KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU0KOVEMckCKLVIcHig0EcaG6rXgadMtbIySaCVk19D5KGNIIZYqrEk" crossorigin="anonymous">
+    <!-- 2. JavaScript chính của KaTeX -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <!-- 3. Tiện ích Auto-render của KaTeX -->
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" xintegrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+    <!-- === KẾT THÚC TÍCH HỢP KATEX === -->
 
     <script>
         // Set theme based on localStorage or system preference
@@ -126,7 +135,7 @@
                         <div id="custom-persona-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
                         <div id="empty-custom-persona-state" class="hidden text-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl mt-4">
                             <div class="flex justify-center mb-4">
-                               <span data-icon="emptyPersona"></span>
+                                <span data-icon="emptyPersona"></span>
                             </div>
                             <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-2">Tạo chuyên gia AI đầu tiên của bạn!</h3>
                             <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">Biến ý tưởng thành hiện thực bằng cách tạo ra một Persona AI với kiến thức và phong cách riêng.</p>
@@ -298,7 +307,7 @@
     <div id="toast-container" class="fixed top-5 right-5 z-[100] space-y-2"></div>
 
 
-    <!-- === HTML CHO MODAL XÁC NHẬN === -->
+    <!-- HTML CHO MODAL XÁC NHẬN -->
     <div id="confirmation-modal-overlay" class="hidden fixed inset-0 bg-black bg-opacity-60 z-[60] flex items-center justify-center p-4">
         <div id="confirmation-modal" class="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300">
             <div class="p-6 sm:flex sm:items-start">
@@ -323,16 +332,15 @@
         </div>
     </div>
 
-
     <script type="module" src="script.js"></script>
     <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("./service-worker.js")
-        .then(reg => console.log("SW registered:", reg.scope))
-        .catch(err => console.error("SW registration failed:", err));
-    });
-  }
-</script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+              navigator.serviceWorker.register("./service-worker.js")
+                .then(reg => console.log("SW registered:", reg.scope))
+                .catch(err => console.error("SW registration failed:", err));
+            });
+        }
+    </script>
 </body>
 </html>
