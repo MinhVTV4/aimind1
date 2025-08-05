@@ -161,11 +161,11 @@ body {
     .persona-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        background-color: #f0fdf4; /* green-50 */
+        background-color: #e0f2fe; /* blue-100 */
     }
     .dark .persona-card:hover {
         box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-        background-color: #bbf7d0; /* green-200 */
+        background-color: #60a5fa; /* blue-400 */
     }
 .skeleton-box { @apply bg-gray-200 dark:bg-gray-700 rounded animate-pulse; }
 .blinking-cursor { display: inline-block; width: 8px; height: 1.2em; background-color: #333; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
