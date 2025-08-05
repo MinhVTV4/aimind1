@@ -154,9 +154,19 @@ body {
 .dark .ai-status { color: #60a5fa; }
 #persona-selection-screen { -ms-overflow-style: none; scrollbar-width: none; }
 #persona-selection-screen::-webkit-scrollbar { display: none; }
-.persona-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; position: relative; }
-.persona-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
-.dark .persona-card:hover { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3); }
+    .persona-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+        position: relative;
+    }
+    .persona-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        background-color: #f0fdf4; /* green-50 */
+    }
+    .dark .persona-card:hover {
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+        background-color: #bbf7d0; /* green-200 */
+    }
 .skeleton-box { @apply bg-gray-200 dark:bg-gray-700 rounded animate-pulse; }
 .blinking-cursor { display: inline-block; width: 8px; height: 1.2em; background-color: #333; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
 .dark .blinking-cursor { background-color: #ccc; }
@@ -368,23 +378,6 @@ body {
 .dark .quiz-learn-more-btn:hover {
     background-color: #164e63; /* sky-800 */
     color: #ccfbf1; /* teal-100 */
-}
-
-@keyframes pulse-subtle {
-    0%, 100% {
-        background-color: var(--new-chat-btn-bg);
-        border-color: var(--new-chat-btn-border);
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); /* No initial shadow */
-    }
-    50% {
-        background-color: var(--new-chat-btn-pulse-bg);
-        border-color: var(--new-chat-btn-pulse-border);
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3); /* Blue shadow */
-    }
-}
-
-#new-chat-btn {
-    animation: pulse-subtle 2s infinite ease-in-out;
 }
 
 /* Flashcard Specific Styles */
