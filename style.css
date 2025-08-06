@@ -177,13 +177,20 @@ body {
     background-color: #dbeafe; /* blue-100 */
 }
 .dark #default-persona-grid .persona-card:hover {
-    background-color: #1e40af; /* blue-800 */
+    background-color: #3b82f6; /* blue-500 */
 }
 .skeleton-box { @apply bg-gray-200 dark:bg-gray-700 rounded animate-pulse; }
 .blinking-cursor { display: inline-block; width: 8px; height: 1.2em; background-color: #333; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
 .dark .blinking-cursor { background-color: #ccc; }
 @keyframes blink { from, to { background-color: transparent; } 50% { background-color: inherit; } }
 #sidebar { transition: transform 0.3s ease-in-out; overflow: hidden; }
+@keyframes subtle-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.005); opacity: 0.98; } /* Very subtle scale and opacity change */
+}
+.animate-subtle-pulse {
+    animation: subtle-pulse 2s ease-in-out infinite;
+}
 #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
 #record-btn.recording { animation: pulse-red 1s infinite; background-color: #ef4444; color: white; }
 @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); transform: scale(1.05); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); } }
