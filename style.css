@@ -155,7 +155,7 @@ body {
 #persona-selection-screen { -ms-overflow-style: none; scrollbar-width: none; }
 #persona-selection-screen::-webkit-scrollbar { display: none; }
 .persona-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; position: relative; }
-.persona-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+.persona-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); background-color: #FCD34D; }
 /* New animation for new-chat-btn */
 @keyframes border-pulse-light {
     0% { border-color: #bfdbfe; /* blue-200 */ }
