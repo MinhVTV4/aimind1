@@ -4,40 +4,6 @@
     --scrollbar-thumb-bg: #888;
     --scrollbar-thumb-hover-bg: #555;
 }
-
-@keyframes pulse-border {
-    0% {
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); /* blue-500, 70% opacity */
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); /* Expand and fade out */
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-    }
-}
-
-@keyframes pulse-border-dark {
-    0% {
-        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.7); /* blue-400, 70% opacity */
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(96, 165, 250, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
-    }
-}
-
-.animate-pulse-border {
-    animation: pulse-border 2s infinite;
-}
-
-.dark .animate-pulse-border {
-    animation: pulse-border-dark 2s infinite;
-}
-
-
 .dark {
     --scrollbar-track-bg: #2d3748;
     --scrollbar-thumb-bg: #718096;
@@ -192,15 +158,27 @@ body {
         transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
         position: relative;
     }
-    .persona-card:hover {
+        .persona-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        background-color: #fffbeb; /* yellow-50 */
     }
     .dark .persona-card:hover {
         box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-        background-color: #facc15; /* yellow-400 */
     }
+/* Specific hover for custom personas */
+#custom-persona-grid .persona-card:hover {
+    background-color: #fffbeb; /* yellow-50 */
+}
+.dark #custom-persona-grid .persona-card:hover {
+    background-color: #facc15; /* yellow-400 */
+}
+/* Specific hover for default personas */
+#default-persona-grid .persona-card:hover {
+    background-color: #dbeafe; /* blue-100 */
+}
+.dark #default-persona-grid .persona-card:hover {
+    background-color: #1e40af; /* blue-800 */
+}
 .skeleton-box { @apply bg-gray-200 dark:bg-gray-700 rounded animate-pulse; }
 .blinking-cursor { display: inline-block; width: 8px; height: 1.2em; background-color: #333; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
 .dark .blinking-cursor { background-color: #ccc; }
