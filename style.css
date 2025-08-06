@@ -154,43 +154,34 @@ body {
 .dark .ai-status { color: #60a5fa; }
 #persona-selection-screen { -ms-overflow-style: none; scrollbar-width: none; }
 #persona-selection-screen::-webkit-scrollbar { display: none; }
-    .persona-card {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
-        position: relative;
-    }
-        .persona-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    }
-    .dark .persona-card:hover {
-        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-    }
-/* Specific hover for custom personas */
-#custom-persona-grid .persona-card:hover {
-    background-color: #fffbeb; /* yellow-50 */
+.persona-card { transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; position: relative; }
+.persona-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+/* New animation for new-chat-btn */
+@keyframes border-pulse-light {
+    0% { border-color: #bfdbfe; /* blue-200 */ }
+    50% { border-color: #60a5fa; /* blue-400 */ }
+    100% { border-color: #bfdbfe; }
 }
-.dark #custom-persona-grid .persona-card:hover {
-    background-color: #facc15; /* yellow-400 */
+
+@keyframes border-pulse-dark {
+    0% { border-color: #475569; /* slate-600 */ }
+    50% { border-color: #64748b; /* slate-500 */ }
+    100% { border-color: #475569; }
 }
-/* Specific hover for default personas */
-#default-persona-grid .persona-card:hover {
-    background-color: #dbeafe; /* blue-100 */
+
+#new-chat-btn {
+    animation: border-pulse-light 2s infinite ease-in-out;
 }
-.dark #default-persona-grid .persona-card:hover {
-    background-color: #3b82f6; /* blue-500 */
+
+.dark #new-chat-btn {
+    animation: border-pulse-dark 2s infinite ease-in-out;
 }
+.dark .persona-card:hover { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3); }
 .skeleton-box { @apply bg-gray-200 dark:bg-gray-700 rounded animate-pulse; }
 .blinking-cursor { display: inline-block; width: 8px; height: 1.2em; background-color: #333; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
 .dark .blinking-cursor { background-color: #ccc; }
 @keyframes blink { from, to { background-color: transparent; } 50% { background-color: inherit; } }
 #sidebar { transition: transform 0.3s ease-in-out; overflow: hidden; }
-@keyframes subtle-pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.005); opacity: 0.98; } /* Very subtle scale and opacity change */
-}
-.animate-subtle-pulse {
-    animation: subtle-pulse 2s ease-in-out infinite;
-}
 #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
 #record-btn.recording { animation: pulse-red 1s infinite; background-color: #ef4444; color: white; }
 @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); transform: scale(1); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); transform: scale(1.05); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); transform: scale(1); } }
