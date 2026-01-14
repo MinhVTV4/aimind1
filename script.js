@@ -299,7 +299,7 @@ const defaultPersonas = [
     // === PERSONA GIA SƯ NGOẠI NGỮ (CÓ DIALOGUE CHOICE CHO CÁC NGÔN NGỮ Á ĐÔNG) ===
     { 
         id: 'language_tutor', 
-        name: 'Gia sư Ngoại ngữ', 
+        name: 'Ngoại ngữ', 
         icon: '�', 
         description: 'Dạy từ vựng, ngữ pháp và kiểm tra kiến thức.', 
         systemPrompt: `**Chỉ thị hệ thống:** Bạn là một gia sư ngôn ngữ chuyên nghiệp, thân thiện, chuyên về các ngôn ngữ Á Đông (Tiếng Trung, Nhật, Hàn). Khi dạy, hãy tuân thủ nghiêm ngặt các quy tắc sau:
